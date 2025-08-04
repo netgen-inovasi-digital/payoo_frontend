@@ -14,6 +14,12 @@ class InformasiTokoController extends GetxController {
   var provinceStatus = ApiCallStatus.holding.obs;
   var cityStatus = ApiCallStatus.holding.obs;
 
+  @override
+  void onInit() {
+    getDataProvinces();
+    super.onInit();
+  }
+
   // getting data from api
   // pengambilan data lokasi
   Future<void> getDataProvinces() async {
@@ -32,7 +38,6 @@ class InformasiTokoController extends GetxController {
 
         // Extract the "text" values from the result
         provinces.value = apiResponse.result;
-
         provinceStatus.value = ApiCallStatus.success; // Perbarui nilai
       },
       onError: (error) {
@@ -66,11 +71,5 @@ class InformasiTokoController extends GetxController {
         cityStatus.value = ApiCallStatus.error; // Perbarui nilai
       },
     );
-  }
-
-  @override
-  void onInit() {
-    getDataProvinces();
-    super.onInit();
   }
 }
