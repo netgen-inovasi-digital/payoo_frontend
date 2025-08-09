@@ -12,6 +12,7 @@ abstract class Routes {
   static const INFORMASI_TOKO = _Paths.INFORMASI_TOKO;
   static const AKUN = _Paths.AKUN;
   static const PRODUK = _Paths.PRODUK;
+  static const KATEGORI = _Paths.KATEGORI;
 }
 
 abstract class _Paths {
@@ -25,4 +26,5 @@ abstract class _Paths {
   static const INFORMASI_TOKO = '/informasi_toko';
   static const AKUN = '/akun';
   static const PRODUK = '/produk';
+  static const KATEGORI = '/kategori';
 }

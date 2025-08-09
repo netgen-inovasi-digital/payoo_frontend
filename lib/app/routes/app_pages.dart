@@ -16,6 +16,8 @@ import 'package:payoo/app/modules/produk/bindings/produk_binding.dart';
 import 'package:payoo/app/modules/produk/views/produk_view.dart';
 import 'package:payoo/app/modules/splash/bindings/splash_binding.dart';
 import 'package:payoo/app/modules/splash/views/splash_view.dart';
+import 'package:payoo/app/modules/kategori/bindings/kategori_binding.dart';
+import 'package:payoo/app/modules/kategori/views/kategori_view.dart';
 
 import '../modules/dashboard/views/dashboard_view.dart';
 
@@ -71,6 +73,11 @@ class AppPages {
       name: _Paths.PRODUK,
       page: () => const ProdukView(),
       binding: ProdukBinding(),
+    ),
+    GetPage(
+      name: Routes.KATEGORI,
+      page: () => KategoriView(),
+      binding: KategoriBinding(),
     ),
   ];
 }
