@@ -18,6 +18,8 @@ import 'package:payoo/app/modules/splash/bindings/splash_binding.dart';
 import 'package:payoo/app/modules/splash/views/splash_view.dart';
 import 'package:payoo/app/modules/kategori/bindings/kategori_binding.dart';
 import 'package:payoo/app/modules/kategori/views/kategori_view.dart';
+import 'package:payoo/app/modules/stok/bindings/stok_binding.dart';
+import 'package:payoo/app/modules/stok/views/stok_view.dart';
 
 import '../modules/dashboard/views/dashboard_view.dart';
 
@@ -75,9 +77,14 @@ class AppPages {
       binding: ProdukBinding(),
     ),
     GetPage(
-      name: Routes.KATEGORI,
-      page: () => KategoriView(),
+      name: _Paths.KATEGORI,
+      page: () => const KategoriView(),
       binding: KategoriBinding(),
+    ),
+    GetPage(
+      name: _Paths.STOK,
+      page: () => const StokView(),
+      binding: StokBinding(),
     ),
   ];
 }

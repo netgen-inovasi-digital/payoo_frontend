@@ -92,7 +92,9 @@ class _ProdukViewState extends State<ProdukView> {
                     ),
                     CustomButtonOutline(
                       label: 'Manajemen Stok',
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(Routes.STOK);
+                      },
                       width: 280,
                       height: 50,
                       icon: const FaIcon(
