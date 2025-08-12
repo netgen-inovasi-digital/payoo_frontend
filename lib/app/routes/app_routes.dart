@@ -14,6 +14,7 @@ abstract class Routes {
   static const PRODUK = _Paths.PRODUK;
   static const KATEGORI = _Paths.KATEGORI;
   static const STOK = _Paths.STOK;
+  static const DASHBOARD_USER = _Paths.DASHBOARD_USER;
 }
 
 abstract class _Paths {
@@ -29,4 +30,5 @@ abstract class _Paths {
   static const PRODUK = '/produk';
   static const KATEGORI = '/kategori';
   static const STOK = '/stok';
+  static const DASHBOARD_USER = '/dashboard_user';
 }

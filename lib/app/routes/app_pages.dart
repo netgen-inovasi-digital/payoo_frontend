@@ -12,6 +12,8 @@ import 'package:payoo/app/modules/auth/pemulihan_callback/views/pemulihan_callba
 import 'package:payoo/app/modules/dashboard/bindings/dashboard_binding.dart';
 import 'package:payoo/app/modules/auth/login/bindings/login_binding.dart';
 import 'package:payoo/app/modules/auth/login/views/login_view.dart';
+import 'package:payoo/app/modules/dashboarduser/bindings/dashboard_user_binding.dart';
+import 'package:payoo/app/modules/dashboarduser/views/dashboard_user_view.dart';
 import 'package:payoo/app/modules/produk/bindings/produk_binding.dart';
 import 'package:payoo/app/modules/produk/views/produk_view.dart';
 import 'package:payoo/app/modules/splash/bindings/splash_binding.dart';
@@ -85,6 +87,11 @@ class AppPages {
       name: _Paths.STOK,
       page: () => const StokView(),
       binding: StokBinding(),
+    ),
+    GetPage(
+      name: _Paths.DASHBOARD_USER,
+      page: () => const DashboardUserView(),
+      binding: DashboardUserBinding(),
     ),
   ];
 }
