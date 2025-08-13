@@ -41,7 +41,7 @@ class CustomAppBarSecondary extends StatelessWidget implements PreferredSizeWidg
         preferredSize: const Size.fromHeight(2),
         child: Container(
           height: 2,
-          color: borderColor ?? Colors.red[100],
+          color: borderColor ?? const Color(0xFFFF9781),
         ),
       ),
     );

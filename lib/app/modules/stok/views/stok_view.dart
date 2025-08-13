@@ -4,8 +4,6 @@ import 'widgets/list_view_stok.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class StokView extends StatelessWidget {
   const StokView({super.key});

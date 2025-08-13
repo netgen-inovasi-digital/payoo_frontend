@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../toko/views/toko_view.dart';
 
 class ListViewStore extends StatelessWidget {
   final List<Map<String, dynamic>> tokoList;
@@ -22,10 +24,14 @@ class ListViewStore extends StatelessWidget {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: StoreListItem(toko: toko),
+                child: StoreListItem(
+                  toko: toko,
+                  onTap: () {
+                    Get.to(() => const TokoView());
+                  },
+                ),
               ),
             ),
-            // Tambahkan jarak antar item, misal 3px
           ],
         );
       },
@@ -35,64 +41,69 @@ class ListViewStore extends StatelessWidget {
 
 class StoreListItem extends StatelessWidget {
   final Map<String, dynamic> toko;
-  const StoreListItem({super.key, required this.toko});
+  final VoidCallback? onTap;
+  const StoreListItem({super.key, required this.toko, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        StoreImage(toko: toko),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                toko['nama']?.toString() ?? '-',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black87,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Row(
+        children: [
+          StoreImage(toko: toko),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  toko['nama']?.toString() ?? '-',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${toko['rating'] ?? '-'}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: 16,
                     ),
-                  ),
-                  const SizedBox(width: 18),
-                  Text(
-                    toko['kategori']?.toString() ?? '-',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                    const SizedBox(width: 4),
+                    Text(
+                      '${toko['rating'] ?? '-'}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 18),
+                    Text(
+                      toko['kategori']?.toString() ?? '-',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          toko['jarak']?.toString() ?? '-',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: Colors.black87,
+          Text(
+            toko['jarak']?.toString() ?? '-',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.black87,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
