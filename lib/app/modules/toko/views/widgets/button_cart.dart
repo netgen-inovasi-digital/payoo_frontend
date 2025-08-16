@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:payoo/app/modules/keranjang/views/keranjang_view.dart';
 
 class CartFloatingButton extends StatelessWidget {
   const CartFloatingButton({super.key});
@@ -21,7 +23,8 @@ class CartFloatingButton extends StatelessWidget {
       ),
       child: FloatingActionButton(
         onPressed: () {
-          // TODO: Implement navigation to cart page
+          // Navigasi ke halaman keranjang dengan GetX
+          Get.to(() => const KeranjangView());
         },
         backgroundColor: Colors.white,
         elevation: 0,
