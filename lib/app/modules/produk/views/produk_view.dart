@@ -3,7 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:payoo/app/components/custom_app_bar_clip_path.dart';
 import 'package:payoo/app/components/custom_header_clip_path.dart';
 import 'package:payoo/app/modules/produk/views/widgets/custom_button_outline.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
+import 'package:get/get.dart';
 
 class ProdukView extends StatefulWidget {
   const ProdukView({super.key});
@@ -74,7 +76,9 @@ class _ProdukViewState extends State<ProdukView> {
                     ),
                     CustomButtonOutline(
                       label: 'Kategori Produk',
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(Routes.KATEGORI);
+                      },
                       width: 280,
                       height: 50,
                       icon: const FaIcon(
@@ -88,7 +92,9 @@ class _ProdukViewState extends State<ProdukView> {
                     ),
                     CustomButtonOutline(
                       label: 'Manajemen Stok',
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(Routes.STOK);
+                      },
                       width: 280,
                       height: 50,
                       icon: const FaIcon(

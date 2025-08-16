@@ -6,21 +6,28 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType keyboardType;
   final bool obscureText;
-  final Padding? suffixIcon;
+  final Widget? suffixIcon;
+  final Widget? prefixIcon;
+  final double width;
+  final double height;
 
-  const CustomTextField(
-      {super.key,
-      required this.hintText,
-      this.controller,
-      this.keyboardType = TextInputType.text,
-      this.obscureText = false,
-      this.suffixIcon});
+  const CustomTextField({
+    super.key,
+    required this.hintText,
+    this.controller,
+    this.keyboardType = TextInputType.text,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.prefixIcon,
+    this.width = 280,
+    this.height = 50,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 280,
-      height: 50,
+      width: width,
+      height: height,
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
@@ -53,6 +60,7 @@ class CustomTextField extends StatelessWidget {
             ),
           ),
           suffixIcon: suffixIcon,
+          prefixIcon: prefixIcon,
           fillColor: LightThemeColors.fieldColor, // Warna latar
         ),
       ),

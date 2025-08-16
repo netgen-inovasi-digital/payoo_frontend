@@ -233,6 +233,26 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontSize: 16)),
             onTap: () {
               // Aksi saat logout
+              Get.offAllNamed(Routes.LOGIN);
+            },
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          ListTile(
+            leading: const FaIcon(
+              FontAwesomeIcons.user,
+              color: LightThemeColors.primaryColor,
+              size: 20,
+            ),
+            title: const Text("Dashboard User",
+                style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16)),
+            onTap: () {
+              // Aksi saat logout
+              Get.toNamed(Routes.DASHBOARD_USER);
             },
           ),
         ],
