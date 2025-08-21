@@ -1,70 +1,75 @@
+// keranjang_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/app/components/custom_app_bar_secondary.dart';
+import 'package:payoo/app/components/custom_app_bar.dart';
+import 'package:payoo/app/modules/keranjang/views/widgets/keranjang_card.dart';
+import 'package:payoo/app/modules/keranjang/views/widgets/pembayaran_modal.dart';
+import 'package:payoo/config/theme/light_theme.dart';
 import '../controllers/keranjang_controller.dart';
-import 'widgets/list_view_keranjang.dart';
-import 'package:payoo/app/components/custom_button.dart';
 
 class KeranjangView extends GetView<KeranjangController> {
   const KeranjangView({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
-    // Data pesanan
-    final RxList<Map<String, dynamic>> pesananList = <Map<String, dynamic>>[
-      {
-        'nama': 'Classic Burger',
-        'jumlah': 1,
-        'harga': 25000,
-        'total': 25000,
-        'active': true,
-      },
-      {
-        'nama': 'Beef Mentai',
-        'jumlah': 1,
-        'harga': 25000,
-        'total': 25000,
-        'active': false,
-      },
-    ].obs;
-
     return Scaffold(
-      // ================= AppBar Custom =================
-      appBar: const CustomAppBarSecondary(
-        title: 'Keranjang',
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Obx(() => CustomAppBar(
+              title: 'Rp.${controller.totalPrice.toStringAsFixed(0)}',
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: LightThemeColors.primaryColor,
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => PembayaranModal(
+                          jumlah: controller.totalPrice, // Use .value to get current value
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.check, size: 15, color: Colors.white),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                )
+              ],
+            )),
       ),
-      // ================= Body =================
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: Column(
-          children: [
-            // ========== List pesanan ========== 
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                child: Obx(() => ListViewKeranjang(
-                  pesananList: pesananList.toList(),
-                  onEdit: (index) {
-                    // TODO: Implementasi edit pesanan
-                  },
-                  onDelete: (index) => pesananList.removeAt(index),
-                )),
+      body: Obx(
+        () {
+          // Check if cart is empty
+          if (controller.product.isEmpty) {
+            return const Center(
+              child: Text(
+                'Keranjang kosong',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
-            ),
-            // ========== Tombol Simpan ==========
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
-              child: CustomButton(
-                label: 'Lanjutkan Pesanan',
-                onPressed: () {
-                  // TODO: Implementasi simpan kategori
-                },
-                width: double.infinity,
-                height: 54,
-              ),
-            ),
-          ],
-        ),
+            );
+          }
+          
+          return ListView.builder(
+            padding: const EdgeInsets.only(bottom: 100.0),
+            itemCount: controller.product.length,
+            itemBuilder: (context, index) {
+              final currentProduct = controller.product[index];
+              return KeranjangCard(
+                produk: currentProduct,
+                controller: controller,
+              );
+            },
+          );
+        },
       ),
     );
   }

@@ -47,16 +47,12 @@ class _TambahProdukViewState extends State<TambahProdukView>
       body: Column(
         children: [
           // Tab Bar custom
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _buildTabButton(0, 'Tambah Produk'),
-                const SizedBox(width: 8),
-                _buildTabButton(1, 'Komposisi Produk'),
-              ],
-            ),
+          Row(
+            children: [
+              _buildTabButton(0, 'Tambah Produk'),
+              const SizedBox(width: 8),
+              _buildTabButton(1, 'Komposisi Produk'),
+            ],
           ),
 
           Expanded(
@@ -78,10 +74,9 @@ class _TambahProdukViewState extends State<TambahProdukView>
       child: GestureDetector(
         onTap: () => _tabController.animateTo(index),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           decoration: BoxDecoration(
             color: _tabController.index == index ? Colors.green : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             label,

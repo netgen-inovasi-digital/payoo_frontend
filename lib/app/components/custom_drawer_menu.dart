@@ -160,6 +160,7 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontSize: 16)),
             onTap: () {
               // Aksi saat transaksi dipilih
+              Get.toNamed(Routes.TRANSAKSI);
             },
           ),
           const SizedBox(
@@ -178,6 +179,7 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontSize: 16)),
             onTap: () {
               // Aksi saat laporan dipilih
+              Get.toNamed(Routes.LAPORAN);
             },
           ),
           const SizedBox(

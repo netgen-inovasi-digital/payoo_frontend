@@ -6,8 +6,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool dividerLine;
   final List<Widget>? children;
+  final VoidCallback? onPressed;
 
-  const CustomAppBar({super.key, required this.title, this.dividerLine = true, this.children});
+  const CustomAppBar({super.key, required this.title, this.dividerLine = true, this.children, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back,
             color: Colors.black), // Ikon panah kembali
-        onPressed: () {
+        onPressed: onPressed ?? () {
           Get.back();
         },
       ),

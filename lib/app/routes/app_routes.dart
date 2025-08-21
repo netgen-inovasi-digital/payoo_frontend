@@ -15,6 +15,13 @@ abstract class Routes {
   static const KATEGORI = _Paths.KATEGORI;
   static const STOK = _Paths.STOK;
   static const DASHBOARD_USER = _Paths.DASHBOARD_USER;
+  static const DATA_PRODUK = _Paths.DATA_PRODUK;
+  static const KOMPOSISI = _Paths.KOMPOSISI;
+  static const TENTANG_PAYOO = _Paths.TENTANG_PAYOO;
+  static const TRANSAKSI = _Paths.TRANSAKSI;
+  static const STRUK = _Paths.STRUK;
+  static const LAPORAN = _Paths.LAPORAN;
+  static const KERANJANG = _Paths.KERANJANG;
 }
 
 abstract class _Paths {
@@ -31,4 +38,11 @@ abstract class _Paths {
   static const KATEGORI = '/kategori';
   static const STOK = '/stok';
   static const DASHBOARD_USER = '/dashboard_user';
+  static const DATA_PRODUK = '/data_produk';
+  static const KOMPOSISI = '/komposisi';
+  static const TRANSAKSI = '/transaksi';
+  static const KERANJANG = '/keranjang';
+  static const STRUK = '/struk';
+  static const LAPORAN = '/laporan';
+  static const TENTANG_PAYOO = '/tentang_payoo';
 }

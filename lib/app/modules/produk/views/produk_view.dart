@@ -48,7 +48,9 @@ class _ProdukViewState extends State<ProdukView> {
                   children: [
                     CustomButtonOutline(
                       label: 'Data Produk',
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(Routes.DATA_PRODUK);
+                      },
                       width: 280,
                       height: 50,
                       icon: const FaIcon(
@@ -62,7 +64,9 @@ class _ProdukViewState extends State<ProdukView> {
                     ),
                     CustomButtonOutline(
                       label: 'Daftar Komposisi',
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(Routes.KOMPOSISI);
+                      },
                       width: 280,
                       height: 50,
                       icon: const FaIcon(
