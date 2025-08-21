@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/components/confirm_dialog.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/komposisi/views/tambah_komposisi_view.dart';
 import 'package:payoo/app/routes/app_pages.dart';
+import 'package:payoo/config/theme/light_theme.dart';
 
-class DetailKomposisiView extends StatelessWidget{
+class DetailKomposisiView extends StatelessWidget {
   const DetailKomposisiView({super.key, required this.komposisi});
   final Komposisi komposisi;
 
@@ -19,13 +21,17 @@ class DetailKomposisiView extends StatelessWidget{
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            _buildDetailRow(label: 'Nama komposisi', value: komposisi.namaKomposisi ),
+            _buildDetailRow(
+                label: 'Nama komposisi', value: komposisi.namaKomposisi),
             const SizedBox(height: 12),
-            _buildDetailRow(label: 'Harga modal', value: 'Rp. ${komposisi.hargaModal }'),
+            _buildDetailRow(
+                label: 'Harga modal', value: 'Rp. ${komposisi.hargaModal}'),
             const SizedBox(height: 12),
-            _buildDetailRow(label: 'Harga jual', value: 'Rp. ${komposisi.hargaJual }'),
+            _buildDetailRow(
+                label: 'Harga jual', value: 'Rp. ${komposisi.hargaJual}'),
             const SizedBox(height: 12),
-            _buildDetailRow(label: 'Stok komposisi', value: '${komposisi.stokKomposisi }'),
+            _buildDetailRow(
+                label: 'Stok komposisi', value: '${komposisi.stokKomposisi}'),
             const SizedBox(height: 12),
             _buildDetailRow(label: 'satuan', value: komposisi.satuan),
             const SizedBox(height: 32),
@@ -40,14 +46,23 @@ class DetailKomposisiView extends StatelessWidget{
               },
             ),
             const SizedBox(height: 12),
-            _buildActionButton(
+            _buildActionButton( 
               text: 'hapus komposisi',
               backgroundColor: Colors.grey[200]!,
               textColor: Colors.grey,
               icon: null,
               onPressed: () {
-                // Handle hapus komposisi action
-
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return ConfirmDialog(
+                        itemName: komposisi.namaKomposisi,
+                        confirmButtonColor: LightThemeColors.buttonColor,
+                        onConfirm: () {
+                          // Add your delete logic here
+                        });
+                  },
+                );
               },
             ),
           ],

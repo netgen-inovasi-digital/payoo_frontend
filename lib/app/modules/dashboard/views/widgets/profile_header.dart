@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:payoo/app/modules/edit_toko/views/edit_toko_view.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -127,7 +130,7 @@ class ProfileHeader extends StatelessWidget {
                     color: Colors.white, size: 11),
                 const SizedBox(width: 8.0),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () { Get.to(EditTokoView()); },
                   child: const Text('Ubah Profil',
                       style: TextStyle(
                         fontSize: 12,

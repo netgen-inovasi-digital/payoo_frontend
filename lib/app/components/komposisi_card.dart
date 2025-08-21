@@ -34,7 +34,7 @@ class _KomposisiCardState extends State<KomposisiCard> {
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(25, 10, 30, 10),
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
         decoration: BoxDecoration(
           color: widget.cardColor,
           border: Border(
@@ -74,7 +74,7 @@ class _KomposisiCardState extends State<KomposisiCard> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/data/models/produk_model.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 
 class CartFloatingButton extends StatelessWidget {
@@ -23,8 +24,8 @@ class CartFloatingButton extends StatelessWidget {
       ),
       child: FloatingActionButton(
         onPressed: () {
-          // Navigasi ke halaman keranjang dengan GetX
-          Get.toNamed(Routes.KERANJANG);
+          // Navigasi ke halaman keranjang dengan GetX dengan masukin arguments dan juga memakai link agar getx gak error dan meledak
+          Get.toNamed(Routes.KERANJANG, arguments: ProdukList);
         },
         backgroundColor: Colors.white,
         elevation: 0,

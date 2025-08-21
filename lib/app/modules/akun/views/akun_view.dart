@@ -35,7 +35,7 @@ class _AkunViewState extends State<AkunView> {
                 height: 50,
               ),
               EditableImage(
-                imageUrl: 'https://via.placeholder.com/150', // URL gambar
+                imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png', // URL gambar
                 onEdit: () {
                   // Aksi saat tombol edit ditekan
                   print("Edit button tapped");

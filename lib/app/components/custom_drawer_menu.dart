@@ -199,6 +199,7 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontSize: 16)),
             onTap: () {
               // Aksi saat edit akun dipilih
+              Get.toNamed(Routes.AKUN);
             },
           ),
           const SizedBox(
@@ -217,6 +218,7 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontSize: 16)),
             onTap: () {
               // Aksi saat tentang dipilih
+              Get.toNamed(Routes.TENTANG_PAYOO);
             },
           ),
           const SizedBox(

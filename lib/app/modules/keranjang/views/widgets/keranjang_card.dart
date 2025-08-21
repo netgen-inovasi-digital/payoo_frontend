@@ -1,4 +1,4 @@
-// app/modules/keranjang/views/widgets/cart_card.dart
+// Notes gak bisa di pake di lain karena bair reaktif di dalam keranjang 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_product_image.dart';
