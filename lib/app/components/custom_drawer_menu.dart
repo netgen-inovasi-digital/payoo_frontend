@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/modules/akun/views/akun_detail_view.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
@@ -55,28 +56,31 @@ class CustomDrawerMenu extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10), // Jarak antara gambar dan teks
-                  const Row(
-                    children: [
-                      Text(
-                        "Setyo WS",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                  GestureDetector(
+                    onTap: () => Get.to(() => const AkunDetailView()),
+                    child: const Row(
+                      children: [
+                        Text(
+                          "Setyo WS",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        "(Pemilik)",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
+                        SizedBox(
+                          width: 10,
                         ),
-                      ),
-                    ],
+                        Text(
+                          "(Pemilik)",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Row(

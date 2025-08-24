@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_product_image.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
-import 'package:payoo/app/modules/keranjang/views/edit_transaksi_produk.dart';
-import 'package:payoo/app/modules/keranjang/views/widgets/keranjang_modal.dart';
 
 class LaporanDetailCard extends StatelessWidget {
   final Produk produk;
