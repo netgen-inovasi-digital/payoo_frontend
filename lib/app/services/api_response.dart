@@ -1,18 +1,48 @@
 class ApiResponse<T> {
-  final int status;
+  final String status; // success / error
   final String message;
-  final List<T> result;
+  final T? data; // untuk response object tunggal (misal auth)
+  final List<T>? result; // untuk response list (misal daftar lokasi)
 
-  ApiResponse(
-      {required this.status, required this.message, required this.result});
+  ApiResponse({
+    required this.status,
+    required this.message,
+    this.data,
+    this.result,
+  });
 
-  // Method to convert a JSON map into an ApiResponse object
   factory ApiResponse.fromJson(
-      Map<String, dynamic> json, T Function(Map<String, dynamic>) fromJsonT) {
+    Map<String, dynamic> json,
+    T Function(Map<String, dynamic>) fromJsonT,
+  ) {
+    // Jika ada key 'data' dan berupa Map -> parse sebagai object
+    T? dataObj;
+    if (json['data'] != null && json['data'] is Map<String, dynamic>) {
+      dataObj = fromJsonT(json['data']);
+    }
+
+    // Jika ada key 'data' dan berupa List -> parse sebagai list
+    List<T>? listResult;
+    if (json['data'] != null && json['data'] is List) {
+      listResult = List<T>.from((json['data'] as List)
+          .map((x) => fromJsonT(x as Map<String, dynamic>)));
+    }
+
+    // Backward compatibility jika API lama pakai 'result'
+    if (listResult == null &&
+        json['result'] != null &&
+        json['result'] is List) {
+      listResult = List<T>.from((json['result'] as List)
+          .map((x) => fromJsonT(x as Map<String, dynamic>)));
+    }
+
     return ApiResponse(
-      status: json['status'],
-      message: json['message'],
-      result: List<T>.from(json['result'].map((x) => fromJsonT(x))),
+      status: json['status'].toString(),
+      message: json['message']?.toString() ?? '',
+      data: dataObj,
+      result: listResult,
     );
   }
+
+  bool get isSuccess => status.toLowerCase() == 'success';
 }

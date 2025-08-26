@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/config/api/base_client.dart';
-import 'package:payoo/config/api/api.dart';
+import 'package:payoo/app/services/base_client.dart';
 import 'package:payoo/app/data/models/auth_model.dart';
+import 'package:payoo/app/services/api_response.dart';
+import 'package:payoo/app/services/api_call_status.dart';
+import 'package:payoo/utils/constant.dart';
 import 'package:payoo/utils/storage_manager.dart';
 
 class LoginController extends GetxController {
-  var isLoading = false.obs;
-  var errorMessage = ''.obs;
-  var authResponse = Rxn<AuthResponse>();
+  var status = ApiCallStatus.holding.obs; // status panggilan API
+  var errorMessage = ''.obs;             // pesan error
+  var apiResponse = Rxn<ApiResponse<AuthData>>(); // response generic
 
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
   Future<void> login() async {
-    isLoading.value = true;
+    status.value = ApiCallStatus.loading;
     errorMessage.value = '';
     final payload = {
       'email': email.text.trim(),
@@ -27,19 +29,41 @@ class LoginController extends GetxController {
       data: payload,
       onSuccess: (response) {
         try {
-          final result = AuthResponse.fromJson(response.data);
-          authResponse.value = result;
-          StorageManager().save('token', result.data.token);
+          final parsed = ApiResponse<AuthData>.fromJson(
+            response.data,
+            (json) => AuthData.fromJson(json),
+          );
+          apiResponse.value = parsed;
+          if (parsed.data?.token != null) {
+            StorageManager().save('token', parsed.data!.token);
+          }
+          status.value = ApiCallStatus.success;
         } catch (e) {
           errorMessage.value = 'Parsing error';
+          status.value = ApiCallStatus.error;
         }
-        isLoading.value = false;
       },
       onError: (error) {
         errorMessage.value = error.toString();
-        isLoading.value = false;
+        status.value = ApiCallStatus.error;
       },
     );
+    if (status.value == ApiCallStatus.loading) {
+      status.value = ApiCallStatus.error; // fallback jika tidak berubah
+    }
+  }
+
+  /// Logout user: hapus token & reset form tanpa dispose controller
+  void logout() {
+    // Hapus token
+    StorageManager().delete('token');
+    // Bersihkan field agar tidak ada data lama
+    email.clear();
+    password.clear();
+    // Reset status ke holding
+    status.value = ApiCallStatus.holding;
+    errorMessage.value = '';
+    apiResponse.value = null;
   }
 
   @override

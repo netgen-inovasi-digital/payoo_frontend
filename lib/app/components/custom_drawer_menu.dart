@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/modules/auth/login/controllers/login_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
@@ -236,7 +237,9 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     fontSize: 16)),
             onTap: () {
-              // Aksi saat logout
+              // Aksi saat logout: gunakan method logout pada controller agar tidak gunakan controller yang sudah disposed
+              final controller = Get.find<LoginController>();
+              controller.logout();
               Get.offAllNamed(Routes.LOGIN);
             },
           ),

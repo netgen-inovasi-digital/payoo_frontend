@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_button.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 import 'package:payoo/app/modules/auth/daftar/controllers/daftar_controller.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 
 class FormDaftar extends StatelessWidget {
@@ -37,14 +38,17 @@ class FormDaftar extends StatelessWidget {
 
         // Tombol Masuk
         Obx(() {
-          if (daftarController.isLoading.value) {
+          if (daftarController.status.value == ApiCallStatus.loading) {
             return const CircularProgressIndicator();
           }
+          final success = daftarController.status.value == ApiCallStatus.success &&
+              (daftarController.apiResponse.value?.isSuccess ?? false);
           return CustomButton(
-            label: 'DAFTAR',
+            label: success ? 'Berhasil' : 'DAFTAR',
             onPressed: () async {
               await daftarController.register();
-              if (daftarController.registerSuccess.value) {
+              if (daftarController.status.value == ApiCallStatus.success &&
+                  (daftarController.apiResponse.value?.isSuccess ?? false)) {
                 onDaftarSuccess();
               } else if (daftarController.errorMessage.isNotEmpty) {
                 Get.snackbar('Register Gagal', daftarController.errorMessage.value,

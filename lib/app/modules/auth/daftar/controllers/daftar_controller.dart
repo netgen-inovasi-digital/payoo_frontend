@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/config/api/base_client.dart';
-import 'package:payoo/config/api/api.dart';
+import 'package:payoo/app/services/base_client.dart';
+import 'package:payoo/utils/constant.dart';
 import 'package:payoo/app/data/models/auth_model.dart';
 import 'package:payoo/utils/storage_manager.dart';
+import 'package:payoo/app/services/api_call_status.dart';
+import 'package:payoo/app/services/api_response.dart';
 
 class DaftarController extends GetxController {
 	// Text field controllers
@@ -14,10 +16,10 @@ class DaftarController extends GetxController {
 	final TextEditingController passwordConfirm = TextEditingController();
 
 	// State
-	var isLoading = false.obs;
+	var status = ApiCallStatus.holding.obs;
 	var errorMessage = ''.obs;
-	var registerSuccess = false.obs;
-	var authResponse = Rxn<AuthResponse>();
+	var apiResponse = Rxn<ApiResponse<AuthData>>();
+	var registerSuccess = false.obs; // tetap untuk logic view lama jika diperlukan
 
 	Future<void> register() async {
 		errorMessage.value = '';
@@ -28,7 +30,7 @@ class DaftarController extends GetxController {
 			return;
 		}
 
-		isLoading.value = true;
+		status.value = ApiCallStatus.loading;
 		final payload = {
 			'name': name.text.trim(),
 			'email': email.text.trim(),
@@ -45,21 +47,29 @@ class DaftarController extends GetxController {
 			data: payload,
 			onSuccess: (response) {
 				try {
-					// Jika API register langsung mengembalikan struktur sama seperti login
-						final result = AuthResponse.fromJson(response.data);
-						authResponse.value = result;
-						StorageManager().save('token', result.data.token);
-				} catch (_) {
-					// Jika tidak sesuai, tetap lanjut sebagai success tanpa token parsing
+					final parsed = ApiResponse<AuthData>.fromJson(
+						response.data,
+						(json) => AuthData.fromJson(json),
+					);
+					apiResponse.value = parsed;
+					if (parsed.data?.token != null) {
+						StorageManager().save('token', parsed.data!.token);
+					}
+					status.value = ApiCallStatus.success;
+					registerSuccess.value = parsed.isSuccess;
+				} catch (e) {
+					errorMessage.value = 'Parsing error';
+					status.value = ApiCallStatus.error;
 				}
-				registerSuccess.value = true;
-				isLoading.value = false;
 			},
 			onError: (error) {
 				errorMessage.value = error.toString();
-				isLoading.value = false;
+				status.value = ApiCallStatus.error;
 			},
 		);
+		if (status.value == ApiCallStatus.loading) {
+			status.value = ApiCallStatus.error; // fallback safety
+		}
 	}
 
 	@override

@@ -4,6 +4,7 @@ import 'package:payoo/app/components/custom_button.dart';
 import 'package:payoo/app/components/custom_header_clip_path.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 import 'package:payoo/app/modules/auth/login/controllers/login_controller.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
@@ -67,22 +68,24 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 20),
                           Obx(() {
-                            if (loginController.isLoading.value) {
+                            if (loginController.status.value == ApiCallStatus.loading) {
                               return const CircularProgressIndicator();
                             }
+                            final success = loginController.status.value == ApiCallStatus.success &&
+                                (loginController.apiResponse.value?.isSuccess ?? false);
                             return CustomButton(
                               height: 50,
                               width: 280,
-                              label: 'Masuk',
+                              label: success ? 'Berhasil' : 'Masuk',
                               onPressed: () async {
                                 await loginController.login();
-                                if (loginController.authResponse.value != null &&
-                                    loginController.authResponse.value!.status == 'success') {
+                                final resp = loginController.apiResponse.value;
+                                if (loginController.status.value == ApiCallStatus.success &&
+                                    (resp?.isSuccess ?? false)) {
                                   Get.toNamed(Routes.DASHBOARD);
                                 } else if (loginController.errorMessage.isNotEmpty) {
                                   Get.snackbar('Login Gagal', loginController.errorMessage.value,
-                                      backgroundColor: Colors.redAccent,
-                                      colorText: Colors.white);
+                                      backgroundColor: Colors.redAccent, colorText: Colors.white);
                                 }
                               },
                             );
