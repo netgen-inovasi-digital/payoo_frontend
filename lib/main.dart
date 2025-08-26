@@ -15,7 +15,7 @@ Future<void> main() async {
   //       //myHive.registerAdapter(OtherAdapter());
   //     }
   // );
-
+  
   // // init shared preference
   // await MySharedPref.init();
 
@@ -23,7 +23,7 @@ Future<void> main() async {
   // await FcmHelper.initFcm();
 
   // // initialize local notifications service
-  // await AwesomeNotificationsHelper.init();
+  // await AwesomeNotificationsHelper.init(); 
 
   runApp(ScreenUtilInit(
     //todo add your (Xd/Figma) artboard size
