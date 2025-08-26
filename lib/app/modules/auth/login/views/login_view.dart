@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_button.dart';
 import 'package:payoo/app/components/custom_header_clip_path.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
+import 'package:payoo/app/modules/auth/login/controllers/login_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
@@ -15,6 +16,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   bool passwordSee = true;
+  final LoginController loginController = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -25,23 +27,25 @@ class _LoginViewState extends State<LoginView> {
           children: [
             Stack(
               children: [
-                // Konten Utama
                 Column(
                   children: [
-                    const SizedBox(
-                        height: 250), // Spasi untuk menyesuaikan posisi
+                    const SizedBox(height: 250),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           const SizedBox(height: 120),
-                          // TextField Pertama
-                          const CustomTextField(hintText: 'email/nomor ponsel'),
+                          // TextField Email
+                          CustomTextField(
+                            hintText: 'email/nomor ponsel',
+                            controller: loginController.email,
+                          ),
                           const SizedBox(height: 20),
-                          // TextField Kedua
+                          // TextField Password
                           CustomTextField(
                             hintText: 'kata sandi',
+                            controller: loginController.password,
                             obscureText: passwordSee,
                             suffixIcon: Padding(
                               padding: const EdgeInsets.only(right: 20),
@@ -62,16 +66,31 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Tombol Masuk
-                          CustomButton(
+                          Obx(() {
+                            if (loginController.isLoading.value) {
+                              return const CircularProgressIndicator();
+                            }
+                            return CustomButton(
                               height: 50,
                               width: 280,
                               label: 'Masuk',
-                              onPressed: () {
-                                Get.toNamed(Routes.DASHBOARD);
-                              }),
+                              onPressed: () async {
+                                await loginController.login(
+                                  loginController.email.text.trim(),
+                                  loginController.password.text.trim(),
+                                );
+                                if (loginController.authResponse.value != null &&
+                                    loginController.authResponse.value!.status == 'success') {
+                                  Get.toNamed(Routes.DASHBOARD);
+                                } else if (loginController.errorMessage.isNotEmpty) {
+                                  Get.snackbar('Login Gagal', loginController.errorMessage.value,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white);
+                                }
+                              },
+                            );
+                          }),
                           const SizedBox(height: 20),
-                          // Teks Daftar dan Lupa Kata Sandi
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -112,7 +131,6 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ],
                 ),
-                // Background Lengkungan Gradasi
                 const CustomHeaderClipPath(
                   height: 350,
                   strokeWidth: 20,
