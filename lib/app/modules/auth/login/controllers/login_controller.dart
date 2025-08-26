@@ -13,12 +13,12 @@ class LoginController extends GetxController {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
-  Future<void> login(String email, String password) async {
+  Future<void> login() async {
     isLoading.value = true;
     errorMessage.value = '';
     final payload = {
-      'email': email,
-      'password': password,
+      'email': email.text.trim(),
+      'password': password.text.trim(),
     };
     const url = Constants.baseUrl + Constants.AUTH_LOGIN;
     await BaseClient.safeApiCall(
@@ -40,5 +40,12 @@ class LoginController extends GetxController {
         isLoading.value = false;
       },
     );
+  }
+
+  @override
+  void onClose() {
+    email.dispose();
+    password.dispose();
+    super.onClose();
   }
 }

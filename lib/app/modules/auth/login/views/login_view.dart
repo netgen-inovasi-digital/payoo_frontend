@@ -75,10 +75,7 @@ class _LoginViewState extends State<LoginView> {
                               width: 280,
                               label: 'Masuk',
                               onPressed: () async {
-                                await loginController.login(
-                                  loginController.email.text.trim(),
-                                  loginController.password.text.trim(),
-                                );
+                                await loginController.login();
                                 if (loginController.authResponse.value != null &&
                                     loginController.authResponse.value!.status == 'success') {
                                   Get.toNamed(Routes.DASHBOARD);

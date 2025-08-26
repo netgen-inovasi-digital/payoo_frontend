@@ -44,9 +44,9 @@ class _DaftarViewState extends State<DaftarView> {
                     ),
                     Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: belumDaftar
-                            ? FormDaftar(onDaftar: _toggleWidget)
-                            : const SuksesDaftar()),
+            child: belumDaftar
+              ? FormDaftar(onDaftarSuccess: _toggleWidget)
+              : const SuksesDaftar()),
                   ],
                 ),
                 // Background Lengkungan Gradasi
