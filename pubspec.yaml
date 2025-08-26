@@ -42,6 +42,7 @@ dependencies:
   dio: ^5.7.0
   logger: ^2.5.0
   pretty_dio_logger: ^1.4.0
+  get_storage: ^2.1.1
   flutter_svg: ^2.0.10+1
   font_awesome_flutter: ^10.8.0
 
