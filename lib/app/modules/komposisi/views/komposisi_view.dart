@@ -4,10 +4,11 @@ import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/empty_state.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/modules/komposisi/views/detail_komposisi_view.dart';
 import 'package:payoo/app/modules/komposisi/views/tambah_komposisi_view.dart';
 import 'package:payoo/app/components/komposisi_card.dart';
-import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class KomposisiView extends StatefulWidget {
@@ -19,14 +20,8 @@ class KomposisiView extends StatefulWidget {
 
 class _KomposisiViewState extends State<KomposisiView> {
   final TextEditingController _searchController = TextEditingController();
-  List<Komposisi> _filteredKomposisi = [];
   String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredKomposisi = komposisiList; 
-  }
+  final KomposisiController controller = Get.find<KomposisiController>();
 
   @override
   void dispose() {
@@ -37,13 +32,6 @@ class _KomposisiViewState extends State<KomposisiView> {
   void _filterKomposisi(String query) {
     setState(() {
       _searchQuery = query;
-      if (query.isEmpty) {
-        _filteredKomposisi = komposisiList;
-      } else {
-        _filteredKomposisi = komposisiList.where((komposisi) {
-          return komposisi.namaKomposisi.toLowerCase().contains(query.toLowerCase());
-        }).toList();
-      }
     });
   }
 
@@ -70,30 +58,49 @@ class _KomposisiViewState extends State<KomposisiView> {
                 ),
               ),
               // Tampilkan hasil pencarian atau pesan jika tidak ada hasil
-              if (_searchQuery.isNotEmpty && _filteredKomposisi.isEmpty)
-                const Expanded(
-                  child: EmptyState(
-                    title: 'Produk tidak ditemukan',
-                    subtitle: 'Coba kata kunci lain',
-                    icon: Icons.search_off,
-                  ),
-                )
-              else
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(
-                      bottom: 120.0, 
-                    ),
-                    itemCount: _filteredKomposisi.length,
+              Expanded(
+                child: Obx(() {
+                  final isLoading = controller.statusList.value == ApiCallStatus.loading;
+                  if (isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (controller.statusList.value == ApiCallStatus.error) {
+                    return EmptyState(
+                      title: 'Gagal memuat',
+                      subtitle: controller.errorList.value,
+                      icon: Icons.error_outline,
+                    );
+                  }
+                  // Filter
+                  final filtered = controller.list.where((k) =>
+                      k.namaKomposisi.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+                  if (_searchQuery.isNotEmpty && filtered.isEmpty) {
+                    return const EmptyState(
+                      title: 'Komposisi tidak ditemukan',
+                      subtitle: 'Coba kata kunci lain',
+                      icon: Icons.search_off,
+                    );
+                  }
+                  if (filtered.isEmpty) {
+                    return const EmptyState(
+                      title: 'Belum ada komposisi',
+                      subtitle: 'Tambah komposisi baru',
+                      icon: Icons.inventory_2_outlined,
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 120.0),
+                    itemCount: filtered.length,
                     itemBuilder: (context, index) {
-                      final komposisi = _filteredKomposisi[index];
+                      final komposisi = filtered[index];
                       return KomposisiCard(
                         komposisi: komposisi,
                         onTap: () => _onKomposisiTap(komposisi),
                       );
                     },
-                  ),
-                ),
+                  );
+                }),
+              ),
             ],
           ),
         ],
@@ -108,6 +115,7 @@ class _KomposisiViewState extends State<KomposisiView> {
             borderRadius: BorderRadius.circular(30.0),
             ),
           onPressed: () {
+            controller.resetCreateForm();
             Get.to(()=>TambahKomposisiView());
           },
           child: const Icon(Icons.add),

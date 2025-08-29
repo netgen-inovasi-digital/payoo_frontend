@@ -1,25 +1,63 @@
-// app/modules/komposisi/model/komposisi_model.dart
+// Model Komposisi untuk konsumsi API
 class Komposisi {
   final int id;
-  final String namaKomposisi;
-  final double hargaModal;
-  final double hargaJual;
-  final int stokKomposisi;
-  final String satuan;
-  int quantity;
+  final int? shopId;
+  final String namaKomposisi; // mapping dari name
+  final double hargaModal; // mapping dari cost_price
+  final double hargaJual; // mapping dari selling_price
+  final String satuan; // mapping dari unit
+  final String? createdAt;
+  final String? updatedAt;
+  final int stokKomposisi; // tidak ada di API create -> default 0 atau dari endpoint lain
+  int quantity; // untuk kebutuhan UI / form (tidak ada di API)
 
   Komposisi({
     required this.id,
     required this.namaKomposisi,
     required this.hargaModal,
     required this.hargaJual,
-    required this.stokKomposisi,
     required this.satuan,
-    required this.quantity,
+    this.shopId,
+    this.createdAt,
+    this.updatedAt,
+    this.stokKomposisi = 0,
+    this.quantity = 0,
   });
+
+  factory Komposisi.fromJson(Map<String, dynamic> json) {
+    return Komposisi(
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      shopId: json['shop_id'] is int
+          ? json['shop_id']
+          : int.tryParse(json['shop_id']?.toString() ?? ''),
+      namaKomposisi: json['name']?.toString() ?? '-',
+      hargaModal: _toDouble(json['cost_price']),
+      hargaJual: _toDouble(json['selling_price']),
+      satuan: json['unit']?.toString() ?? '',
+      createdAt: json['created_at']?.toString(),
+      updatedAt: json['updated_at']?.toString(),
+      stokKomposisi: json['stock'] is int
+          ? json['stock']
+          : int.tryParse(json['stock']?.toString() ?? '0') ?? 0,
+      quantity: 0,
+    );
+  }
+
+  Map<String, dynamic> toJsonCreate() => {
+        'name': namaKomposisi,
+        'cost_price': hargaModal,
+        'selling_price': hargaJual,
+        'unit': satuan,
+      };
+
+  static double _toDouble(dynamic v) {
+    if (v == null) return 0;
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    return double.tryParse(v.toString()) ?? 0;
+  }
 }
 
-// Data dummy komposisi
 final List<Komposisi> komposisiList = [
   Komposisi(
     id: 1,

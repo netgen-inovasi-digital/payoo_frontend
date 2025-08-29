@@ -221,11 +221,17 @@ class BaseClient {
       }
     }
 
-    var exception = ApiException(
-        url: url,
-        message: error.message ?? 'Un Expected Api Error!',
-        response: error.response,
-        statusCode: error.response?.statusCode);
+  // Ambil pesan dari body jika ada
+  String apiMessage = error.response?.data is Map
+    ? (error.response?.data['message']?.toString() ?? '')
+    : '';
+  var exception = ApiException(
+    url: url,
+    message: apiMessage.isNotEmpty
+      ? apiMessage
+      : (error.message ?? 'Un Expected Api Error!'),
+    response: error.response,
+    statusCode: error.response?.statusCode);
     if (onError != null) {
       return onError(exception);
     } else {

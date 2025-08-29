@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/my_theme.dart';
 
 Future<void> main() async {
   //wait for bindings
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize GetStorage first
+  await GetStorage.init();
 
   // initialize local db (hive) and register our custom adapters
   // await MyHive.init(
