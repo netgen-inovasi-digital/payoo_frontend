@@ -35,7 +35,8 @@ class LoginController extends GetxController {
           );
           apiResponse.value = parsed;
           if (parsed.data?.token != null) {
-            StorageManager().save('token', parsed.data!.token);
+            final tokenToSave = parsed.data!.token;
+            StorageManager().save('token', tokenToSave);
           }
           status.value = ApiCallStatus.success;
         } catch (e) {

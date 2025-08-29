@@ -20,13 +20,15 @@ class ApiException implements Exception {
   @override
   toString() {
     String result = '';
-
-    // TODO: add error message field which is coming from api for you (For ex: response.data['error']['message'])
-    result += response?.data?['error'] ?? '';
-
+    // Prioritaskan field 'error' jika ada
+    result += response?.data?['error']?.toString() ?? '';
+    // Jika kosong, coba ambil 'message'
     if (result.isEmpty) {
-      result +=
-          message; //message is the (dio error message) so usually its not user friendly
+      result += response?.data?['message']?.toString() ?? '';
+    }
+    // Jika masih kosong, fallback ke message bawaan (biasanya berasal dari Dio)
+    if (result.isEmpty) {
+      result += message;
     }
     return result;
   }

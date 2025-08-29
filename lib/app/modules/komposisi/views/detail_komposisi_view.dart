@@ -3,13 +3,15 @@ import 'package:get/get.dart';
 import 'package:payoo/app/components/confirm_dialog.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
 import 'package:payoo/app/modules/komposisi/views/tambah_komposisi_view.dart';
-import 'package:payoo/app/routes/app_pages.dart';
-import 'package:payoo/config/theme/light_theme.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 
 class DetailKomposisiView extends StatelessWidget {
   const DetailKomposisiView({super.key, required this.komposisi});
   final Komposisi komposisi;
+  
+  KomposisiController get controller => Get.find<KomposisiController>();
 
   @override
   Widget build(BuildContext context) {
@@ -41,34 +43,51 @@ class DetailKomposisiView extends StatelessWidget {
               textColor: Colors.green,
               icon: Icons.chevron_right,
               onPressed: () {
-                // Handle edit komposisi action
+                // Pre-fill form with current komposisi data
+                controller.namaController.text = komposisi.namaKomposisi;
+                controller.hargaModalController.text = komposisi.hargaModal.toString();
+                controller.hargaJualController.text = komposisi.hargaJual.toString();
+                controller.satuanController.text = komposisi.satuan;
                 Get.to(() => TambahKomposisiView(komposisi: komposisi));
               },
             ),
             const SizedBox(height: 12),
-            _buildActionButton( 
-              text: 'hapus komposisi',
-              backgroundColor: Colors.grey[200]!,
-              textColor: Colors.grey,
-              icon: null,
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return ConfirmDialog(
-                        itemName: komposisi.namaKomposisi,
-                        confirmButtonColor: LightThemeColors.buttonColor,
-                        onConfirm: () {
-                          // Add your delete logic here
-                        });
-                  },
-                );
-              },
-            ),
+            Obx(() {
+              final isDeleting = controller.statusDelete.value == ApiCallStatus.loading;
+              return _buildActionButton( 
+                text: isDeleting ? 'Menghapus...' : 'hapus komposisi',
+                backgroundColor: isDeleting ? Colors.grey[300]! : Colors.grey[200]!,
+                textColor: isDeleting ? Colors.grey[600]! : Colors.red,
+                icon: null,
+                onPressed: isDeleting ? () {} : () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ConfirmDialog(
+                          itemName: komposisi.namaKomposisi,
+                          confirmButtonColor: Colors.red,
+                          onConfirm: () async {
+                            await _handleDelete();
+                          });
+                    },
+                  );
+                },
+              );
+            }),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _handleDelete() async {
+    final success = await controller.deleteKomposisi(komposisi.id);
+    if (success) {
+      Get.back(); // back to list
+      Get.snackbar('Sukses', 'Komposisi berhasil dihapus');
+    } else {
+      Get.snackbar('Gagal', controller.errorDelete.value, snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
   Widget _buildDetailRow({required String label, required String value}) {
