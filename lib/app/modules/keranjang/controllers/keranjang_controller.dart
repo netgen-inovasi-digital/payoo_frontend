@@ -96,6 +96,8 @@ class KeranjangController extends GetxController {
     return total;
   }
 
+  get selectedPaymentMethod => null;
+
   // ✅ Helper method for clearing cart
   void clearCart() {
     product.clear();

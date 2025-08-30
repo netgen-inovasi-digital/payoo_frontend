@@ -58,7 +58,7 @@ class GantiPasswordView extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         const CustomAkunTextField(
-                          label: 'Password Baru*',
+                          label: 'Password Baru*',  
                           initialValue: '',
                         ),
                         const SizedBox(height: 90),
