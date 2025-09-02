@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/app/components/CustomFooterClipPath.dart';
+import 'package:payoo/app/components/custom_footer_clip_path.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_app_bar_clip_path.dart';
 import 'package:payoo/app/components/custom_header_clip_path.dart';

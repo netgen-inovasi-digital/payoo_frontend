@@ -73,47 +73,8 @@ class MenuDetailView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 0, 30, 30),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement add to cart functionality
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5F5F5),
-                  foregroundColor: Colors.green,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Tambah Pesanan'),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Beli Sekarang'),
-              ),
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: const BottomNavBar(),
     );
   }
 }
+  

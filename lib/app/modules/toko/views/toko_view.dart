@@ -45,8 +45,6 @@ class TokoView extends StatelessWidget {
       ),
       // Bottom navigation
       bottomNavigationBar: const BottomNavBar(),
-      // Floating action button keranjang
-      floatingActionButton: const CartFloatingButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
