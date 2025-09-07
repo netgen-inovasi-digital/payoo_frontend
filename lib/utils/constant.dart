@@ -15,6 +15,7 @@ class Constants {
   // Products
   static const PRODUCTS = '/products';
   static const PRODUCT_BY_ID = '/products/{id}';
+  static const PRODUCT_COMPOSITION = '/products/{id}/compositions';
 
   // Categories
   static const CATEGORIES = '/categories';
@@ -31,6 +32,19 @@ class Constants {
   // Stocks
   static const STOCKS_CREATE = '/stocks'; // POST
   static const STOCKS_BY_COMPOSITION_ID = '/stocks/{composition_id}';
+
+  // Orders
+  static const ORDER_USER = '/orders/user/{user_id}'; 
+  static const ORDER_SHOP = '/orders/shop/{shop_id}';
+  static const ORDER_BY_ID = '/orders/{id}';
+  static const ORDER_STATUS = '/orders/status/{id}'; //put
+  static const ORDERS = '/orders'; //post
+
+  //reports
+  static const REPORTS = "/reports/{{shop_id}}/summary";
+
+  //upload
+  static const UPLOAD = '/upload';
 
   // ================== API LAIN (Lokasi) ==================
   static const baseUrllokasi = 'https://alamat.thecloudalert.com/api';

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class EditableImage extends StatelessWidget {
-  final String imageUrl;
+  final String photo;
   final VoidCallback onEdit;
 
   const EditableImage({
     super.key,
-    required this.imageUrl,
+    required this.photo,
     required this.onEdit,
   });
 
@@ -40,7 +40,7 @@ class EditableImage extends StatelessWidget {
               ),
               child: ClipOval(
                 child: Image.network(
-                  imageUrl,
+                  photo,
                   fit: BoxFit.cover,
                 ),
               ),

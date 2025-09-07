@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/data/models/produk_model.dart';
 import 'package:payoo/app/modules/keranjang/views/keranjang_view.dart';
 import 'package:payoo/app/modules/pesanan/views/pesanan_view.dart';
 
@@ -89,7 +90,7 @@ class BottomNavBar extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {
                   // Handle cart button tap
-                  Get.toNamed(Routes.KERANJANG);
+                  Get.toNamed(Routes.KERANJANG, arguments: produkList);
                 },
                 child: Icon(
                   Icons.shopping_cart,

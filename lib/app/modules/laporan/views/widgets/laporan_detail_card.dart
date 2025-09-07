@@ -18,7 +18,7 @@ class LaporanDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalPrice = count * produk.price;
+    final totalPrice = count * produk.sellingPrice ;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
@@ -28,7 +28,7 @@ class LaporanDetailCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CustomProductImage(imageUrl: produk.imageUrl),
+          CustomProductImage(photo: produk.photo),
           const SizedBox(width: 18),
           Expanded(
             child: Column(
@@ -47,7 +47,7 @@ class LaporanDetailCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "$count x Rp.${produk.price.toStringAsFixed(0)} = Rp.${totalPrice.toStringAsFixed(0)}",
+                      "$count x Rp.${produk.sellingPrice} = Rp.${totalPrice.toStringAsFixed(0)}",
                       style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w700,

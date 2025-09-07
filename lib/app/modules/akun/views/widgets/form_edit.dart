@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_button.dart';
 import 'package:payoo/app/components/custom_text_field_with_label.dart';
+import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
 
 class FormEdit extends StatelessWidget {
   final VoidCallback onDaftar;
-
-  const FormEdit({super.key, required this.onDaftar});
-
+  
+  FormEdit({super.key, required this.onDaftar});
+final DashboardUserController userController = DashboardUserController();
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: 10),
-        const CustomTextFieldWithLabel(labelText: 'Nama akun*', hintText: ''),
+        CustomTextFieldWithLabel(labelText: 'Nama akun*', hintText: userController.namaController.text),
         const SizedBox(height: 10),
         // TextField email
-        const CustomTextFieldWithLabel(labelText: 'Email*', hintText: ''),
+        CustomTextFieldWithLabel(labelText: 'Email*', hintText: userController.emailController.text),
         const SizedBox(height: 10),
         // TextField nomor ponsel
-        const CustomTextFieldWithLabel(
+        CustomTextFieldWithLabel(
           labelText: 'Nomor ponsel*',
-          hintText: '',
+          hintText: userController.phoneController.text,
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 10),
         // TextField kata sandi
-        const CustomTextFieldWithLabel(
+        CustomTextFieldWithLabel(
             labelText: 'Password lama*', hintText: ''),
         const SizedBox(height: 10),
         // TextField ulang kata sandi

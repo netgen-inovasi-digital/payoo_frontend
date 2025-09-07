@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_editable_image.dart';
 import 'package:payoo/app/modules/akun/views/widgets/akun_form.dart';
+import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class AkunEditView extends StatelessWidget {
-  const AkunEditView({super.key});
-
+   AkunEditView({super.key});
+  final DashboardUserController userController = DashboardUserController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +29,7 @@ class AkunEditView extends StatelessWidget {
                 const SizedBox(height: 60),
                 // Editable image
                 EditableImage(
-                  imageUrl:
+                  photo:
                       'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
                   onEdit: () {
                     print("Edit button tapped");
@@ -43,7 +44,7 @@ class AkunEditView extends StatelessWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                   ),
-                  child: const AkunForm(isEditing: true),
+                  child: AkunForm(isEditing: true, userController: userController),
                 )
               ],
             ),

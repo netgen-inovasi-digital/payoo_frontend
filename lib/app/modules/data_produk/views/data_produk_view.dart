@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_footer_clip_path.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
-import 'package:payoo/app/components/custom_app_bar_clip_path.dart';
-import 'package:payoo/app/components/custom_header_clip_path.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
 import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/empty_state.dart';
 import 'package:payoo/app/components/product_card.dart';
 import 'package:payoo/app/modules/data_produk/views/detail_produk_view.dart';
 import 'package:payoo/app/modules/data_produk/views/tambah_produk_view.dart';
-import 'package:payoo/app/routes/app_pages.dart';
+import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 
 class DataProdukView extends StatefulWidget {
   const DataProdukView({super.key});
@@ -21,14 +20,11 @@ class DataProdukView extends StatefulWidget {
 
 class _DataProdukViewState extends State<DataProdukView> {
   final TextEditingController _searchController = TextEditingController();
+
+  final ProdukController _produkController =
+      Get.put<ProdukController>(ProdukController());
   List<Produk> _filteredProducts = [];
   String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredProducts = ProdukList; 
-  }
 
   @override
   void dispose() {
@@ -40,9 +36,9 @@ class _DataProdukViewState extends State<DataProdukView> {
     setState(() {
       _searchQuery = query;
       if (query.isEmpty) {
-        _filteredProducts = ProdukList;
+        _filteredProducts = _produkController.list;
       } else {
-        _filteredProducts = ProdukList.where((product) {
+        _filteredProducts = _produkController.list.where((product) {
           return product.name.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
@@ -50,11 +46,19 @@ class _DataProdukViewState extends State<DataProdukView> {
   }
 
   void _onProductTap(Produk product) {
-    Get.to(() => DetailProdukView(produk: product));
+    Get.to(() => DetailProdukView(produkId: product.id));
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Produk> produkList = _produkController.list;
+    if (_searchQuery.isEmpty) {
+      _filteredProducts = produkList;
+    } else {
+      _filteredProducts = produkList.where((product) {
+        return product.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
     return Scaffold(
       appBar: const CustomAppBar(title: 'Data Produk', dividerLine: false),
       body: Stack(
@@ -63,7 +67,8 @@ class _DataProdukViewState extends State<DataProdukView> {
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 30.0, vertical: 10.0),
                 child: SearchInputField(
                   controller: _searchController,
                   onSearchChanged: _filterProducts,
@@ -84,21 +89,38 @@ class _DataProdukViewState extends State<DataProdukView> {
                   ),
                 )
               else
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(
-                      bottom: 120.0, 
+                Obx(() {
+                  if (_produkController.statusList.value ==
+                      ApiCallStatus.loading) {
+                    return const Expanded(
+                        child: Center(child: CircularProgressIndicator()));
+                  }
+                  if (_produkController.statusList.value ==
+                      ApiCallStatus.error) {
+                    return Expanded(
+                      child: EmptyState(
+                        title: 'Gagal memuat',
+                        subtitle: _produkController.errorList.value,
+                        icon: Icons.error_outline,
+                      ),
+                    );
+                  }
+                  return Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(
+                        bottom: 120.0,
+                      ),
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = _filteredProducts[index];
+                        return ProductCard(
+                          produk: product,
+                          onTap: () => _onProductTap(product),
+                        );
+                      },
                     ),
-                    itemCount: _filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = _filteredProducts[index];
-                      return ProductCard(
-                        produk: product,
-                        onTap: () => _onProductTap(product),
-                      );
-                    },
-                  ),
-                ),
+                  );
+                }),
             ],
           ),
           // Footer overlay at bottom
@@ -113,7 +135,7 @@ class _DataProdukViewState extends State<DataProdukView> {
                 FloatingActionButton(
                   shape: const CircleBorder(),
                   onPressed: () {
-                  Get.to(() => const TambahProdukView());
+                    Get.to(() => const TambahProdukView());
                   },
                   backgroundColor: Colors.white,
                   elevation: 4,

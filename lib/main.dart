@@ -19,9 +19,9 @@ Future<void> main() async {
   //       //myHive.registerAdapter(OtherAdapter());
   //     }
   // );
-  
+
   // // init shared preference
-  // await MySharedPref.init();
+  // await MySharedPref.init();   
 
   // // inti fcm services
   // await FcmHelper.initFcm();

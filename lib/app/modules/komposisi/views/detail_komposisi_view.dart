@@ -62,7 +62,7 @@ class DetailKomposisiView extends StatelessWidget {
                 onPressed: isDeleting ? () {} : () {
                   showDialog(
                     context: context,
-                    builder: (BuildContext context) {
+                    builder: (BuildContext context) { 
                       return ConfirmDialog(
                           itemName: komposisi.namaKomposisi,
                           confirmButtonColor: Colors.red,

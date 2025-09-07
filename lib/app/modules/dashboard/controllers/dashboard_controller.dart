@@ -1,7 +1,51 @@
 import 'package:get/get.dart';
+import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
+import 'package:payoo/app/modules/toko/controllers/toko_controller.dart';
 
-import '../../../../utils/constant.dart';
-import '../../../services/api_call_status.dart';
-import '../../../services/base_client.dart';
+enum LoadingStatus {
+  initial,
+  loading,
+  success,
+  error,
+}
 
-class DashboardController extends GetxController {}
+class DashboardController extends GetxController {
+  final DashboardUserController userController = Get.put<DashboardUserController>(DashboardUserController());
+  final TokoController tokoController = Get.put<TokoController>(TokoController());
+
+  final Rx<LoadingStatus> status = Rx<LoadingStatus>(LoadingStatus.initial);
+  final RxString errorMessage = RxString('');
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadData();
+  }
+  
+  Future<void> loadData() async {
+    try {
+      status.value = LoadingStatus.loading;
+      
+      // Wait for user data to be available (with a timeout)
+      int attempts = 0;
+      const maxAttempts = 10; // Maximum number of attempts
+      const delaySeconds = 1; // Delay between attempts in seconds
+      
+      while (userController.user.value == null && attempts < maxAttempts) {
+        await Future.delayed(const Duration(seconds: delaySeconds));
+        attempts++;
+      }
+      
+      if (userController.user.value != null) {
+        await tokoController.fetchTokoById(userController.user.value!.shopId);
+        status.value = LoadingStatus.success;
+      } else {
+        status.value = LoadingStatus.error;
+        errorMessage.value = 'User data not available after waiting';
+      }
+    } catch (e) {
+      status.value = LoadingStatus.error;
+      errorMessage.value = e.toString();
+    }
+  }
+}

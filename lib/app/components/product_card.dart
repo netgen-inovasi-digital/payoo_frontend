@@ -43,7 +43,7 @@ class ProductCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CustomProductImage(imageUrl: produk.imageUrl),
+            CustomProductImage(photo: produk.photo),
             const SizedBox(width: 18),
             Expanded(
               child: Column(
@@ -65,7 +65,7 @@ class ProductCard extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          "Rp.${produk.price.toStringAsFixed(0)},-",
+                          "Rp.${produk.sellingPrice},-",
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontWeight: FontWeight.w700,
@@ -73,14 +73,7 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Text(
-                        "Stok = ${produk.stock}pcs",
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
+                      
                     ],
                   ),
                 ],

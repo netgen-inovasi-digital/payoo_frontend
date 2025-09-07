@@ -23,7 +23,7 @@ class _RiwayatTransaksiViewState extends State<RiwayatTransaksiView> {
     {"total": "Rp 75.000", "transaksi": "Minggu ke 3", "jumlah": "25", "week": "week3"},
     {"total": "Rp 75.000", "transaksi": "Minggu ke 4", "jumlah": "25", "week": "week4"},
   ];
-  final List<Produk> dummyProdukList = (List<Produk>.from(ProdukList)..shuffle()).take(5).toList();
+  final List<Produk> dummyProdukList = (List<Produk>.from(produkList)..shuffle()).take(5).toList();
   // Dummy data for item details (when week is clicked)
   final Map<String, List<Map<String, dynamic>>> itemDetails = {
     "week1": [

@@ -25,7 +25,7 @@ class CartFloatingButton extends StatelessWidget {
       child: FloatingActionButton(
         onPressed: () {
           // Navigasi ke halaman keranjang dengan GetX dengan masukin arguments dan juga memakai link agar getx gak error dan meledak
-          Get.toNamed(Routes.KERANJANG, arguments: ProdukList);
+          Get.toNamed(Routes.KERANJANG, arguments: produkList);
         },
         backgroundColor: Colors.white,
         elevation: 0,

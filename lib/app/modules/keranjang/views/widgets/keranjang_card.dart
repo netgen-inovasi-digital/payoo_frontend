@@ -34,7 +34,7 @@ class KeranjangCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CustomProductImage(imageUrl: produk.imageUrl),
+            CustomProductImage(photo: produk.photo),
             const SizedBox(width: 18),
             Expanded(
               child: Column(
@@ -54,13 +54,13 @@ class KeranjangCard extends StatelessWidget {
                   // Wrap entire row in Obx
                   Obx(() {
                     final count = controller.getProductCount(produk.id);
-                    final totalPrice = count * produk.price;
-                    
+                    final totalPrice = count * produk.sellingPrice;
+
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "$count x Rp.${produk.price.toStringAsFixed(0)} = Rp.${totalPrice.toStringAsFixed(0)}",
+                          "$count x Rp.${produk.sellingPrice} = Rp.${totalPrice.toStringAsFixed(0)}",
                           style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.w700,

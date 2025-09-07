@@ -9,7 +9,9 @@ import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/empty_state.dart';
 import 'package:payoo/app/components/product_card.dart';
 import 'package:payoo/app/modules/keranjang/controllers/keranjang_controller.dart';
+import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class TransaksiView extends StatefulWidget {
@@ -22,14 +24,10 @@ class TransaksiView extends StatefulWidget {
 class _TransaksiViewState extends State<TransaksiView> {
   final TextEditingController _searchController = TextEditingController();
   List<Produk> _filteredProducts = [];
-  List<Produk> _cartItems = [];
+  final List<Produk> _cartItems = [];
   String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredProducts = ProdukList;
-  }
+  final ProdukController _produkController =
+      Get.put<ProdukController>(ProdukController());
 
   @override
   void dispose() {
@@ -41,9 +39,9 @@ class _TransaksiViewState extends State<TransaksiView> {
     setState(() {
       _searchQuery = query;
       if (query.isEmpty) {
-        _filteredProducts = ProdukList;
+        _filteredProducts = _produkController.list;
       } else {
-        _filteredProducts = ProdukList.where((product) {
+        _filteredProducts = _produkController.list.where((product) {
           return product.name.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
@@ -61,11 +59,19 @@ class _TransaksiViewState extends State<TransaksiView> {
   }
 
   double get _totalPrice {
-    return _cartItems.fold(0, (sum, item) => sum + item.price);
+    return _cartItems.fold(0, (sum, item) => sum + item.sellingPrice);
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Produk> produkList = _produkController.list;
+    if (_searchQuery.isEmpty) {
+      _filteredProducts = produkList;
+    } else {
+      _filteredProducts = produkList.where((product) {
+        return product.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
     return Scaffold(
       appBar: const CustomAppBar(title: 'Transaksi', dividerLine: false),
       body: Stack(
@@ -94,24 +100,42 @@ class _TransaksiViewState extends State<TransaksiView> {
                   ),
                 )
               else
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(
-                      bottom: 100.0,
+                Obx(() {
+                  if (_produkController.statusList.value ==
+                      ApiCallStatus.loading) {
+                    return const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (_produkController.statusList.value ==
+                      ApiCallStatus.error) {
+                    return Expanded(
+                      child: EmptyState(
+                        title: 'Gagal memuat',
+                        subtitle: _produkController.errorList.value,
+                        icon: Icons.error_outline,
+                      ),
+                    );
+                  }
+                  return Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(
+                        bottom: 100.0,
+                      ),
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = _filteredProducts[index];
+                        return ProductCard(
+                          cardColor: _cartItems.contains(product)
+                              ? const Color(0xFFD9D9D9)
+                              : Colors.white,
+                          produk: product,
+                          onTap: () => _onProductTap(product),
+                        );
+                      },
                     ),
-                    itemCount: _filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = _filteredProducts[index];
-                      return ProductCard(
-                        cardColor: _cartItems.contains(product)
-                            ? const Color(0xFFD9D9D9)
-                            : Colors.white,
-                        produk: product,
-                        onTap: () => _onProductTap(product),
-                      );
-                    },
-                  ),
-                ),
+                  );
+                }),
             ],
           ),
           // Cart Bottom Sheet
@@ -127,7 +151,7 @@ class _TransaksiViewState extends State<TransaksiView> {
                   onPressed: () {
                     // ✅ OPTION 1: Register controller if not exists
                     KeranjangController keranjangController;
-                    
+
                     try {
                       keranjangController = Get.find<KeranjangController>();
                     } catch (e) {

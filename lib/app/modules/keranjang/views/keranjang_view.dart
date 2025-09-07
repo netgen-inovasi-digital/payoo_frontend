@@ -11,8 +11,10 @@ import 'package:payoo/config/theme/light_theme.dart';
 import '../controllers/keranjang_controller.dart';
 
 class KeranjangView extends GetView<KeranjangController> {
-  const KeranjangView({super.key});
-  final role = 'user';
+  KeranjangView({super.key});
+  final role = '';
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +157,7 @@ class KeranjangView extends GetView<KeranjangController> {
           );
         },
       ),
-      bottomNavigationBar: const CheckoutButton(),
+      bottomNavigationBar: role == 'user' ? const CheckoutButton() : null,
     );
   }
 }

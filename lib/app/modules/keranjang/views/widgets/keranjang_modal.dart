@@ -33,7 +33,7 @@ void keranjangModal({
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      CustomProductImage(imageUrl: produk.imageUrl),
+                      CustomProductImage(photo: produk.photo),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -52,8 +52,8 @@ void keranjangModal({
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Rp.${produk.price.toStringAsFixed(0)}",
-                                  style: const TextStyle(
+                                "Rp.${produk.sellingPrice}",
+                                style: const TextStyle(
                                     fontSize: 14,
                                     color: Color(0xFF999999),
                                     fontWeight: FontWeight.w400,

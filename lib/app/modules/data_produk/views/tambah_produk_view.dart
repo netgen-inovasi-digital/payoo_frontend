@@ -1,11 +1,14 @@
+// File: lib/app/modules/data_produk/views/tambah_produk_view.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/data_produk/views/widgets/komposisi_produk_tab.dart';
 import 'package:payoo/app/modules/data_produk/views/widgets/tambah_produk_tab.dart';
+import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 
 class TambahProdukView extends StatefulWidget {
   const TambahProdukView({super.key});
-
+  
   @override
   State<TambahProdukView> createState() => _TambahProdukViewState();
 }
@@ -13,7 +16,10 @@ class TambahProdukView extends StatefulWidget {
 class _TambahProdukViewState extends State<TambahProdukView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
+  final ProdukController controller = Get.find<ProdukController>();
+  // State untuk menyimpan komposisi yang dipilih
+  List<Komposisi> selectedKomposisi = [];
+  
   @override
   void initState() {
     super.initState();
@@ -21,12 +27,30 @@ class _TambahProdukViewState extends State<TambahProdukView>
     _tabController.addListener(() {
       setState(() {}); // update warna tab
     });
+    
+    // Reset form untuk mode tambah baru
+    controller.resetCreateForm();
+    
+    // Initialize dengan komposisi dari dummy data jika ada
+    selectedKomposisi = List.from(controller.produk.value?.compositions ?? []);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Callback untuk update komposisi dari tab komposisi
+  void updateSelectedKomposisi(List<Komposisi> komposisi) {
+    setState(() {
+      selectedKomposisi = komposisi;
+    });
+  }
+
+  // Callback untuk navigate ke tab komposisi dari tab tambah produk
+  void goToKomposisiTab() {
+    _tabController.animateTo(1);
   }
 
   @override
@@ -54,13 +78,18 @@ class _TambahProdukViewState extends State<TambahProdukView>
               _buildTabButton(1, 'Komposisi Produk'),
             ],
           ),
-
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                const TambahProdukTab(),
-                KomposisiProdukTab(komposisi: komposisiList),
+                TambahProdukTab(
+                  onNextTab: goToKomposisiTab,
+                  selectedKomposisi: selectedKomposisi,
+                ),
+                KomposisiProdukTab(
+                  komposisi: selectedKomposisi,
+                  onKomposisiChanged: updateSelectedKomposisi,
+                ),
               ],
             ),
           ),
