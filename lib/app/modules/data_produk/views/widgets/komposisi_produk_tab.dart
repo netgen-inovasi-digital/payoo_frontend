@@ -1,4 +1,4 @@
-// File: lib/app/modules/data_produk/views/widgets/komposisi_produk_tab.dart
+// Update imports
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
@@ -10,7 +10,6 @@ import 'package:payoo/app/services/api_call_status.dart';
 class KomposisiProdukTab extends StatefulWidget {
   final List<Komposisi> komposisi;
   final Function(List<Komposisi>)? onKomposisiChanged;
-  
   const KomposisiProdukTab({
     super.key, 
     required this.komposisi,

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/modules/toko/controllers/toko_controller.dart';
 
 enum LoadingStatus {
@@ -10,7 +10,7 @@ enum LoadingStatus {
 }
 
 class DashboardController extends GetxController {
-  final DashboardUserController userController = Get.put<DashboardUserController>(DashboardUserController());
+  final AkunController userController = Get.put<AkunController>(AkunController());
   final TokoController tokoController = Get.put<TokoController>(TokoController());
 
   final Rx<LoadingStatus> status = Rx<LoadingStatus>(LoadingStatus.initial);

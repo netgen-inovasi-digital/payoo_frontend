@@ -25,7 +25,9 @@ class _DetailProdukViewState extends State<DetailProdukView> {
   void initState() {
     super.initState();
     // Fetch data only once when the widget initializes
-    controller.fetchProdukById(widget.produkId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchProdukById(widget.produkId);
+    });
   }
 
   @override
@@ -157,6 +159,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                             color: Colors.black,
                             fontWeight: FontWeight.w700),
                       ),
+                      const SizedBox(height: 10),
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -172,7 +175,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '${index + 1}. ${composition.name}',
+                                    '${index + 1}. ${composition.namaKomposisi}',
                                     style: const TextStyle(
                                         fontSize: 16,
                                         color: Colors.black,
@@ -180,7 +183,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                                   ),
                                 ),
                                 Text(
-                                  'Rp ${composition.costPrice} (${composition.unit})',
+                                  'Rp ${composition.hargaModal} (${composition.satuan})',
                                   style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black,
@@ -200,8 +203,14 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                         children: [
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () {
-                                Get.to(() => const TambahProdukView());
+                              onPressed: () async {
+                                // Navigate to edit view and wait for result
+                                final result = await Get.to(() => const TambahProdukView(isEdit: true));
+                                
+                                // Refresh the product details after editing
+                                if (result == true || mounted) {
+                                  controller.fetchProdukById(widget.produkId);
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFF4F4F4),

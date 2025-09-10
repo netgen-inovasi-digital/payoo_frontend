@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:payoo/app/data/models/komposisi_model.dart';
 import '../stok_detail_view.dart';
 import 'package:get/get.dart';
 
 class ListViewStok extends StatelessWidget {
-	final List<Map<String, dynamic>> stokList;
+	final List<Komposisi> stokList;
 
 	const ListViewStok({
 		super.key,
 		required this.stokList,
 	});
 
-	String formatRupiah(int value) {
+	String formatRupiah(double value) {
 		return 'Rp.${value.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")},-';
 	}
 
@@ -40,14 +41,14 @@ class ListViewStok extends StatelessWidget {
 											mainAxisAlignment: MainAxisAlignment.spaceBetween,
 											children: [
 												Text(
-													item['nama'],
+													item.namaKomposisi,
 													style: const TextStyle(
 														fontWeight: FontWeight.bold,
 														fontSize: 18,
 													),
 												),
 												Text(
-													formatRupiah(item['harga']),
+													formatRupiah( item.hargaJual),
 													style: const TextStyle(
 														fontWeight: FontWeight.bold,
 														fontSize: 15,
@@ -60,14 +61,14 @@ class ListViewStok extends StatelessWidget {
 											mainAxisAlignment: MainAxisAlignment.spaceBetween,
 											children: [
 												Text(
-													formatRupiah(item['hargaModal']),
+													formatRupiah(item.hargaModal),
 													style: const TextStyle(
 														color: Colors.grey,
 														fontSize: 13,
 													),
 												),
 												Text(
-													'Stok = ${item['stok']} pcs',
+													'Stok = ${item.stokKomposisi} pcs',
 													style: const TextStyle(
 														color: Colors.grey,
 														fontSize: 13,

@@ -135,11 +135,6 @@ class AppPages {
       binding: KomposisiBinding(),
     ),
     GetPage(
-      name: _Paths.STRUK,
-      page: () => const StrukView(),
-      binding: StrukBinding(),
-    ),
-    GetPage(
         name: _Paths.LAPORAN,
         page: () => const LaporanView(),
         binding: LaporanBinding()),

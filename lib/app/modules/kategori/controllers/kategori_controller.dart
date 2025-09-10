@@ -4,8 +4,8 @@ import 'package:payoo/app/data/models/kategori_model.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/services/api_response.dart';
 import 'package:payoo/app/services/base_client.dart';
-import 'package:payoo/utils/constant.dart';
-import 'package:payoo/utils/storage_manager.dart';
+import 'package:payoo/config/utils/constant.dart';
+import 'package:payoo/config/utils/storage_manager.dart';
 
 class KategoriController extends GetxController {
   // List state

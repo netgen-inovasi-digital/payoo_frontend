@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_app_bar_secondary.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 import 'package:payoo/app/components/custom_button.dart';
+import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
 import 'package:payoo/app/modules/stok/views/widgets/stok_info.dart';
+import 'package:payoo/app/routes/app_pages.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 
 class StokFormView extends StatefulWidget {
-  final Map<String, dynamic> stok;
+  final Komposisi stok;
   const StokFormView({super.key, required this.stok});
 
   @override
@@ -14,18 +19,41 @@ class StokFormView extends StatefulWidget {
 
 class _StokFormViewState extends State<StokFormView> {
   int _mode = 1; // 1: tambah, 2: kurangi
-  final TextEditingController _jumlahController = TextEditingController();
-  final TextEditingController _hargaController = TextEditingController();
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  final TextEditingController _dateController = TextEditingController();
 
+  final StokController stokController = Get.put(StokController());
   @override
   void dispose() {
-    _jumlahController.dispose();
-    _hargaController.dispose();
-    _dateController.dispose();
     super.dispose();
+  }
+
+  Future<void> onSave() async {
+    bool success;
+    int currentQuantity =
+        int.tryParse(stokController.quantityController.text) ?? 0;
+    if (_mode == 1) {
+      success = await stokController.createStock(widget.stok.id, 'in');
+    } else {
+      if (currentQuantity > widget.stok.stokKomposisi) {
+        Get.snackbar('Error', 'Jumlah pengurangan melebihi stok yang ada',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white);
+        return;
+      }
+      success = await stokController.createStock(widget.stok.id, 'out');
+    }
+    if (success) {
+      Get.toNamed(Routes.STOK);
+      Get.snackbar('Sukses', 'Stok berhasil diperbarui',
+          snackPosition: SnackPosition.BOTTOM);
+    } else {
+      Get.snackbar('Error', 'Gagal memperbarui stok',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white);
+    }
   }
 
   Future<void> _pickDate(BuildContext context) async {
@@ -46,9 +74,11 @@ class _StokFormViewState extends State<StokFormView> {
       setState(() {
         _selectedDate = pickedDate;
         _selectedTime = pickedTime;
-        String dateStr = '${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}';
+        String dateStr =
+            '${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}';
         String timeStr = pickedTime != null ? pickedTime.format(context) : '';
-        _dateController.text = timeStr.isNotEmpty ? '$dateStr $timeStr' : dateStr;
+        stokController.dateController.text =
+            timeStr.isNotEmpty ? '$dateStr $timeStr' : dateStr;
       });
     }
   }
@@ -87,33 +117,25 @@ class _StokFormViewState extends State<StokFormView> {
               ],
             ),
             const SizedBox(height: 16),
-            if (_mode == 1) ...[
-              // Date picker
-              GestureDetector(
-                onTap: () => _pickDate(context),
-                child: AbsorbPointer(
-                  child: CustomTextField(
-                    hintText: 'Tanggal',
-                    controller: _dateController,
-                    width: double.infinity,
-                    height: 50,
-                    suffixIcon: const Icon(Icons.calendar_today, size: 18),
-                  ),
+
+            // Date picker
+            GestureDetector(
+              onTap: () => _pickDate(context),
+              child: AbsorbPointer(
+                child: CustomTextField(
+                  hintText: 'Tanggal',
+                  controller: stokController.dateController,
+                  width: double.infinity,
+                  height: 50,
+                  suffixIcon: const Icon(Icons.calendar_today, size: 18),
                 ),
               ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: 'Harga',
-                controller: _hargaController,
-                keyboardType: TextInputType.number,
-                width: double.infinity,
-                height: 50,
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
+            const SizedBox(height: 16),
+
             CustomTextField(
               hintText: 'Stok',
-              controller: _jumlahController,
+              controller: stokController.quantityController,
               keyboardType: TextInputType.number,
               width: double.infinity,
               height: 50,
@@ -123,14 +145,17 @@ class _StokFormViewState extends State<StokFormView> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: CustomButton(
-          label: 'SIMPAN',
-          onPressed: () {
-            // TODO: Simpan perubahan stok
-            Navigator.of(context).pop();
-          },
-          width: double.infinity,
-          height: 54,
+        child: Obx(
+          () => CustomButton(
+            label: stokController.statusCreate.value == ApiCallStatus.loading
+                ? 'Menyimpan...'
+                : 'SIMPAN',
+            onPressed: () {
+              onSave();
+            },
+            width: double.infinity,
+            height: 54,
+          ),
         ),
       ),
     );

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/app/data/models/keranjang_modal.dart';
+import 'package:payoo/app/data/models/keranjang_model.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
 import 'package:payoo/app/data/models/user_model.dart';
-import 'package:payoo/app/modules/dashboard/controllers/dashboard_controller.dart';
-import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
-import 'package:payoo/app/modules/dashboarduser/views/dashboard_user_view.dart' hide DashboardUserController;
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/services/api_response.dart';
 import 'package:payoo/app/services/base_client.dart';
-import 'package:payoo/utils/constant.dart';
-import 'package:payoo/utils/storage_manager.dart';
+import 'package:payoo/config/utils/constant.dart';
+import 'package:payoo/config/utils/storage_manager.dart';
 
 class KeranjangController extends GetxController {
   var countItem = <int, int>{}.obs;
@@ -18,45 +16,54 @@ class KeranjangController extends GetxController {
   var keranjang = Rx<KeranjangModel?>(null);
   var error = ''.obs;
   var product = <Produk>[].obs;
-  DashboardUserController userController = Get.find<DashboardUserController>();
-    
-
+  var paymentAmount = 0.0.obs;
+  AkunController userController = Get.find<AkunController>();
+  final enteredAmount = TextEditingController();
   final namaController = TextEditingController();
   final hargaModalController = TextEditingController();
   final hargaJualController = TextEditingController();
   final satuanController = TextEditingController();
+  var shopId = 0.obs;
+  var userId = 0.obs;
   // State update
   var statusUpdate = ApiCallStatus.holding.obs;
   var errorUpdate = ''.obs;
-
+  var orderId = 0.obs;
   @override
   void onInit() {
     super.onInit();
     _initializeFromArguments();
+    _loadAkun();
   }
+
+  // Fixed createOrder method in KeranjangController
   Future<bool> createOrder({String? notes}) async {
     status.value = ApiCallStatus.loading;
     error.value = '';
-    const url =
-        Constants.baseUrl + Constants.ORDERS; // Update with correct endpoint
+    const url = Constants.baseUrl + Constants.ORDERS;
     final token = StorageManager().read<String>('token');
 
     // Ensure user data is loaded before proceeding
     while (userController.status.value == ApiCallStatus.loading) {
       await Future.delayed(const Duration(milliseconds: 100));
     }
-    User? currentUser = userController.user.value;
-    int? shopId = currentUser?.shopId;
-    if (shopId == null) {
+
+    if (shopId.value == 0) {
       error.value = 'Shop ID not found';
       status.value = ApiCallStatus.error;
       return false;
     }
-    if (currentUser == null) {
-      error.value = 'User not found';
+
+    // Parse entered amount to ensure we have the correct payment amount
+    final enteredAmountValue = double.tryParse(enteredAmount.text.trim());
+    if (enteredAmountValue == null || enteredAmountValue <= 0) {
+      error.value = 'Invalid payment amount';
       status.value = ApiCallStatus.error;
       return false;
     }
+
+    // Set the payment amount
+    paymentAmount.value = enteredAmountValue;
 
     // Create order items from current cart
     final orderItems = product.map((prod) {
@@ -65,14 +72,30 @@ class KeranjangController extends GetxController {
         'product_id': prod.id,
         'quantity': quantity,
         'price': prod.sellingPrice,
-        'subtotal': prod.sellingPrice * quantity
+        // Remove amount_paid from individual items since it should be at order level
+        // 'amount_paid': paymentAmount.value, // ❌ Remove this line
       };
     }).toList();
 
+    if (orderItems.isEmpty) {
+      error.value = 'Cart is empty';
+      status.value = ApiCallStatus.error;
+      return false;
+    }
+
+    // Get current timestamp for created_at and updated_at
+    final now = DateTime.now().toString().split('.')[0].replaceAll('T', ' ');
+
     final payload = {
-      'shop_id': shopId,
+      'user_id': userId.value.toString(),
+      'shop_id': shopId.value.toString(),
+      'status': 'pending',
       'notes': notes ?? '',
-      'total': totalPrice,
+      'total': totalPrice.toStringAsFixed(2),
+      'amount_paid': paymentAmount.value
+          .toStringAsFixed(2), // ✅ Add amount_paid at order level
+      'created_at': now,
+      'updated_at': now,
       'order_items': orderItems
     };
 
@@ -92,6 +115,7 @@ class KeranjangController extends GetxController {
             keranjang.value = parsed.data;
             clearCart(); // Clear cart after successful order
           }
+          orderId.value = keranjang.value?.id ?? 0;
           status.value = ApiCallStatus.success;
           success = true;
         } catch (e) {
@@ -122,19 +146,24 @@ class KeranjangController extends GetxController {
   void _initializeFromArguments() {
     final args = Get.arguments;
     if (args != null && args is List<Produk>) {
-      // ✅ Clear first to avoid conflicts on second opening
       product.clear();
       countItem.clear();
 
-      // ✅ Use Future.microtask to avoid GetX scope issues
       Future.microtask(() {
         product.assignAll(args);
 
-        // Initialize counts
         for (var prod in args) {
           countItem[prod.id] = 1;
         }
       });
+    }
+  }
+
+  void _loadAkun() {
+    if (userController.user.value != null) {
+      namaController.text = userController.user.value!.name ?? '';
+      userId.value = userController.user.value!.id;
+      shopId.value = userController.user.value?.shopId ?? 0;
     }
   }
 

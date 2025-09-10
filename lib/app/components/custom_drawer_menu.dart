@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/modules/auth/login/controllers/login_controller.dart';
 import 'package:payoo/app/modules/akun/views/akun_detail_view.dart';
 import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
-import 'package:payoo/utils/storage_manager.dart';
+import 'package:payoo/config/utils/storage_manager.dart';
 
 class CustomDrawerMenu extends StatelessWidget {
-   CustomDrawerMenu({super.key});
-final DashboardUserController userController = Get.put(DashboardUserController());
+  CustomDrawerMenu({super.key});
+  final AkunController userController = Get.put(AkunController());
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -60,12 +61,53 @@ final DashboardUserController userController = Get.put(DashboardUserController()
                               end: Alignment.bottomRight,
                             ),
                           ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(3.0),
-                            child: CircleAvatar(
-                              backgroundColor: Colors.white,
-                              child: Icon(Icons.person,
-                                  size: 40, color: Colors.grey),
+                          child: Padding(
+                            padding: const EdgeInsets.all(3.0),
+                            child: ClipOval(
+                              child: Container(
+                                width: 84,
+                                height: 84,
+                                color: Colors.white,
+                                child: userController.user.value?.photo ==
+                                            null ||
+                                        userController.user.value?.photo == ""
+                                    ? const Icon(Icons.person,
+                                        size: 40, color: Colors.grey)
+                                    : Image.network(
+                                        userController.user.value!.photo!,
+                                        width: 84,
+                                        height: 84,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  const AlwaysStoppedAnimation<
+                                                          Color>(
+                                                      LightThemeColors
+                                                          .primaryColor),
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.person,
+                                                    size: 40,
+                                                    color: Colors.grey),
+                                      ),
+                              ),
                             ),
                           ),
                         ),
@@ -75,8 +117,8 @@ final DashboardUserController userController = Get.put(DashboardUserController()
                 ),
                 const SizedBox(height: 10), // Jarak antara gambar dan teks
                 GestureDetector(
-                  onTap: () => Get.to(() =>  AkunDetailView()),
-                  child:  Row(
+                  onTap: () => Get.to(() => AkunDetailView()),
+                  child: Row(
                     children: [
                       Text(
                         userController.user.value?.name ?? "Nama profil",

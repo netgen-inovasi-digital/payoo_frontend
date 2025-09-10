@@ -7,7 +7,6 @@ class CustomProductImage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    print("photo test123425: $photo");
     return Container(
       width: 85,
       height: 85,

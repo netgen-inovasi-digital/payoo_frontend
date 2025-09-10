@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_editable_image.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/modules/akun/views/widgets/akun_form.dart';
 import 'package:payoo/app/modules/akun/views/widgets/custom_akun_text_field.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
-class GantiPasswordView extends StatelessWidget {
+class GantiPasswordView extends GetView<AkunController> {
   const GantiPasswordView({super.key});
 
+  _changePassword() async {
+    bool success = await controller.changePassword();
+    if (success) {
+
+      Get.snackbar('Success', 'Password berhasil diubah',
+          snackPosition: SnackPosition.BOTTOM);
+      Get.back(); // Go back to the previous screen
+    } else {
+      Get.snackbar('Error', controller.errorUpdate.value,
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,8 +44,9 @@ class GantiPasswordView extends StatelessWidget {
                 const SizedBox(height: 60),
                 // Editable image
                 EditableImage(
+                  isEditable: false,
                   photo:
-                      'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
+                     controller.user.value?.photo ?? 'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
                   onEdit: () {
                     print("Edit button tapped");
                   },
@@ -52,12 +67,14 @@ class GantiPasswordView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Nama akun field
-                        const CustomAkunTextField(
+                        CustomAkunTextField(
+                          controller: controller.oldPasswordController,
                           label: 'Password Lama*',
                           initialValue: '',
                         ),
                         const SizedBox(height: 20),
-                        const CustomAkunTextField(
+                        CustomAkunTextField(
+                          controller: controller.newPasswordController,
                           label: 'Password Baru*',  
                           initialValue: '',
                         ),
@@ -66,7 +83,7 @@ class GantiPasswordView extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 80, vertical: 50),
                           child:
-                              CustomSaveButton(onPressed: () {}, label: 'Simpan'),
+                              CustomSaveButton(onPressed: () {_changePassword();}, label: 'Simpan'),
                         )
                       ],
                     ),

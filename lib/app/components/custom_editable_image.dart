@@ -4,11 +4,12 @@ import 'package:payoo/config/theme/light_theme.dart';
 class EditableImage extends StatelessWidget {
   final String photo;
   final VoidCallback onEdit;
-
+  final bool isEditable;
   const EditableImage({
     super.key,
     required this.photo,
     required this.onEdit,
+    this.isEditable = true,
   });
 
   @override
@@ -49,7 +50,7 @@ class EditableImage extends StatelessWidget {
         ),
 
         // Tombol edit
-        Positioned(
+        if (isEditable) Positioned(
           bottom: 0,
           right: 0,
           child: GestureDetector(

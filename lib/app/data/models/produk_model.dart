@@ -1,4 +1,5 @@
 import 'package:payoo/app/data/models/kategori_model.dart';
+import 'package:payoo/app/data/models/komposisi_model.dart';
 
 class Shop {
   final int id;
@@ -10,45 +11,6 @@ class Shop {
   });
 }
 
-class Composition {
-  final int id;
-  final int productId;
-  final int compositionId;
-  final String name;
-  final String costPrice;
-  final String sellingPrice;
-  final String unit;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  Composition({
-    required this.id,
-    required this.productId,
-    required this.compositionId,
-    required this.name,
-    required this.costPrice,
-    required this.sellingPrice,
-    required this.unit,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  factory Composition.fromJson(Map<String, dynamic> json) {
-    return Composition(
-      id: json['id'],
-      productId: json['product_id'],
-      compositionId: json['composition_id'],
-      name: json['name'],
-      costPrice: json['cost_price'],
-      sellingPrice: json['selling_price'],
-      unit: json['unit'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-    );
-  }
-}
-
-
 class Produk {
   final int id;
   final String name;
@@ -58,7 +20,8 @@ class Produk {
   final int sellingPrice;
   final Shop shop;
   final Kategori kategori;
-  final List<Composition> compositions;
+  final List<Komposisi> compositions;
+  final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -71,6 +34,7 @@ class Produk {
     required this.sellingPrice,
     required this.shop,
     required this.kategori,
+    this.notes = '',
     this.compositions = const [],
     required this.createdAt,
     required this.updatedAt,
@@ -84,6 +48,7 @@ class Produk {
       photo: json['photo'],
       costPrice: json['cost_price'],
       sellingPrice: json['selling_price'],
+      notes: json['notes'],
       shop: Shop(
         id: json['shop_id'],
         name: '',
@@ -93,7 +58,7 @@ class Produk {
         name: json['category_name'] ?? '',
       ),
       compositions: (json['compositions'] as List<dynamic>?)
-              ?.map((item) => Composition.fromJson(item))
+              ?.map((item) => Komposisi.fromJson(item))
               .toList() ??
           [],
       createdAt: DateTime.parse(json['created_at']),

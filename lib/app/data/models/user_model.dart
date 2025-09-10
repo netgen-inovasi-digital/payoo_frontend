@@ -3,7 +3,7 @@
       final int id;
       final String name;
       final String email;
-      final String photo;
+       String photo;
       final String role;
       final String phone;
       final int shopId;

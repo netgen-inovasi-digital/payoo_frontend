@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_editable_image.dart';
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/modules/edit_toko/views/widgets/form_edit_toko.dart';
+import 'package:payoo/app/modules/toko/controllers/toko_controller.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class EditTokoView extends StatefulWidget {
@@ -13,6 +15,13 @@ class EditTokoView extends StatefulWidget {
 
 class _EditTokoViewState extends State<EditTokoView> {
   bool belumDaftar = true;
+  final TokoController controller = TokoController();
+  @override
+  void initState() {
+    super.initState();
+    controller.akunController.fetchUser();
+    controller.fetchTokoById(controller.akunController.user.value?.shopId ?? 0);
+  }
 
   void _toggleWidget() {
     setState(() {
@@ -56,7 +65,7 @@ class _EditTokoViewState extends State<EditTokoView> {
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                   ),
-                  child: const FormEditToko(),
+                  child: FormEditToko(controller: controller),
                 ),
               ],
             ),

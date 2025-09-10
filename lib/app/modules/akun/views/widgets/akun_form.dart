@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/modules/akun/views/akun_edit_view.dart';
 import 'package:payoo/app/modules/akun/views/ganti_password_view.dart';
 import 'package:payoo/app/modules/akun/views/widgets/custom_akun_text_field.dart';
 import 'package:payoo/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class AkunForm extends StatelessWidget {
   const AkunForm({super.key, required this.isEditing, required this.userController});
   final bool isEditing;
-  final DashboardUserController userController;
- 
+  final AkunController userController;
+  
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -211,7 +213,7 @@ class AkunForm extends StatelessWidget {
         colorText: Colors.white,
       );
       // Go back to previous screen
-      Get.back();
+      Get.offAndToNamed(Routes.DASHBOARD);
     } else {
       // Error message is already set in controller
       Get.snackbar(

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/modules/struk/views/struk_view.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class TransaksiBerhasilView extends StatelessWidget {
-  const TransaksiBerhasilView({super.key, required this.bayar, required this.harga});
+  const TransaksiBerhasilView({super.key, required this.bayar, required this.harga, required this.orderId});
   final double bayar;
   final double harga;
+  final int orderId;
 
   @override
   Widget build(BuildContext context) {
@@ -100,8 +102,10 @@ class TransaksiBerhasilView extends StatelessWidget {
                     color: const Color(0xFFF5F5F5),
                     textColor: LightThemeColors.buttonColor,
                     onPressed: () {
-                      // TODO: Implement lihat struk
-                      Get.offAndToNamed(Routes.STRUK);
+                      // First clear all screens and go to dashboard
+                      Get.offAllNamed(Routes.DASHBOARD);
+                      // Then show StrukView
+                      Get.to(() => StrukView(orderId: orderId));
                     },
                   ),
                 ],

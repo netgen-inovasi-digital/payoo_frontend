@@ -1,19 +1,24 @@
 // File: lib/app/modules/data_produk/views/widgets/tambah_produk_tab.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/kategori/controllers/kategori_controller.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
+import 'package:payoo/app/services/image_upload_service.dart';
 
 class TambahProdukTab extends StatefulWidget {
+  final bool isEdit;
   final VoidCallback? onNextTab;
   final List<Komposisi> selectedKomposisi;
-  
+
   const TambahProdukTab({
     super.key,
     this.onNextTab,
+    this.isEdit = false,
     this.selectedKomposisi = const [],
   });
 
@@ -23,20 +28,31 @@ class TambahProdukTab extends StatefulWidget {
 
 class _TambahProdukTabState extends State<TambahProdukTab> {
   final ProdukController controller = Get.find<ProdukController>();
-  final KategoriController kategoriController = Get.put<KategoriController>(KategoriController());
-   
+  final KategoriController kategoriController =
+      Get.put<KategoriController>(KategoriController());
+  final ImageUploadService imageController =
+      Get.put<ImageUploadService>(ImageUploadService());
 
+  Future<void> _loadProdukCategories() async {
+    if (kategoriController.list.isEmpty) {
+      await kategoriController.fetchKategori();
+    }
+    if (controller.produk.value == null) {
+      controller.resetCreateForm();
+    } else {
+      controller.setFormFromProduk(controller.produk.value!);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // Load categories when widget initializes
-    _loadCategories();
+    if (widget.isEdit) {
+      _loadProdukCategories();
+    } else {
+      controller.resetCreateForm();                                                               
+    }
   }
-
-  void _loadCategories() {
-    // Assuming KategoriController has a method to load categories
-   }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +63,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
-            _buildImageUpload(),
+            _buildImageUpload(imageController, controller),
             const SizedBox(height: 10),
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -63,27 +79,29 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             const SizedBox(height: 16),
             _buildCategoryDropdown(),
             const SizedBox(height: 16),
-            _buildTextField('harga jual*', controller.hargaJualController, isNumber: true),
+            _buildTextField('harga jual*', controller.hargaJualController,
+                isNumber: true),
             const SizedBox(height: 16),
-            _buildTextField('harga modal', controller.hargaModalController, isNumber: true),
+            _buildTextField('harga modal', controller.hargaModalController,
+                isNumber: true),
             const SizedBox(height: 16),
-            
+
             // Komposisi info section
             if (widget.selectedKomposisi.isNotEmpty) ...[
               const SizedBox(height: 20),
               _buildKomposisiInfo(),
             ],
-            
+
             const SizedBox(height: 80),
-            
+
             Obx(() {
+              final isCreateLoading = controller.statusCreate.value == ApiCallStatus.loading;
+              final isUpdateLoading = controller.statusUpdate.value == ApiCallStatus.loading;
+              final isLoading = isCreateLoading || isUpdateLoading;
+              
               return CustomSaveButton(
-                onPressed: controller.statusCreate.value == ApiCallStatus.loading 
-                  ? () {} // Empty function instead of null
-                  : () => _submitProduk(),
-                label: controller.statusCreate.value == ApiCallStatus.loading 
-                  ? 'MENYIMPAN...' 
-                  : 'SIMPAN',
+                onPressed: isLoading ? () {} : () => _submitProduk(),
+                label: isLoading ? 'MENYIMPAN...' : 'SIMPAN',
               );
             }),
             const SizedBox(height: 20),
@@ -129,15 +147,15 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             ],
           ),
           const SizedBox(height: 8),
-          ...widget.selectedKomposisi.take(3).map((komposisi) => 
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Text(
-                '• ${komposisi.namaKomposisi}',
-                style: const TextStyle(fontSize: 14),
+          ...widget.selectedKomposisi.take(3).map(
+                (komposisi) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    '• ${komposisi.namaKomposisi}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
               ),
-            ),
-          ),
           if (widget.selectedKomposisi.length > 3)
             Text(
               'dan ${widget.selectedKomposisi.length - 3} lainnya...',
@@ -162,7 +180,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
       _showErrorSnackbar('Kategori produk harus dipilih');
       return;
     }
-    
+
     if (controller.hargaJualController.text.trim().isEmpty) {
       _showErrorSnackbar('Harga jual harus diisi');
       return;
@@ -171,44 +189,65 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
     // Validate price format
     final hargaJual = double.tryParse(controller.hargaJualController.text.trim());
     if (hargaJual == null || hargaJual <= 0) {
-      _showErrorSnackbar('Harga jual harus berupa angka yang valid dan lebih dari 0');
+      _showErrorSnackbar(
+          'Harga jual harus berupa angka yang valid dan lebih dari 0');
       return;
     }
 
     // Validate modal price if provided
     if (controller.hargaModalController.text.trim().isNotEmpty) {
-      final hargaModal = double.tryParse(controller.hargaModalController.text.trim());
+      final hargaModal =
+          double.tryParse(controller.hargaModalController.text.trim());
       if (hargaModal == null || hargaModal < 0) {
         _showErrorSnackbar('Harga modal harus berupa angka yang valid');
         return;
       }
     }
 
-    // Set selected category to controller (assuming there's a method for this)
-    // You might need to add this method to your ProdukController
-    controller.setKategori(controller.selectedKategoriId.value!);
-    
-    // Set selected komposisi to controller
+    // Set selected category and komposisi to controller
+    controller.setKategori(controller.selectedKategoriId.value);
     controller.setKomposisi(widget.selectedKomposisi);
-
-    // Submit produk
-    final success = await controller.createProduk();
     
-    if (success) {
-      Get.back(); // Return to previous page
-      _showSuccessSnackbar('Produk berhasil ditambahkan');
-    } else {
-      _showErrorSnackbar(
-        controller.errorCreate.value.isNotEmpty
-          ? controller.errorCreate.value 
-          : 'Gagal menambahkan produk'
-      );
+    bool success = false;
+    
+    try {
+      // Submit produk
+      if (!widget.isEdit) {
+        success = await controller.createProduk();
+      } else {
+        success = await controller.updateProduk(controller.produk.value!.id);
+      }
+
+      if (success) {
+        // Fixed navigation - don't call multiple routes
+        Get.back(); // Go back to previous screen
+        if (widget.isEdit) {
+          Get.back(); // Go back to data produk view if needed
+        }
+
+        _showSuccessSnackbar(widget.isEdit 
+          ? 'Produk berhasil diperbarui' 
+          : 'Produk berhasil ditambahkan');
+          
+        // Refresh the product list to show updated data
+        await controller.fetchProduk();
+      } else {
+        final errorMessage = widget.isEdit 
+          ? controller.errorUpdate.value
+          : controller.errorCreate.value;
+          
+        _showErrorSnackbar(errorMessage.isNotEmpty
+            ? errorMessage
+            : 'Gagal ${widget.isEdit ? "memperbarui" : "menambahkan"} produk');
+      }
+    } catch (e) {
+      _showErrorSnackbar('Terjadi kesalahan: $e');
     }
   }
 
   void _showErrorSnackbar(String message) {
     Get.snackbar(
-      'Error', 
+      'Error',
       message,
       backgroundColor: Colors.red,
       colorText: Colors.white,
@@ -226,17 +265,20 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
     );
   }
 
-  Widget _buildImageUpload() {
+  Widget _buildImageUpload(
+      ImageUploadService imageController, ProdukController controller) {
     return Center(
       child: GestureDetector(
         onTap: () {
-          // TODO: Implement image picker
-          Get.snackbar(
-            'Info', 
-            'Fitur upload gambar akan segera tersedia',
-            backgroundColor: Colors.blue,
-            colorText: Colors.white,
-          );
+          imageController.pickAndUploadImage(ImageSource.gallery, 'produk');
+          imageController.uploadStatus.listen((status) {
+            if (status == ApiCallStatus.success &&
+                imageController.image.value != null) {
+              controller.linkImage.value = imageController.image.value!.url;
+            } else if (status == ApiCallStatus.error) {
+              _showErrorSnackbar('Gagal mengunggah gambar');
+            }
+          });
         },
         child: Container(
           width: 110,
@@ -253,11 +295,44 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
           child: Stack(
             children: [
               Center(
-                child: Icon(
-                  Icons.image_outlined, 
-                  size: 40, 
-                  color: Colors.grey[500]
-                ),
+                child: Obx(() {
+                  if (imageController.uploadStatus.value ==
+                      ApiCallStatus.loading) {
+                    return const CircularProgressIndicator();
+                  }
+                  
+                  // Show current image if available
+                  final currentImageUrl = controller.linkImage.value.isNotEmpty 
+                    ? controller.linkImage.value 
+                    : controller.produk.value?.photo;
+                    
+                  if (currentImageUrl != null && currentImageUrl.isNotEmpty) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(
+                        currentImageUrl,
+                        height: 110,
+                        width: 110,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: Icon(Icons.error_outline,
+                                  color: Colors.red, size: 40),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  } else {
+                    return Icon(
+                      Icons.image_outlined,
+                      size: 40,
+                      color: Colors.grey[500],
+                    );
+                  }
+                }),
               ),
               Positioned(
                 bottom: 8,
@@ -265,15 +340,11 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                 child: Container(
                   width: 20,
                   height: 20,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2FA36B),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF2FA36B),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.add, 
-                    size: 12, 
-                    color: Colors.white
-                  ),
+                  child: const Icon(Icons.add, size: 12, color: Colors.white),
                 ),
               ),
             ],
@@ -283,7 +354,8 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController? textController, {bool isNumber = false}) {
+  Widget _buildTextField(String label, TextEditingController? textController,
+      {bool isNumber = false}) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -292,96 +364,102 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
       ),
       child: TextField(
         controller: textController,
-        keyboardType: isNumber ? TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+        keyboardType: isNumber
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         decoration: InputDecoration(
           hintText: label,
           hintStyle: TextStyle(color: Colors.grey[500], fontSize: 15),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         ),
       ),
     );
   }
 
   Widget _buildCategoryDropdown() {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-    decoration: BoxDecoration(
-      color: Colors.grey[100],
-      borderRadius: BorderRadius.circular(25),
-    ),
-    child: Obx(() {
-      if (kategoriController.statusList.value == ApiCallStatus.loading) {
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Memuat kategori...',
-                style: TextStyle(color: Colors.grey[700], fontSize: 15),
-              ),
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Obx(() {
+        if (kategoriController.statusList.value == ApiCallStatus.loading) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Memuat kategori...',
+                  style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                ),
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Check if categories list is empty
+        if (kategoriController.list.isEmpty) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Text(
+              'Tidak ada kategori tersedia',
+              style: TextStyle(color: Colors.grey[500], fontSize: 15),
+            ),
+          );
+        }
+
+        // Get unique categories to avoid duplicates
+        final uniqueKategori = kategoriController.list.toSet().toList();
+
+        // Ensure selected value exists in the list
+        String? selectedValue = controller.selectedKategoriId.value;
+        if (selectedValue != null &&
+            selectedValue.isNotEmpty &&
+            !uniqueKategori
+                .any((kategori) => kategori.id.toString() == selectedValue)) {
+          selectedValue = null; // Reset if selected value doesn't exist in list
+          controller.selectedKategoriId.value = '';
+        }
+
+        return DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: selectedValue?.isNotEmpty == true ? selectedValue : null,
+            hint: Text(
+              'kategori produk*',
+              style: TextStyle(color: Colors.grey[500], fontSize: 15),
+            ),
+            isExpanded: true,
+            icon: const Icon(Icons.keyboard_arrow_down,
+                color: Colors.grey, size: 20),
+            items: uniqueKategori.map((kategori) {
+              return DropdownMenuItem<String>(
+                value: kategori.id.toString(),
+                child: Text(
+                  kategori.name ?? 'Unknown Category', // Handle null names
+                  style: const TextStyle(fontSize: 15),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                controller.selectedKategoriId.value = newValue;
+              }
+            },
           ),
         );
-      }
-
-      // Check if categories list is empty
-      if (kategoriController.list.isEmpty) {
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Text(
-            'Tidak ada kategori tersedia',
-            style: TextStyle(color: Colors.grey[500], fontSize: 15),
-          ),
-        );
-      }
-
-      // Get unique categories to avoid duplicates
-      final uniqueKategori = kategoriController.list.toSet().toList();
-      
-      // Ensure selected value exists in the list
-      String? selectedValue = controller.selectedKategoriId.value;
-      if (selectedValue != null && 
-          selectedValue.isNotEmpty && 
-          !uniqueKategori.any((kategori) => kategori.id.toString() == selectedValue)) {
-        selectedValue = null; // Reset if selected value doesn't exist in list
-        controller.selectedKategoriId.value = '';
-      }
-
-      return DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedValue?.isNotEmpty == true ? selectedValue : null,
-          hint: Text(
-            'kategori produk*',
-            style: TextStyle(color: Colors.grey[500], fontSize: 15),
-          ),
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
-          items: uniqueKategori.map((kategori) {
-            return DropdownMenuItem<String>(
-              value: kategori.id.toString(),
-              child: Text(
-                kategori.name ?? 'Unknown Category', // Handle null names
-                style: const TextStyle(fontSize: 15),
-              ),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            if (newValue != null) {
-              controller.selectedKategoriId.value = newValue;
-            }
-          },
-        ),
-      );
-    }),
-  );
-}}
+      }),
+    );
+  }
+}

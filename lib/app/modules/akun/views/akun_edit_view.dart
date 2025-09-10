@@ -1,13 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_editable_image.dart';
+import 'package:payoo/app/modules/akun/controllers/akun_controller.dart';
 import 'package:payoo/app/modules/akun/views/widgets/akun_form.dart';
 import 'package:payoo/app/modules/dashboarduser/controllers/dashboard_user_controller.dart';
+import 'package:payoo/app/services/image_upload_service.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
-class AkunEditView extends StatelessWidget {
-   AkunEditView({super.key});
-  final DashboardUserController userController = DashboardUserController();
+class AkunEditView extends StatefulWidget {
+  const AkunEditView({super.key});
+
+  @override
+  State<AkunEditView> createState() => _AkunEditViewState();
+}
+
+class _AkunEditViewState extends State<AkunEditView> {
+  final AkunController userController = AkunController();
+
+    _loadAkun() async {
+    await userController.fetchUser();
+    userController.fillProfile();
+  } 
+
+  ImageUploadService imageUploadService = ImageUploadService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Load categories when widget initializes
+    _loadAkun();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,12 +53,29 @@ class AkunEditView extends StatelessWidget {
               children: [
                 const SizedBox(height: 60),
                 // Editable image
-                EditableImage(
-                  photo:
-                      'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
-                  onEdit: () {
-                    print("Edit button tapped");
-                  },
+                Obx(
+                  () => EditableImage(
+                    photo:
+                      userController.user.value?.photo != null && userController.user.value!.photo.isNotEmpty ? userController.user.value!.photo : 'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
+                    onEdit: () {
+                      print("Starting image picking and upload...");
+                      imageUploadService.pickAndUploadImage(ImageSource.gallery, 'akun').then((success) {
+                        print("Image upload success: $success");
+                        if (success && imageUploadService.image.value != null) {
+                          print("Image URL: ${imageUploadService.image.value!.url}");
+                          setState(() {
+                            userController.imageLink.value = imageUploadService.image.value!.url;
+                            print("Updated controller imageLink to: ${userController.imageLink.value}");
+                          });
+                        } else {
+                          print("Upload failed or image is null");
+                          print("Success: $success, Image null: ${imageUploadService.image.value == null}");
+                        }
+                      }).catchError((error) {
+                        print("Error during image upload: $error");
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(height: 60),
                 // White container for the form

@@ -108,8 +108,7 @@ class KeranjangView extends GetView<KeranjangController> {
                         showDialog(
                           context: context,
                           builder: (context) => PembayaranModal(
-                            jumlah: controller
-                                .totalPrice, // Use .value to get current value
+                            controller: controller,
                           ),
                         );
                       }

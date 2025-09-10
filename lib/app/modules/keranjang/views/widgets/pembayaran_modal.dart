@@ -1,18 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/modules/keranjang/controllers/keranjang_controller.dart';
 import 'package:payoo/app/modules/transaksi/views/transaksi_berhasil_view.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 
 class PembayaranModal extends StatelessWidget {
-  final double jumlah;
-  final TextEditingController _controller = TextEditingController();
-  
-
-  PembayaranModal({
+  final KeranjangController controller;
+  const PembayaranModal({
     super.key,
-    required this.jumlah,
+    required this.controller,
   });
+  Future<void> _handlePay() async {
+    if (controller.enteredAmount.text.trim().isEmpty) {
+      controller.enteredAmount.text = controller.totalPrice.toString();
+    }
+    if (controller.countItem.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Jumlah item tidak boleh kosong',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    
+    // Parse the entered amount once and store it
+    final enteredAmountValue = double.tryParse(controller.enteredAmount.text);
+    if (enteredAmountValue == null || enteredAmountValue < controller.totalPrice) {
+      Get.snackbar(
+        'Error',
+        'Jumlah uang tidak mencukupi',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Set the payment amount in the controller
+    controller.paymentAmount.value = enteredAmountValue;
+    final price = controller.totalPrice;
+    // Call create order
+    final success = await controller.createOrder();
+
+    if (success) {
+      Get.to(TransaksiBerhasilView(
+        bayar: controller.paymentAmount.value,
+        harga: price,
+        orderId: controller.orderId.value,
+      ));
+    } else {
+      // Error message is already set in controller
+      Get.snackbar(
+        'Error',
+        controller.error.string,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +106,7 @@ class PembayaranModal extends StatelessWidget {
                       ),
                       Flexible(
                         child: TextField(
-                          controller: _controller,
+                          controller: controller.enteredAmount,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
@@ -66,8 +115,8 @@ class PembayaranModal extends StatelessWidget {
                             border: InputBorder.none,
                             isDense: true,
                             contentPadding: EdgeInsets.zero,
-                            hintText: jumlah.toString(),
-                            hintStyle: TextStyle(
+                            hintText: controller.totalPrice.toString(),
+                            hintStyle: const TextStyle(
                               fontSize: 16,
                               color: Color(0xFF9E9E9E),
                               fontWeight: FontWeight.w300,
@@ -119,15 +168,7 @@ class PembayaranModal extends StatelessWidget {
                     height: 40,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (_controller.text.isEmpty) {
-                          _controller.text = jumlah.toString();
-                        }
-                        // You can access the entered amount with _controller.text
-                        String enteredAmount = _controller.text;
-
-                        Get.to(TransaksiBerhasilView(
-                            bayar: double.tryParse(enteredAmount) ?? 0.0,
-                            harga: jumlah));
+                        _handlePay();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4CAF50),
