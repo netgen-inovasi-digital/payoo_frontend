@@ -30,6 +30,15 @@ class _TransaksiViewState extends State<TransaksiView> {
       Get.put<ProdukController>(ProdukController());
 
   @override
+  void initState() {
+    super.initState();
+    _produkController.fetchProduk();
+    _searchController.addListener(() {
+      _filterProducts(_searchController.text);
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();

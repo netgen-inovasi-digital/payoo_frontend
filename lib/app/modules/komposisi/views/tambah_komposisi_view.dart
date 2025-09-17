@@ -89,8 +89,8 @@ class TambahKomposisiView extends StatelessWidget {
       if (ok) {
         Get.toNamed(Routes.KOMPOSISI);
         Get.snackbar('Sukses', 'Komposisi diperbarui');
-      } else {
-        Get.snackbar('Gagal', controller.errorUpdate.value, snackPosition: SnackPosition.BOTTOM);
+        } else {
+          Get.snackbar('Gagal', controller.errorUpdate.value, snackPosition: SnackPosition.BOTTOM);
       }
     }
   }

@@ -22,8 +22,6 @@ class _StrukViewState extends State<StrukView> {
   void initState() {
     super.initState();
     controller.getOrderById(orderId: widget.orderId);
-
-
   }
   
 
@@ -154,15 +152,15 @@ class _StrukViewState extends State<StrukView> {
               controller.order.value?.orderItems != null
                   ? ListView.builder(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: controller.order.value!.orderItems!.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: controller.order.value!.orderItems.length,
                       itemBuilder: (context, index) {
-                        final item = controller.order.value!.orderItems![index];
+                        final item = controller.order.value!.orderItems[index];
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.productId.toString(),
+                              controller.produkList[index].name.toString(),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

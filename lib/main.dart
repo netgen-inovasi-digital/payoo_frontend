@@ -51,8 +51,8 @@ Future<void> main() async {
               child: MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                 child: widget!,
-              ));
-        },
+              )); 
+        },    
         initialRoute: AppPages.INITIAL,
         getPages: AppPages.routes,
         

@@ -40,11 +40,7 @@ class ProdukController extends GetxController {
   var selectedKategoriId = ''.obs;
   var selectedKomposisi = <Komposisi>[].obs;
 
-  @override
-  void onInit() {
-    fetchProduk();
-    super.onInit();
-  }
+
 
   /// Sets the selected category ID for the product
   void setKategori(String kategoriId) {
@@ -367,13 +363,11 @@ class ProdukController extends GetxController {
         } catch (e) {
           errorUpdate.value = 'Error parsing response: $e';
           statusUpdate.value = ApiCallStatus.error;
-          print('Parsing error: $e');
         }
       },
       onError: (e) {
         errorUpdate.value = e.toString();
         statusUpdate.value = ApiCallStatus.error;
-        print('API Error: $e');
       },
     );
 

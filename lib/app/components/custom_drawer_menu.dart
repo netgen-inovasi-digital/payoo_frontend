@@ -243,7 +243,7 @@ class CustomDrawerMenu extends StatelessWidget {
                   fontSize: 16)),
           onTap: () {
             // Aksi saat laporan dipilih
-            Get.toNamed(Routes.LAPORAN);
+            Get.toNamed(Routes.LAPORAN, arguments: userController.user.value?.shopId);
           },
         ),
         const SizedBox(

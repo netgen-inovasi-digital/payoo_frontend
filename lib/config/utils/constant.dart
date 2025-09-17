@@ -41,8 +41,8 @@ class Constants {
   static const ORDERS = '/orders'; //post
 
   //reports
-  static const REPORTS = "/reports/{{shop_id}}/summary";
-
+  static const REPORTS_SUMMARY = "/reports/{shop_id}/summary";
+  static const REPORTS_ORDERS = "/reports/{shop_id}/orders";
   //upload
   static const UPLOAD = '/upload';
 

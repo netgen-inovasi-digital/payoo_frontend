@@ -27,7 +27,7 @@ class _DataProdukViewState extends State<DataProdukView> {
   @override
   void initState() {
     super.initState();
-    // Refresh data when view is initialized
+    _produkController.fetchProduk();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshData();
     });

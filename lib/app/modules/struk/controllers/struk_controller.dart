@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:payoo/app/data/models/Toko_model.dart';
 import 'package:payoo/app/data/models/keranjang_model.dart';
+import 'package:payoo/app/data/models/produk_model.dart';
+import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/modules/toko/controllers/toko_controller.dart';
 import 'package:payoo/app/services/api_response.dart';
 import 'package:payoo/config/utils/storage_manager.dart';
@@ -19,6 +21,9 @@ class StrukController extends GetxController {
   var shopId = 0.obs;
   var userId = 0.obs;
   var toko = <Toko?>[].obs;
+  ProdukController produkController =
+      Get.put<ProdukController>(ProdukController());
+  List<Produk> produkList = <Produk>[].obs;
 
   // State update
   var statusUpdate = ApiCallStatus.holding.obs;
@@ -48,8 +53,23 @@ class StrukController extends GetxController {
             userId.value = int.tryParse('${order.value?.userId}') ?? 0;
             await tokoController.fetchTokoById(shopId.value);
             calculateTotalHargaAndItem();
+            produkList.clear();
+
+            // Load all products in parallel
+            final productIds = order.value?.orderItems
+                    .map((item) => item.productId)
+                    .toList() ??
+                [];
+
+            // Fetch products one by one and add them to the list
+            for (var id in productIds) {
+              await produkController.fetchProdukById(id);
+              if (produkController.produk.value != null) {
+                produkList.add(produkController.produk.value!);
+              }
+            }
           }
-          
+
           status.value = ApiCallStatus.success;
           success = true;
         } catch (e) {
@@ -68,6 +88,7 @@ class StrukController extends GetxController {
     }
     return success;
   }
+
   void calculateTotalHargaAndItem() {
     totalHarga.value = 0.0;
     if (order.value?.orderItems != null) {

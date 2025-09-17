@@ -90,7 +90,7 @@ class BottomNavBar extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {
                   // Handle cart button tap
-                  Get.toNamed(Routes.KERANJANG, arguments: produkList);
+                  Get.toNamed(Routes.KERANJANG, );
                 },
                 child: Icon(
                   Icons.shopping_cart,

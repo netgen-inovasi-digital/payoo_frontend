@@ -7,7 +7,7 @@ import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/services/base_client.dart';
 import 'package:payoo/config/utils/constant.dart';
 import 'package:payoo/config/utils/storage_manager.dart';
-import '../data/models/imageFile.dart';
+import '../data/models/image_file.dart';
 
 class ImageUploadService extends GetxService {
   final ImagePicker _picker = ImagePicker();
