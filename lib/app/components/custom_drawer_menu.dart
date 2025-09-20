@@ -309,22 +309,22 @@ class CustomDrawerMenu extends StatelessWidget {
         const SizedBox(
           height: 10,
         ),
-        ListTile(
-          leading: const FaIcon(
-            FontAwesomeIcons.user,
-            color: LightThemeColors.primaryColor,
-            size: 20,
-          ),
-          title: const Text("Dashboard User",
-              style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
-          onTap: () {
-            // Aksi saat logout
-            Get.toNamed(Routes.DASHBOARD_USER);
-          },
-        ),
+        // ListTile(
+        //   leading: const FaIcon(
+        //     FontAwesomeIcons.user,
+        //     color: LightThemeColors.primaryColor,
+        //     size: 20,
+        //   ),
+        //   title: const Text("Dashboard User",
+        //       style: TextStyle(
+        //           fontFamily: 'Quicksand',
+        //           fontWeight: FontWeight.w600,
+        //           fontSize: 16)),
+        //   onTap: () {
+        //     // Aksi saat logout
+        //     Get.toNamed(Routes.DASHBOARD_USER);
+        //   },
+        // ),
       ],
     );
   }
