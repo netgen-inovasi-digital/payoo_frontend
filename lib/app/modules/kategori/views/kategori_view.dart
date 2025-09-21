@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
+import 'package:payoo/app/components/custom_snackbar.dart';
 import '../controllers/kategori_controller.dart';
 import 'widgets/list_view_kategori.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
@@ -26,29 +27,48 @@ class KategoriView extends GetView<KategoriController> {
             // ========== Input kategori ==========
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: CustomTextField(
-                      hintText: 'nama kategori*',
-                      controller: c.nameController,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Obx(() => CustomTextField(
+                          hintText: 'Nama kategori*',
+                          controller: c.nameController,
+                          hasError: c.hasAttemptedSubmit.value && 
+                                   c.nameError.value.isNotEmpty,
+                          errorText: c.nameError.value,
+                        )),
+                      ),
+                      const SizedBox(width: 8),
+                      Obx(() {
+                        if (c.statusCreate.value == ApiCallStatus.loading) {
+                          return const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        }
+                        return IconButton(
+                          icon: const Icon(Icons.add_circle_outline, color: Colors.green),
+                          onPressed: () async {
+                            final ok = await c.createKategori();
+                            if (ok) {
+                              CustomSnackBar.showCustomSnackBar(
+                                title: 'Sukses', 
+                                message: 'Kategori berhasil ditambahkan'
+                              );
+                              c.resetCreateForm();
+                            } 
+                          },
+                        );
+                      }),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline, color: Colors.green),
-                    onPressed: () async {
-                      final nama = c.nameController.text.trim();
-                      if (nama.isEmpty) return;
-                      final ok = await c.createKategori();
-                      if (ok) {
-                        Get.snackbar('Sukses', 'Kategori ditambahkan');
-                        c.resetCreateForm();
-                      } else {
-                        Get.snackbar('Gagal', c.errorCreate.value, snackPosition: SnackPosition.BOTTOM);
-                      }
-                    },
-                  ),
+                  // Optional description field
                 ],
               ),
             ),
@@ -72,9 +92,17 @@ class KategoriView extends GetView<KategoriController> {
                     onDelete: (Kategori k) async {
                       final ok = await c.deleteKategori(k.id);
                       if (ok) {
-                        Get.snackbar('Sukses', 'Kategori dihapus');
+                        CustomSnackBar.showCustomSnackBar(
+                          title: 'Sukses', 
+                          message: 'Kategori "${k.name}" berhasil dihapus'
+                        );
                       } else {
-                        Get.snackbar('Gagal', c.errorDelete.value, snackPosition: SnackPosition.BOTTOM);
+                        CustomSnackBar.showCustomErrorSnackBar(
+                          title: 'Gagal Menghapus', 
+                          message: c.errorDelete.value.isNotEmpty 
+                            ? c.errorDelete.value 
+                            : 'Terjadi kesalahan saat menghapus kategori'
+                        );
                       }
                     },
                   );

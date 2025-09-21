@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/confirm_dialog.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
+import 'package:payoo/app/components/custom_snackbar.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
 import 'package:payoo/app/modules/komposisi/views/tambah_komposisi_view.dart';
@@ -84,9 +85,15 @@ class DetailKomposisiView extends StatelessWidget {
     final success = await controller.deleteKomposisi(komposisi.id);
     if (success) {
       Get.back(); // back to list
-      Get.snackbar('Sukses', 'Komposisi berhasil dihapus');
+      CustomSnackBar.showCustomSnackBar(
+        title: 'Sukses',
+        message: 'Komposisi berhasil dihapus',
+      );
     } else {
-      Get.snackbar('Gagal', controller.errorDelete.value, snackPosition: SnackPosition.BOTTOM);
+      CustomSnackBar.showCustomErrorSnackBar(
+        title: 'Gagal',
+        message: controller.errorDelete.value,
+      );
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
+import 'package:payoo/app/components/custom_snackbar.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
@@ -30,27 +31,39 @@ class TambahKomposisiView extends StatelessWidget {
         padding: const EdgeInsets.only(top: 20, bottom: 20),
         child: Column(
           children: [
-            CustomTextField(
-              hintText: 'nama komposisi*',
+            Obx(() => CustomTextField(
+              hintText: 'Nama komposisi*',
               controller: controller.namaController,
-            ),
+              hasError: controller.hasAttemptedSubmit.value && 
+                       controller.namaError.value.isNotEmpty,
+              errorText: controller.namaError.value,
+            )),
             const SizedBox(height: 16),
-            CustomTextField(
-              hintText: 'harga modal*',
+            Obx(() => CustomTextField(
+              hintText: 'Harga modal*',
               controller: controller.hargaModalController,
               keyboardType: TextInputType.number,
-            ),
+              hasError: controller.hasAttemptedSubmit.value && 
+                       controller.hargaModalError.value.isNotEmpty,
+              errorText: controller.hargaModalError.value,
+            )),
             const SizedBox(height: 16),
-            CustomTextField(
-              hintText: 'harga jual*',
+            Obx(() => CustomTextField(
+              hintText: 'Harga jual*',
               controller: controller.hargaJualController,
               keyboardType: TextInputType.number,
-            ),
+              hasError: controller.hasAttemptedSubmit.value && 
+                       controller.hargaJualError.value.isNotEmpty,
+              errorText: controller.hargaJualError.value,
+            )),
             const SizedBox(height: 16),
-            CustomTextField(
-              hintText: 'satuan',
+            Obx(() => CustomTextField(
+              hintText: 'Satuan',
               controller: controller.satuanController,
-            ),
+              hasError: controller.hasAttemptedSubmit.value && 
+                       controller.satuanError.value.isNotEmpty,
+              errorText: controller.satuanError.value,
+            )),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.fromLTRB(40.0, 0.0, 40.0, 0.0),
@@ -79,18 +92,44 @@ class TambahKomposisiView extends StatelessWidget {
       final ok = await controller.createKomposisi();
       if (ok) {
         Get.toNamed(Routes.KOMPOSISI);
-        Get.snackbar('Sukses', 'Komposisi dibuat');
+        CustomSnackBar.showCustomSnackBar(
+          title: 'Sukses', 
+          message: 'Komposisi berhasil dibuat'
+        );
       } else {
-        Get.snackbar('Gagal', controller.errorCreate.value, snackPosition: SnackPosition.BOTTOM);
+        // Check if it's a validation error or API error
+        if (controller.errorCreate.value.isNotEmpty) {
+          CustomSnackBar.showCustomErrorSnackBar(
+            title: 'Gagal Membuat', 
+            message: controller.errorCreate.value
+          );
+        }
       }
     } else {
       // Update existing komposisi
       final ok = await controller.updateKomposisi(komposisi!.id);
       if (ok) {
         Get.toNamed(Routes.KOMPOSISI);
-        Get.snackbar('Sukses', 'Komposisi diperbarui');
+        CustomSnackBar.showCustomSnackBar(
+          title: 'Sukses', 
+          message: 'Komposisi berhasil diperbarui'
+        );
         } else {
-          Get.snackbar('Gagal', controller.errorUpdate.value, snackPosition: SnackPosition.BOTTOM);
+          // Check if it's a validation error or API error
+          if (controller.namaError.value.isNotEmpty || 
+              controller.hargaModalError.value.isNotEmpty ||
+              controller.hargaJualError.value.isNotEmpty ||
+              controller.satuanError.value.isNotEmpty) {
+            CustomSnackBar.showCustomErrorSnackBar(
+              title: 'Form Tidak Valid', 
+              message: 'Mohon periksa kembali data yang Anda masukkan'
+            );
+          } else if (controller.errorUpdate.value.isNotEmpty) {
+            CustomSnackBar.showCustomErrorSnackBar(
+              title: 'Gagal Memperbarui', 
+              message: controller.errorUpdate.value
+            );
+          }
       }
     }
   }
