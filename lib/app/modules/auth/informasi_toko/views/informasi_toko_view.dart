@@ -44,39 +44,56 @@ class InformasiTokoView extends StatelessWidget {
                           children: [
                             const SizedBox(height: 20),
                             // TextField nama toko
-                            CustomTextField(
+                            Obx(() => CustomTextField(
                               hintText: 'nama toko*',
                               controller: controller.name,
-                            ),
+                              hasError: controller.hasAttemptedSubmit.value && 
+                                       controller.nameError.value.isNotEmpty,
+                              errorText: controller.nameError.value,
+                            )),
                             const SizedBox(height: 20),
                             // TextField jenis usaha
                             Obx(() => CustomDropdown<String>(
-                                  hintText: controller.selectedType.value.isEmpty
-                                      ? 'jenis toko*'
-                                      : controller.selectedType.value,
-                                  itemsStatic: const ['mandiri', 'perusahaan'],
-                                  onChanged: (val) {
-                                    controller.setType(val);
-                                  },
-                                )),
+                              hintText: controller.selectedType.value.isEmpty
+                                  ? 'jenis toko*'
+                                  : controller.selectedType.value,
+                              itemsStatic: const ['mandiri', 'perusahaan'],
+                              hasError: controller.hasAttemptedSubmit.value && 
+                                       controller.typeError.value.isNotEmpty,
+                              errorText: controller.typeError.value,
+                              onChanged: (val) {
+                                controller.setType(val);
+                              },
+                            )),
                             const SizedBox(height: 20),
                             // TextField nomor ponsel
-                            CustomTextField(
+                            Obx(() => CustomTextField(
                               hintText: 'nomor ponsel*',
                               controller: controller.phone,
-                            ),
+                              keyboardType: TextInputType.phone,
+                              hasError: controller.hasAttemptedSubmit.value && 
+                                       controller.phoneError.value.isNotEmpty,
+                              errorText: controller.phoneError.value,
+                            )),
                             const SizedBox(height: 20),
                             // TextField email
-                            CustomTextField(
+                            Obx(() => CustomTextField(
                               hintText: 'email*',
                               controller: controller.email,
-                            ),
+                              keyboardType: TextInputType.emailAddress,
+                              hasError: controller.hasAttemptedSubmit.value && 
+                                       controller.emailError.value.isNotEmpty,
+                              errorText: controller.emailError.value,
+                            )),
                             const SizedBox(height: 20),
                             // TextField alamat toko
-                            CustomTextField(
+                            Obx(() => CustomTextField(
                               hintText: 'alamat toko*',
                               controller: controller.address,
-                            ),
+                              hasError: controller.hasAttemptedSubmit.value && 
+                                       controller.addressError.value.isNotEmpty,
+                              errorText: controller.addressError.value,
+                            )),
                             const SizedBox(height: 20),
                             // TextField provinsi
                             Obx(() {
@@ -106,6 +123,9 @@ class InformasiTokoView extends StatelessWidget {
                                           : controller.selectedProvince.value,
                                       items: controller.provinces,
                                       itemTextBuilder: (item) => item.text,
+                                      hasError: controller.hasAttemptedSubmit.value && 
+                                               controller.provinceError.value.isNotEmpty,
+                                      errorText: controller.provinceError.value,
                                       onChanged: (selectedProvince) {
                                         controller.setProvince(selectedProvince.text);
                                         controller.getDataCities(selectedProvince.id);
@@ -118,6 +138,7 @@ class InformasiTokoView extends StatelessWidget {
                                 ); // Default widget jika tidak ada kondisi terpenuhi
                               }
                             }),
+                            // Province error message
                             const SizedBox(height: 20),
                             // TextField kabupaten kota
                             Obx(() {
@@ -147,6 +168,9 @@ class InformasiTokoView extends StatelessWidget {
                                           : controller.selectedCity.value,
                                       items: controller.cities,
                                       itemTextBuilder: (item) => item.text,
+                                      hasError: controller.hasAttemptedSubmit.value && 
+                                               controller.cityError.value.isNotEmpty,
+                                      errorText: controller.cityError.value,
                                       onChanged: (selectedCity) {
                                         controller.setCity(selectedCity.text);
                                       },
@@ -158,6 +182,7 @@ class InformasiTokoView extends StatelessWidget {
                                 ); // Default widget jika tidak ada kondisi terpenuhi
                               }
                             }),
+                            // City error message
                             const SizedBox(height: 20),
                             // Error message
                             Obx(() => controller.saveError.value.isNotEmpty
