@@ -99,34 +99,34 @@ class KeranjangCard extends StatelessWidget {
                     );
                   }),
                   
-                  const SizedBox(height: 5),
-                  Container(
-                    width: 50,
-                    height: 22,
-                    margin: const EdgeInsets.only(top: 10),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Get.to(() => EditTransaksiProduk(produk: produk));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(color: Colors.black, width: 0.5),
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                      ),
-                      child: const Text(
-                        'Edit',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  )
+                  // const SizedBox(height: 5),
+                  // Container(
+                  //   width: 50,
+                  //   height: 22,
+                  //   margin: const EdgeInsets.only(top: 10),
+                  //   child: ElevatedButton(
+                  //     onPressed: () {
+                  //       Get.to(() => EditTransaksiProduk(produk: produk));
+                  //     },
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.white,
+                  //       padding: EdgeInsets.zero,
+                  //       minimumSize: Size.zero,
+                  //       shape: RoundedRectangleBorder(
+                  //         side: const BorderSide(color: Colors.black, width: 0.5),
+                  //         borderRadius: BorderRadius.circular(30.0),
+                  //       ),
+                  //     ),
+                  //     child: const Text(
+                  //       'Edit',
+                  //       style: TextStyle(
+                  //         color: Colors.black,
+                  //         fontWeight: FontWeight.w300,
+                  //         fontSize: 10,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // )
                 ],
               ),
             ),

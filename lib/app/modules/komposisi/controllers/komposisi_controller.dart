@@ -31,12 +31,6 @@ class KomposisiController extends GetxController {
 	final hargaJualController = TextEditingController();
 	final satuanController = TextEditingController();
 
-	@override
-	void onInit() {
-		fetchKomposisi();
-		super.onInit();
-	}
-
 	Future<void> fetchKomposisi() async {
 		statusList.value = ApiCallStatus.loading;
 		errorList.value = '';

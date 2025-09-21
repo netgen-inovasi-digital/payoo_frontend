@@ -12,10 +12,9 @@ enum LoadingStatus {
 class DashboardController extends GetxController {
   final AkunController userController = Get.put<AkunController>(AkunController());
   final TokoController tokoController = Get.put<TokoController>(TokoController());
-
+  
   final Rx<LoadingStatus> status = Rx<LoadingStatus>(LoadingStatus.initial);
   final RxString errorMessage = RxString('');
-
   @override
   void onInit() {
     super.onInit();

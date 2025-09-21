@@ -7,12 +7,12 @@ import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/modules/keranjang/views/widgets/checkout_button.dart';
 import 'package:payoo/app/modules/keranjang/views/widgets/keranjang_card.dart';
 import 'package:payoo/app/modules/keranjang/views/widgets/pembayaran_modal.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 import '../controllers/keranjang_controller.dart';
 
 class KeranjangView extends GetView<KeranjangController> {
-  KeranjangView({super.key});
-  final role = '';
+  const KeranjangView({super.key});
 
   
   @override
@@ -21,112 +21,111 @@ class KeranjangView extends GetView<KeranjangController> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: Obx(() => CustomAppBar(
-              title: 'Rp.${controller.totalPrice.toStringAsFixed(0)}',
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: role == 'user'
-                        ? Colors.white
-                        : LightThemeColors.primaryColor,
-                    borderRadius: BorderRadius.circular(0),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      if (role == 'user') {
-                        Get.dialog(
-                          Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(0),
-                            ),
-                            insetPadding: const EdgeInsets.only(
-                                left: 200, top: 0, bottom: 0, right: 0),
-                            alignment: Alignment.centerRight,
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Text(
-                                      'Voucher Anda',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  const Divider(
-                                    color: LightThemeColors.accentColor,
-                                    height: 10,
-                                  ),
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount:
-                                          3, // Replace with your actual promo list
-                                      itemBuilder: (context, index) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            // Handle voucher selection
-                                            Get.back();
-                                          },
-                                          child: Column(
-                                            children: [
-                                              ListTile(
-                                                leading: SvgPicture.asset(
-                                                  'assets/images/discount_icon.svg',
-                                                  width: 35,
-                                                  height: 35,
-                                                ),
-                                                title: const Text(
-                                                  'Voucher diskon 20%',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                              ),
-                                              const Divider(
-                                                height: 4,
-                                                color: Colors.grey,
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          barrierDismissible: true,
-                        );
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) => PembayaranModal(
-                            controller: controller,
-                          ),
-                        );
-                      }
-                    },
-                    icon: role == 'user'
-                        ? SvgPicture.asset(
-                            'assets/images/discount_icon.svg',
-                            width: 20,
-                            height: 20,
-                          )
-                        : const Icon(Icons.check,
-                            size: 15, color: Colors.white),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                )
-              ],
-            )),
+        child: CustomAppBar(title: 'Keranjang'),
+      //   child: Obx(() => CustomAppBar(
+      //         title: 'Rp.${controller.totalPrice.toStringAsFixed(0)}',
+      //         children: [
+      //           Container(
+      //             width: 30,
+      //             height: 30,
+      //             decoration: BoxDecoration(
+      //               color: Colors.white,
+      //               borderRadius: BorderRadius.circular(0),
+      //             ),
+      //             // child: IconButton(
+      //             //   onPressed: () {
+      //             //     if (role == 'user') {
+      //             //       Get.dialog(
+      //             //         Dialog(
+      //             //           shape: RoundedRectangleBorder(
+      //             //             borderRadius: BorderRadius.circular(0),
+      //             //           ),
+      //             //           insetPadding: const EdgeInsets.only(
+      //             //               left: 200, top: 0, bottom: 0, right: 0),
+      //             //           alignment: Alignment.centerRight,
+      //             //           child: SizedBox(
+      //             //             height: MediaQuery.of(context).size.height,
+      //             //             child: Column(
+      //             //               children: [
+      //             //                 Padding(
+      //             //                   padding: const EdgeInsets.all(16.0),
+      //             //                   child: Text(
+      //             //                     'Voucher Anda',
+      //             //                     style: TextStyle(
+      //             //                       fontSize: 20,
+      //             //                       fontWeight: FontWeight.bold,
+      //             //                       color: Colors.black,
+      //             //                     ),
+      //             //                   ),
+      //             //                 ),
+      //             //                 const Divider(
+      //             //                   color: LightThemeColors.accentColor,
+      //             //                   height: 10,
+      //             //                 ),
+      //             //                 Expanded(
+      //             //                   child: ListView.builder(
+      //             //                     itemCount:
+      //             //                         3, // Replace with your actual promo list
+      //             //                     itemBuilder: (context, index) {
+      //             //                       return GestureDetector(
+      //             //                         onTap: () {
+      //             //                           // Handle voucher selection
+      //             //                           Get.back();
+      //             //                         },
+      //             //                         child: Column(
+      //             //                           children: [
+      //             //                             ListTile(
+      //             //                               leading: SvgPicture.asset(
+      //             //                                 'assets/images/discount_icon.svg',
+      //             //                                 width: 35,
+      //             //                                 height: 35,
+      //             //                               ),
+      //             //                               title: const Text(
+      //             //                                 'Voucher diskon 20%',
+      //             //                                 style: TextStyle(
+      //             //                                   fontWeight: FontWeight.w700,
+      //             //                                 ),
+      //             //                               ),
+      //             //                             ),
+      //             //                             const Divider(
+      //             //                               height: 4,
+      //             //                               color: Colors.grey,
+      //             //                             ),
+      //             //                           ],
+      //             //                         ),
+      //             //                       );
+      //             //                     },
+      //             //                   ),
+      //             //                 ),
+      //             //               ],
+      //             //             ),
+      //             //           ),
+      //             //         ),
+      //             //         barrierDismissible: true,
+      //             //       );
+      //             //     } else {
+      //             //       showDialog(
+      //             //         context: context,
+      //             //         builder: (context) => PembayaranModal(
+      //             //           controller: controller,
+      //             //         ),
+      //             //       );
+      //             //     }
+      //             //   },
+      //             //   // icon: role == 'user'
+      //             //   //     ? SvgPicture.asset(
+      //             //   //         'assets/images/discount_icon.svg',
+      //             //   //         width: 20,
+      //             //   //         height: 20,
+      //             //   //       )
+      //             //   //     : const Icon(Icons.check,
+      //             //   //         size: 15, color: Colors.white),
+      //             //   padding: EdgeInsets.zero,
+      //             //   constraints: const BoxConstraints(),
+      //             // ),
+      //           )
+      //         ],
+      //       )),
       ),
       body: Obx(
         () {
@@ -156,7 +155,17 @@ class KeranjangView extends GetView<KeranjangController> {
           );
         },
       ),
-      bottomNavigationBar: role == 'user' ? const CheckoutButton() : null,
+      bottomNavigationBar: Obx(() {
+        if (controller.product.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        if(controller.status.value == ApiCallStatus.loading){
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        return CheckoutButton(price: controller.totalPrice.toStringAsFixed(0), controller: controller);
+      }),
     );
   }
 }

@@ -14,6 +14,7 @@ class DashboardView extends StatelessWidget {
   final DashboardController dashboardController =
       Get.put<DashboardController>(DashboardController());
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,6 +47,7 @@ class DashboardView extends StatelessWidget {
                       builder: (context) {
                         // Gunakan Builder untuk mendapatkan konteks yang benar
                         return ProfileHeader(
+                          photo: dashboardController.tokoController.toko.value?.photo ?? '',
                           businessName: dashboardController
                                   .tokoController.toko.value?.name ??
                               'Nama Toko',

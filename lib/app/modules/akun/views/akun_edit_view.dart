@@ -58,21 +58,20 @@ class _AkunEditViewState extends State<AkunEditView> {
                     photo:
                       userController.user.value?.photo != null && userController.user.value!.photo.isNotEmpty ? userController.user.value!.photo : 'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
                     onEdit: () {
-                      print("Starting image picking and upload...");
                       imageUploadService.pickAndUploadImage(ImageSource.gallery, 'akun').then((success) {
-                        print("Image upload success: $success");
+
                         if (success && imageUploadService.image.value != null) {
-                          print("Image URL: ${imageUploadService.image.value!.url}");
+                        
                           setState(() {
                             userController.imageLink.value = imageUploadService.image.value!.url;
-                            print("Updated controller imageLink to: ${userController.imageLink.value}");
                           });
                         } else {
-                          print("Upload failed or image is null");
-                          print("Success: $success, Image null: ${imageUploadService.image.value == null}");
+                          Get.snackbar('Error', 'Gagal mengunggah gambar',
+                              snackPosition: SnackPosition.BOTTOM);
                         }
                       }).catchError((error) {
-                        print("Error during image upload: $error");
+                        Get.snackbar('Error', 'Gagal mengunggah gambar: $error',
+                            snackPosition: SnackPosition.BOTTOM);
                       });
                     },
                   ),

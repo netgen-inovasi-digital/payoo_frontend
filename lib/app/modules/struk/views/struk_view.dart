@@ -21,16 +21,17 @@ class _StrukViewState extends State<StrukView> {
   @override
   void initState() {
     super.initState();
-    controller.getOrderById(orderId: widget.orderId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.getOrderById(orderId: widget.orderId);
+    });
   }
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
         title: "Struk Penjualan",
-        onPressed: () => Get.toNamed(Routes.DASHBOARD),
+        onPressed: () => Get.offAllNamed(Routes.DASHBOARD),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),
@@ -153,35 +154,39 @@ class _StrukViewState extends State<StrukView> {
                   ? ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: controller.order.value!.orderItems.length,
+                      itemCount: controller.order.value?.orderItems.length ?? 0,
                       itemBuilder: (context, index) {
                         final item = controller.order.value!.orderItems[index];
+
+                        if (index >= controller.produkList.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                                SizedBox(width: 8),
+                                Text('Loading product...'),
+                              ],
+                            ),
+                          );
+                        }
+
+                        final produk = controller.produkList[index];
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              controller.produkList[index].name.toString(),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
+                            Text(produk.name),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '${item.quantity.toStringAsFixed(0)}x${item.price.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400),
-                                ),
+                                    '${item.quantity}x${item.price.toStringAsFixed(0)}'),
                                 Text(
-                                  'Rp. ${(item.quantity * item.price).toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400),
-                                ),
+                                    'Rp. ${(item.quantity * item.price).toStringAsFixed(0)}'),
                               ],
                             ),
                             const SizedBox(height: 10),
@@ -196,17 +201,22 @@ class _StrukViewState extends State<StrukView> {
               const SizedBox(height: 10),
 
               // Summary Section
-              _buildSummaryRow('Total Item', controller.totalItem.value.toString()),
-              _buildSummaryRow('Sub Total', 'Rp. ${controller.totalHarga.value.toStringAsFixed(0)}'),
-              _buildSummaryRow('Potongan', 'Rp. 0'),
+              _buildSummaryRow(
+                  'Total Item', controller.totalItem.value.toString()),
+              _buildSummaryRow('Sub Total',
+                  'Rp. ${controller.totalHarga.value.toStringAsFixed(0)}'),
               const SizedBox(height: 5),
               _buildSummaryRow(
                 'Total',
                 'Rp. ${controller.totalHarga.value.toStringAsFixed(0)}',
                 isBold: true,
               ),
-              _buildSummaryRow('Bayar', controller.order.value?.amountPaid.toString() ?? '0', isBold: true),
-              _buildSummaryRow('Kembali', 'Rp. ${(controller.order.value?.amountPaid ?? 0) - controller.totalHarga.value}', isBold: true),
+              _buildSummaryRow('Bayar',
+                  'Rp. ${controller.order.value?.amountPaid.toStringAsFixed(0) ?? 0}',
+                  isBold: true),
+              _buildSummaryRow('Kembali',
+                  'Rp. ${((controller.order.value?.amountPaid ?? 0) - controller.totalHarga.value).toStringAsFixed(0)}',
+                  isBold: true),
 
               const SizedBox(height: 10),
               const Divider(color: Colors.black),

@@ -1,7 +1,7 @@
 class Stock {
   final int id;
   final int compositionId;
-  final int quantity;
+   int quantity;
   final StockType type;
   final DateTime date;
   final DateTime createdAt;

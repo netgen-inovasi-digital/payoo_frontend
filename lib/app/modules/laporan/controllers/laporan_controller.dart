@@ -38,35 +38,36 @@ class LaporanController extends GetxController {
     if (args != null && args is int) {
       return args;
     }
-    
+
     // Case 2: Map with shopId key
     if (args != null && args is Map) {
       if (args.containsKey('shopId')) {
-        return args['shopId'] is int ? args['shopId'] : int.tryParse(args['shopId'].toString()) ?? 0;
+        return args['shopId'] is int
+            ? args['shopId']
+            : int.tryParse(args['shopId'].toString()) ?? 0;
       }
       if (args.containsKey('shop_id')) {
-        return args['shop_id'] is int ? args['shop_id'] : int.tryParse(args['shop_id'].toString()) ?? 0;
+        return args['shop_id'] is int
+            ? args['shop_id']
+            : int.tryParse(args['shop_id'].toString()) ?? 0;
       }
     }
-    
+
     // Fallback: Try to get from storage
     final storage = StorageManager();
     final storedShopId = storage.read<int>('shopId');
     if (storedShopId != null) {
       return storedShopId;
     }
-    
+
     return 0; // Default if all else fails
   }
-
-
 
   ProdukController produkController =
       Get.put<ProdukController>(ProdukController());
   List<Produk> produkList = <Produk>[].obs;
 
-  Future<void> fetchOrderReport(
-      {required String period}) async {
+  Future<void> fetchOrderReport({required String period}) async {
     statusOrderReport.value = ApiCallStatus.loading;
     errorOrderReport.value = '';
     final url =
@@ -93,8 +94,7 @@ class LaporanController extends GetxController {
     });
   }
 
-  Future<void> fetchReportSummary(
-      {required String period}) async {
+  Future<void> fetchReportSummary({required String period}) async {
     statusSummary.value = ApiCallStatus.loading;
     errorSummary.value = '';
     var url =
@@ -175,6 +175,26 @@ class LaporanController extends GetxController {
         statusOrderDetail.value = ApiCallStatus.error;
       },
     );
+  }
+
+  @override
+  void onClose() {
+    // Reset all Rx values to their initial states
+    ordersReport.value = null;
+    statusOrderReport.value = ApiCallStatus.holding;
+    errorOrderReport.value = '';
+    selectedPeriod.value = 'bulan ini';
+
+    reportSummary.value = null;
+    statusSummary.value = ApiCallStatus.holding;
+    errorSummary.value = '';
+
+    orderDetail.value = null;
+    statusOrderDetail.value = ApiCallStatus.holding;
+    errorOrderDetail.value = '';
+
+    produkList.clear();
+    super.onClose();
   }
 
   // Future<void> fetchProduk() async {
