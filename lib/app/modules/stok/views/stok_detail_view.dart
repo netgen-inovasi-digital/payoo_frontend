@@ -1,6 +1,6 @@
-import 'package:payoo/app/components/custom_app_bar_secondary.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
+import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/modules/stok/views/widgets/stok_info.dart';
 import 'stok_form_view.dart';
 import 'widgets/stok_action_button.dart';
@@ -15,7 +15,7 @@ class StokDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBarSecondary(
+      appBar: const CustomAppBar(
         title: 'Manajemen Stok',
       ),
       body: Padding(
