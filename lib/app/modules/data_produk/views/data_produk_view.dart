@@ -9,6 +9,7 @@ import 'package:payoo/app/components/product_card.dart';
 import 'package:payoo/app/modules/data_produk/views/detail_produk_view.dart';
 import 'package:payoo/app/modules/data_produk/views/tambah_produk_view.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 
 class DataProdukView extends StatefulWidget {
@@ -80,7 +81,11 @@ class _DataProdukViewState extends State<DataProdukView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Data Produk', dividerLine: false),
+      appBar: CustomAppBar(
+        title: 'Data Produk',
+        dividerLine: false,
+        onPressed: () => Get.toNamed(Routes.PRODUK),
+      ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child: Stack(

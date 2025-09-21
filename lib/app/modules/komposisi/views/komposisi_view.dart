@@ -10,6 +10,7 @@ import 'package:payoo/app/modules/komposisi/views/detail_komposisi_view.dart';
 import 'package:payoo/app/modules/komposisi/views/tambah_komposisi_view.dart';
 import 'package:payoo/app/components/komposisi_card.dart';
 import 'package:payoo/config/theme/light_theme.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 
 class KomposisiView extends StatefulWidget {
   const KomposisiView({super.key});
@@ -42,7 +43,10 @@ class _KomposisiViewState extends State<KomposisiView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Data Komposisi'),
+      appBar: CustomAppBar(
+        title: 'Data Komposisi', 
+        onPressed: () => Get.toNamed(Routes.PRODUK),
+      ),
       body: Stack(
         children: [
           // Main content

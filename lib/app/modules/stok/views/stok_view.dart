@@ -3,6 +3,7 @@ import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'widgets/list_view_stok.dart';
 import 'package:flutter/material.dart';
@@ -58,8 +59,9 @@ class _StokViewState extends State<StokView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         title: 'Manajemen Stok',
+        onPressed: () => Get.toNamed(Routes.PRODUK),
       ),
       body: Column(
         children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_snackbar.dart';
+import 'package:payoo/app/routes/app_pages.dart';
 import '../controllers/kategori_controller.dart';
 import 'widgets/list_view_kategori.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
@@ -18,7 +19,10 @@ class KategoriView extends GetView<KategoriController> {
 
     return Scaffold(
       // ================= AppBar Custom =================
-      appBar: const CustomAppBar(title: 'Data Kategori'),
+      appBar: CustomAppBar(
+        title: 'Data Kategori',
+        onPressed: () => Get.toNamed(Routes.PRODUK),
+      ),
       // ================= Body =================
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),

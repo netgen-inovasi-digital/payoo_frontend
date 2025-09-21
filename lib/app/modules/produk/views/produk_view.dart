@@ -28,8 +28,9 @@ class _ProdukViewState extends State<ProdukView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBarClipPath(
+      appBar: CustomAppBarClipPath(
         title: 'Produk',
+        onPressed: () => Get.toNamed(Routes.DASHBOARD),
       ),
       body: SingleChildScrollView(
         child: Center(

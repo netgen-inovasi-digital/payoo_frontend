@@ -5,8 +5,9 @@ import 'package:payoo/config/theme/light_theme.dart';
 class CustomAppBarClipPath extends StatelessWidget
     implements PreferredSizeWidget {
   final String title;
+  final VoidCallback? onPressed;
 
-  const CustomAppBarClipPath({super.key, required this.title});
+  const CustomAppBarClipPath({super.key, required this.title, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class CustomAppBarClipPath extends StatelessWidget
       leading: IconButton(
         icon: const Icon(Icons.arrow_back,
             color: Colors.white), // Ikon panah kembali
-        onPressed: () {
+        onPressed: onPressed ?? () {
           Get.back();
         },
       ),
