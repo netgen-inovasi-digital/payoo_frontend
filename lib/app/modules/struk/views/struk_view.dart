@@ -232,17 +232,19 @@ class _StrukViewState extends State<StrukView> {
               ),
               const SizedBox(height: 10),
 
-              // Share Button
+              // Print Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 35.0),
-                child: CustomSaveButton(
+                child: Obx(() => CustomSaveButton(
                   onPressed: () {
-                    // Add share functionality here
+                    if (!controller.isPrinting.value) {
+                      controller.showPrinterDialog();
+                    }
                   },
-                  label: "Share",
+                  label: controller.isPrinting.value ? "Printing..." : "Print",
                   labelFontSize: 20,
                   paddingHeight: 13,
-                ),
+                )),
               )
             ],
           );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/my_theme.dart';
 
@@ -11,6 +12,12 @@ Future<void> main() async {
 
   // Initialize GetStorage first
   await GetStorage.init();
+
+  // Initialize permissions status (optional - akan di-request saat diperlukan)
+  await Permission.bluetooth.status;
+  await Permission.bluetoothConnect.status;
+  await Permission.bluetoothScan.status;
+  // await Permission.location.status;
 
   // initialize local db (hive) and register our custom adapters
   // await MyHive.init(
