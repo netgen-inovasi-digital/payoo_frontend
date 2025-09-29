@@ -21,19 +21,53 @@ class FormDaftar extends StatelessWidget {
         const SizedBox(height: 20),
 
         // TextField nama pemilik
-        CustomTextField(hintText: 'nama pemilik*', controller: daftarController.name),
+        Obx(() => CustomTextField(
+          hintText: 'Nama pemilik*', 
+          controller: daftarController.name,
+          hasError: daftarController.hasAttemptedSubmit.value && 
+                   daftarController.nameError.value.isNotEmpty,
+          errorText: daftarController.nameError.value,
+        )),
         const SizedBox(height: 20),
         // TextField email
-        CustomTextField(hintText: 'email*', controller: daftarController.email),
+        Obx(() => CustomTextField(
+          hintText: 'Email*', 
+          controller: daftarController.email,
+          keyboardType: TextInputType.emailAddress,
+          hasError: daftarController.hasAttemptedSubmit.value && 
+                   daftarController.emailError.value.isNotEmpty,
+          errorText: daftarController.emailError.value,
+        )),
         const SizedBox(height: 20),
         // TextField nomor ponsel
-        CustomTextField(hintText: 'nomor ponsel pemilik*', controller: daftarController.phone),
+        Obx(() => CustomTextField(
+          hintText: 'Nomor ponsel pemilik*', 
+          controller: daftarController.phone,
+          keyboardType: TextInputType.phone,
+          hasError: daftarController.hasAttemptedSubmit.value && 
+                   daftarController.phoneError.value.isNotEmpty,
+          errorText: daftarController.phoneError.value,
+        )),
         const SizedBox(height: 20),
         // TextField kata sandi
-        CustomTextField(hintText: 'kata sandi*', controller: daftarController.password, obscureText: true),
+        Obx(() => CustomTextField(
+          hintText: 'Kata sandi*', 
+          controller: daftarController.password, 
+          obscureText: true,
+          hasError: daftarController.hasAttemptedSubmit.value && 
+                   daftarController.passwordError.value.isNotEmpty,
+          errorText: daftarController.passwordError.value,
+        )),
         const SizedBox(height: 20),
         // TextField ulang kata sandi
-        CustomTextField(hintText: 'ulang kata sandi*', controller: daftarController.passwordConfirm, obscureText: true),
+        Obx(() => CustomTextField(
+          hintText: 'Ulang kata sandi*', 
+          controller: daftarController.passwordConfirm, 
+          obscureText: true,
+          hasError: daftarController.hasAttemptedSubmit.value && 
+                   daftarController.passwordConfirmError.value.isNotEmpty,
+          errorText: daftarController.passwordConfirmError.value,
+        )),
         const SizedBox(height: 20),
 
         // Tombol Masuk

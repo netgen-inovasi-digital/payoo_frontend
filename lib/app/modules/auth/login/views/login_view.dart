@@ -38,16 +38,23 @@ class _LoginViewState extends State<LoginView> {
                         children: [
                           const SizedBox(height: 120),
                           // TextField Email
-                          CustomTextField(
-                            hintText: 'email/nomor ponsel',
+                          Obx(() => CustomTextField(
+                            hintText: 'Email',
                             controller: loginController.email,
-                          ),
+                            keyboardType: TextInputType.emailAddress,
+                            hasError: loginController.hasAttemptedSubmit.value && 
+                                     loginController.emailError.value.isNotEmpty,
+                            errorText: loginController.emailError.value,
+                          )),
                           const SizedBox(height: 20),
                           // TextField Password
-                          CustomTextField(
-                            hintText: 'kata sandi',
+                          Obx(() => CustomTextField(
+                            hintText: 'Kata Sandi',
                             controller: loginController.password,
                             obscureText: passwordSee,
+                            hasError: loginController.hasAttemptedSubmit.value && 
+                                     loginController.passwordError.value.isNotEmpty,
+                            errorText: loginController.passwordError.value,
                             suffixIcon: Padding(
                               padding: const EdgeInsets.only(right: 20),
                               child: GestureDetector(
@@ -65,7 +72,7 @@ class _LoginViewState extends State<LoginView> {
                                 ),
                               ),
                             ),
-                          ),
+                          )),
                           const SizedBox(height: 20),
                           Obx(() {
                             if (loginController.status.value == ApiCallStatus.loading) {

@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/data/models/stok_model.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/services/api_response.dart';
@@ -14,13 +13,64 @@ class StokController extends GetxController {
   var error = ''.obs;
   TextEditingController quantityController = TextEditingController();
   TextEditingController dateController = TextEditingController();
-  // State update
+  
+  // State create
   var statusCreate = ApiCallStatus.holding.obs;
   var errorCreate = ''.obs;
-  var statusUpdate = ApiCallStatus.holding.obs;
-  var errorUpdate = ''.obs;
+
+  // Form validation states
+  var quantityError = ''.obs;
+  var dateError = ''.obs;
+  var hasAttemptedSubmit = false.obs;
+
+  bool validateForm() {
+    hasAttemptedSubmit.value = true;
+    quantityError.value = '';
+    dateError.value = '';
+    
+    bool isValid = true;
+    
+    // Validate quantity
+    final quantityText = quantityController.text.trim();
+    if (quantityText.isEmpty) {
+      quantityError.value = 'Jumlah stok tidak boleh kosong';
+      isValid = false;
+    } else {
+      final quantity = int.tryParse(quantityText);
+      if (quantity == null) {
+        quantityError.value = 'Jumlah stok harus berupa angka';
+        isValid = false;
+      } else if (quantity <= 0) {
+        quantityError.value = 'Jumlah stok harus lebih dari 0';
+        isValid = false;
+      } else if (quantity > 999999) {
+        quantityError.value = 'Jumlah stok terlalu besar';
+        isValid = false;
+      }
+    }
+    
+    // Validate date
+    final dateText = dateController.text.trim();
+    if (dateText.isEmpty) {
+      dateError.value = 'Tanggal tidak boleh kosong';
+      isValid = false;
+    }
+    
+    return isValid;
+  }
+
+  void clearValidationErrors() {
+    quantityError.value = '';
+    dateError.value = '';
+    hasAttemptedSubmit.value = false;
+  }
 
   Future<bool> createStock(int komposisId, String type) async {
+    // Validate form before making API call
+    if (!validateForm()) {
+      return false;
+    }
+
     statusCreate.value = ApiCallStatus.loading;
     errorCreate.value = '';
     const url = Constants.baseUrl + Constants.STOCKS_CREATE;
@@ -55,7 +105,6 @@ class StokController extends GetxController {
           );
           if (parsed.data != null) {
             stok = Rx<Stock?>(parsed.data);
-            await updateKomposisi(komposisId);
           }
           statusCreate.value = ApiCallStatus.success;
           success = true;
@@ -80,43 +129,18 @@ class StokController extends GetxController {
     return success;
   }
 
-  Future<bool> updateKomposisi(int id) async {
-    statusUpdate.value = ApiCallStatus.loading;
-    errorUpdate.value = '';
-    final url = Constants.baseUrl +
-        Constants.COMPOSITION_BY_ID.replaceAll('{id}', id.toString());
-    final token = StorageManager().read<String>('token');
-	
-    final payload = {
-      'stock': int.tryParse(quantityController.text.trim()) ?? 0,
-    };
-    bool success = false;
-    await BaseClient.safeApiCall(
-      url,
-      RequestType.put,
-      headers: token != null ? {'Authorization': 'Bearer $token'} : null,
-      data: payload,
-      onSuccess: (response) {
-        try {
-          final parsed = ApiResponse<Komposisi>.fromJson(
-            response.data,
-            (json) => Komposisi.fromJson(json),
-          );
-          statusUpdate.value = ApiCallStatus.success;
-          success = true;
-        } catch (e) {
-          errorUpdate.value = 'Parsing error';
-          statusUpdate.value = ApiCallStatus.error;
-        }
-      },
-      onError: (e) {
-        errorUpdate.value = e.toString();
-        statusUpdate.value = ApiCallStatus.error;
-      },
-    );
-    if (statusUpdate.value == ApiCallStatus.loading) {
-      statusUpdate.value = ApiCallStatus.error;
-    }
-    return success;
+  void resetForm() {
+    quantityController.clear();
+    dateController.clear();
+    clearValidationErrors();
+    statusCreate.value = ApiCallStatus.holding;
+    errorCreate.value = '';
+  }
+
+  @override
+  void onClose() {
+    quantityController.dispose();
+    dateController.dispose();
+    super.onClose();
   }
 }

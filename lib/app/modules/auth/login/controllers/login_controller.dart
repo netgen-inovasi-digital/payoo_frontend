@@ -12,10 +12,50 @@ class LoginController extends GetxController {
   var errorMessage = ''.obs;             // pesan error
   var apiResponse = Rxn<ApiResponse<AuthData>>(); // response generic
 
+  // Validation error messages (only shown after submit attempt)
+  var emailError = ''.obs;
+  var passwordError = ''.obs;
+  var hasAttemptedSubmit = false.obs;
+
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
+  bool validateForm() {
+    hasAttemptedSubmit.value = true;
+    emailError.value = '';
+    passwordError.value = '';
+    
+    bool isValid = true;
+    
+    // Validate email
+    final emailText = email.text.trim();
+    if (emailText.isEmpty) {
+      emailError.value = 'Email tidak boleh kosong';
+      isValid = false;
+    } else if (!GetUtils.isEmail(emailText)) {
+      emailError.value = 'Format email tidak valid';
+      isValid = false;
+    }
+    
+    // Validate password
+    final passwordText = password.text.trim();
+    if (passwordText.isEmpty) {
+      passwordError.value = 'Kata sandi tidak boleh kosong';
+      isValid = false;
+    } else if (passwordText.length < 6) {
+      passwordError.value = 'Kata sandi minimal 6 karakter';
+      isValid = false;
+    }
+    
+    return isValid;
+  }
+
   Future<void> login() async {
+    // Validate form before making API call
+    if (!validateForm()) {
+      return;
+    }
+
     status.value = ApiCallStatus.loading;
     errorMessage.value = '';
     final payload = {
@@ -65,6 +105,10 @@ class LoginController extends GetxController {
     status.value = ApiCallStatus.holding;
     errorMessage.value = '';
     apiResponse.value = null;
+    // Reset validation errors
+    emailError.value = '';
+    passwordError.value = '';
+    hasAttemptedSubmit.value = false;
   }
 
   @override

@@ -26,9 +26,44 @@ class KategoriController extends GetxController {
   final statusUpdate = ApiCallStatus.holding.obs;
   final errorUpdate = ''.obs;
 
+  // Form validation states
+  var nameError = ''.obs;
+  var descriptionError = ''.obs;
+  var hasAttemptedSubmit = false.obs;
+
   // Form controllers
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
+
+  bool validateCreateForm() {
+    hasAttemptedSubmit.value = true;
+    nameError.value = '';
+    descriptionError.value = '';
+    
+    bool isValid = true;
+    
+    // Validate name
+    final nameText = nameController.text.trim();
+    if (nameText.isEmpty) {
+      nameError.value = 'Nama kategori tidak boleh kosong';
+      isValid = false;
+    } else if (nameText.length < 2) {
+      nameError.value = 'Nama kategori minimal 2 karakter';
+      isValid = false;
+    } else if (nameText.length > 50) {
+      nameError.value = 'Nama kategori maksimal 50 karakter';
+      isValid = false;
+    }
+    
+    // Validate description (optional but if provided, must meet criteria)
+    final descriptionText = descriptionController.text.trim();
+    if (descriptionText.isNotEmpty && descriptionText.length > 200) {
+      descriptionError.value = 'Deskripsi maksimal 200 karakter';
+      isValid = false;
+    }
+    
+    return isValid;
+  }
 
   @override
   void onInit() {
@@ -69,6 +104,11 @@ class KategoriController extends GetxController {
   }
 
   Future<bool> createKategori() async {
+    // Validate form before making API call
+    if (!validateCreateForm()) {
+      return false;
+    }
+
     statusCreate.value = ApiCallStatus.loading;
     errorCreate.value = '';
     const url = Constants.baseUrl + Constants.CATEGORIES;
@@ -190,8 +230,12 @@ class KategoriController extends GetxController {
     descriptionController.clear();
     statusCreate.value = ApiCallStatus.holding;
     errorCreate.value = '';
-  statusUpdate.value = ApiCallStatus.holding;
-  errorUpdate.value = '';
+    statusUpdate.value = ApiCallStatus.holding;
+    errorUpdate.value = '';
+    // Reset validation errors
+    nameError.value = '';
+    descriptionError.value = '';
+    hasAttemptedSubmit.value = false;
   }
 
   @override

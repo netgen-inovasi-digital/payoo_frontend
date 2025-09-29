@@ -32,6 +32,16 @@ class InformasiTokoController extends GetxController {
   var saveError = ''.obs;
   var saveSuccess = false.obs;
 
+  // Validation error messages (only shown after submit attempt)
+  var nameError = ''.obs;
+  var emailError = ''.obs;
+  var addressError = ''.obs;
+  var phoneError = ''.obs;
+  var typeError = ''.obs;
+  var provinceError = ''.obs;
+  var cityError = ''.obs;
+  var hasAttemptedSubmit = false.obs;
+
   @override
   void onInit() {
     getDataProvinces();
@@ -95,24 +105,87 @@ class InformasiTokoController extends GetxController {
   void setProvince(String value) => selectedProvince.value = value;
   void setCity(String value) => selectedCity.value = value;
 
-  bool _validateForm() {
-    if (name.text.trim().isEmpty ||
-        email.text.trim().isEmpty ||
-        address.text.trim().isEmpty ||
-        phone.text.trim().isEmpty ||
-        selectedType.value.isEmpty ||
-        selectedProvince.value.isEmpty ||
-        selectedCity.value.isEmpty) {
-      saveError.value = 'Lengkapi semua field wajib';
-      return false;
+  bool validateForm() {
+    hasAttemptedSubmit.value = true;
+    nameError.value = '';
+    emailError.value = '';
+    addressError.value = '';
+    phoneError.value = '';
+    typeError.value = '';
+    provinceError.value = '';
+    cityError.value = '';
+    
+    bool isValid = true;
+    
+    // Validate shop name
+    final nameText = name.text.trim();
+    if (nameText.isEmpty) {
+      nameError.value = 'Nama toko tidak boleh kosong';
+      isValid = false;
+    } else if (nameText.length < 2) {
+      nameError.value = 'Nama toko minimal 2 karakter';
+      isValid = false;
     }
-    return true;
+    
+    // Validate email
+    final emailText = email.text.trim();
+    if (emailText.isEmpty) {
+      emailError.value = 'Email tidak boleh kosong';
+      isValid = false;
+    } else if (!GetUtils.isEmail(emailText)) {
+      emailError.value = 'Format email tidak valid';
+      isValid = false;
+    }
+    
+    // Validate address
+    final addressText = address.text.trim();
+    if (addressText.isEmpty) {
+      addressError.value = 'Alamat toko tidak boleh kosong';
+      isValid = false;
+    } else if (addressText.length < 5) {
+      addressError.value = 'Alamat toko minimal 5 karakter';
+      isValid = false;
+    }
+    
+    // Validate phone
+    final phoneText = phone.text.trim();
+    if (phoneText.isEmpty) {
+      phoneError.value = 'Nomor ponsel tidak boleh kosong';
+      isValid = false;
+    } else if (!GetUtils.isPhoneNumber(phoneText)) {
+      phoneError.value = 'Format nomor ponsel tidak valid';
+      isValid = false;
+    }
+    
+    // Validate type
+    if (selectedType.value.isEmpty) {
+      typeError.value = 'Jenis toko harus dipilih';
+      isValid = false;
+    }
+    
+    // Validate province
+    if (selectedProvince.value.isEmpty) {
+      provinceError.value = 'Provinsi harus dipilih';
+      isValid = false;
+    }
+    
+    // Validate city
+    if (selectedCity.value.isEmpty) {
+      cityError.value = 'Kabupaten/Kota harus dipilih';
+      isValid = false;
+    }
+    
+    return isValid;
   }
 
   Future<void> saveShop() async {
+    // Validate form before making API call
+    if (!validateForm()) {
+      return;
+    }
+
     saveError.value = '';
     saveSuccess.value = false;
-    if (!_validateForm()) return;
     // ambil token
     final token = StorageManager().read<String>('token');
     if (token == null || token.isEmpty) {
@@ -156,5 +229,27 @@ class InformasiTokoController extends GetxController {
     address.dispose();
     phone.dispose();
     super.onClose();
+  }
+
+  void resetForm() {
+    name.clear();
+    email.clear();
+    address.clear();
+    phone.clear();
+    selectedType.value = '';
+    selectedProvince.value = '';
+    selectedCity.value = '';
+    isSaving.value = false;
+    saveError.value = '';
+    saveSuccess.value = false;
+    // Reset validation errors
+    nameError.value = '';
+    emailError.value = '';
+    addressError.value = '';
+    phoneError.value = '';
+    typeError.value = '';
+    provinceError.value = '';
+    cityError.value = '';
+    hasAttemptedSubmit.value = false;
   }
 }

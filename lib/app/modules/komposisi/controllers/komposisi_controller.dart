@@ -25,11 +25,101 @@ class KomposisiController extends GetxController {
 	var statusDelete = ApiCallStatus.holding.obs;
 	var errorDelete = ''.obs;
 
+	// Form validation states
+	var namaError = ''.obs;
+	var hargaModalError = ''.obs;
+	var hargaJualError = ''.obs;
+	var satuanError = ''.obs;
+	var hasAttemptedSubmit = false.obs;
+
 	// Form controllers
 	final namaController = TextEditingController();
 	final hargaModalController = TextEditingController();
 	final hargaJualController = TextEditingController();
 	final satuanController = TextEditingController();
+
+	bool validateForm() {
+		hasAttemptedSubmit.value = true;
+		namaError.value = '';
+		hargaModalError.value = '';
+		hargaJualError.value = '';
+		satuanError.value = '';
+		
+		bool isValid = true;
+		
+		// Validate nama komposisi
+		final namaText = namaController.text.trim();
+		if (namaText.isEmpty) {
+			namaError.value = 'Nama komposisi tidak boleh kosong';
+			isValid = false;
+		} else if (namaText.length < 2) {
+			namaError.value = 'Nama komposisi minimal 2 karakter';
+			isValid = false;
+		} else if (namaText.length > 100) {
+			namaError.value = 'Nama komposisi maksimal 100 karakter';
+			isValid = false;
+		}
+		
+		// Validate harga modal
+		final hargaModalText = hargaModalController.text.trim();
+		if (hargaModalText.isEmpty) {
+			hargaModalError.value = 'Harga modal tidak boleh kosong';
+			isValid = false;
+		} else {
+			final hargaModal = double.tryParse(hargaModalText);
+			if (hargaModal == null) {
+				hargaModalError.value = 'Harga modal harus berupa angka';
+				isValid = false;
+			} else if (hargaModal < 0) {
+				hargaModalError.value = 'Harga modal tidak boleh negatif';
+				isValid = false;
+			} else if (hargaModal > 999999999) {
+				hargaModalError.value = 'Harga modal terlalu besar';
+				isValid = false;
+			}
+		}
+		
+		// Validate harga jual
+		final hargaJualText = hargaJualController.text.trim();
+		if (hargaJualText.isEmpty) {
+			hargaJualError.value = 'Harga jual tidak boleh kosong';
+			isValid = false;
+		} else {
+			final hargaJual = double.tryParse(hargaJualText);
+			if (hargaJual == null) {
+				hargaJualError.value = 'Harga jual harus berupa angka';
+				isValid = false;
+			} else if (hargaJual < 0) {
+				hargaJualError.value = 'Harga jual tidak boleh negatif';
+				isValid = false;
+			} else if (hargaJual > 999999999) {
+				hargaJualError.value = 'Harga jual terlalu besar';
+				isValid = false;
+			} else {
+				// Check if harga jual >= harga modal
+				final hargaModal = double.tryParse(hargaModalController.text.trim());
+				if (hargaModal != null && hargaJual < hargaModal) {
+					hargaJualError.value = 'Harga jual harus lebih besar atau sama dengan harga modal';
+					isValid = false;
+				}
+			}
+		}
+		
+		// Validate satuan (required and must be one of allowed values)
+		final satuanText = satuanController.text.trim();
+		if (satuanText.isEmpty) {
+			satuanError.value = 'Satuan tidak boleh kosong';
+			isValid = false;
+		} else {
+			final allowedSatuan = ['pcs', 'gr', 'lembar'];
+			if (!allowedSatuan.contains(satuanText)) {
+				satuanError.value = 'Satuan harus salah satu dari: pcs, gr, atau lembar';
+				isValid = false;
+			}
+		}
+		
+		return isValid;
+	}
 
 	Future<void> fetchKomposisi() async {
 		statusList.value = ApiCallStatus.loading;
@@ -66,6 +156,11 @@ class KomposisiController extends GetxController {
 	}
 
 	Future<bool> createKomposisi() async {
+		// Validate form before making API call
+		if (!validateForm()) {
+			return false;
+		}
+
 		statusCreate.value = ApiCallStatus.loading;
 		errorCreate.value = '';
 		const url = Constants.baseUrl + Constants.COMPOSITIONS;
@@ -110,6 +205,11 @@ class KomposisiController extends GetxController {
 	}
 
 	Future<bool> updateKomposisi(int id) async {
+		// Validate form before making API call
+		if (!validateForm()) {
+			return false;
+		}
+
 		statusUpdate.value = ApiCallStatus.loading;
 		errorUpdate.value = '';
 		final url = Constants.baseUrl + Constants.COMPOSITION_BY_ID.replaceAll('{id}', id.toString());
@@ -193,6 +293,12 @@ class KomposisiController extends GetxController {
 		errorCreate.value = '';
 		statusUpdate.value = ApiCallStatus.holding;
 		errorUpdate.value = '';
+		// Reset validation errors
+		namaError.value = '';
+		hargaModalError.value = '';
+		hargaJualError.value = '';
+		satuanError.value = '';
+		hasAttemptedSubmit.value = false;
 	}
 
 	@override
