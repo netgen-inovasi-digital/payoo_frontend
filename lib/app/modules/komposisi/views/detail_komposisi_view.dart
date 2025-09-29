@@ -48,7 +48,7 @@ class DetailKomposisiView extends StatelessWidget {
                 controller.namaController.text = komposisi.namaKomposisi;
                 controller.hargaModalController.text = komposisi.hargaModal.toString();
                 controller.hargaJualController.text = komposisi.hargaJual.toString();
-                controller.satuanController.text = komposisi.satuan;
+                controller.selectedSatuan.value = komposisi.satuan;
                 Get.to(() => TambahKomposisiView(komposisi: komposisi));
               },
             ),

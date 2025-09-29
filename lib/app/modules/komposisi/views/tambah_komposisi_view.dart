@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
+import 'package:payoo/app/components/custom_dropdown.dart';
 import 'package:payoo/app/components/custom_snackbar.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
@@ -10,22 +11,53 @@ import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dar
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 
-class TambahKomposisiView extends StatelessWidget {
-  TambahKomposisiView({super.key, this.komposisi});
+class TambahKomposisiView extends StatefulWidget {
+  const TambahKomposisiView({super.key, this.komposisi});
   final Komposisi? komposisi;
+
+  @override
+  State<TambahKomposisiView> createState() => _TambahKomposisiViewState();
+}
+
+class _TambahKomposisiViewState extends State<TambahKomposisiView> {
   final KomposisiController controller = Get.find<KomposisiController>();
+
+  // Data satuan static enum
+  final List<String> satuanOptions = const [
+    'pcs',
+    'gr', 
+    'kg',
+    'ml',
+    'liter',
+    'lembar',
+    'slice',
+    'butir',
+    'pack',
+    'botol'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize form data if editing
+    if (widget.komposisi != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.namaController.text = widget.komposisi!.namaKomposisi;
+        controller.hargaModalController.text = widget.komposisi!.hargaModal.toString();
+        controller.hargaJualController.text = widget.komposisi!.hargaJual.toString();
+        // Set selected satuan for dropdown
+        if (satuanOptions.contains(widget.komposisi!.satuan)) {
+          controller.selectedSatuan.value = widget.komposisi!.satuan;
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-  if (komposisi != null) {
-    controller.namaController.text = komposisi!.namaKomposisi;
-    controller.hargaModalController.text = komposisi!.hargaModal.toString();
-    controller.hargaJualController.text = komposisi!.hargaJual.toString();
-    controller.satuanController.text = komposisi!.satuan;
-  }
     return Scaffold(
       appBar: CustomAppBar(
-        title: komposisi != null ? 'Edit Komposisi' : 'Tambah Komposisi'
+        title: widget.komposisi != null ? 'Edit Komposisi' : 'Tambah Komposisi'
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 20),
@@ -57,12 +89,18 @@ class TambahKomposisiView extends StatelessWidget {
               errorText: controller.hargaJualError.value,
             )),
             const SizedBox(height: 16),
-            Obx(() => CustomTextField(
-              hintText: 'Satuan',
-              controller: controller.satuanController,
+            // Ganti CustomTextField dengan CustomDropdown untuk satuan
+            Obx(() => CustomDropdown<String>(
+              hintText: controller.selectedSatuan.value.isEmpty
+                  ? 'Pilih satuan*'
+                  : controller.selectedSatuan.value,
+              itemsStatic: satuanOptions,
               hasError: controller.hasAttemptedSubmit.value && 
                        controller.satuanError.value.isNotEmpty,
               errorText: controller.satuanError.value,
+              onChanged: (selectedSatuan) {
+                controller.setSatuan(selectedSatuan);
+              },
             )),
             const Spacer(),
             Padding(
@@ -77,7 +115,7 @@ class TambahKomposisiView extends StatelessWidget {
                   },
                   label: isLoading
                       ? 'Menyimpan...'
-                      : komposisi != null ? 'Update' : 'Simpan',
+                      : widget.komposisi != null ? 'Update' : 'Simpan',
                 );
               }),
             )
@@ -88,7 +126,7 @@ class TambahKomposisiView extends StatelessWidget {
   }
 
   Future<void> _handleSave() async {
-    if (komposisi == null) {
+    if (widget.komposisi == null) {
       final ok = await controller.createKomposisi();
       if (ok) {
         Get.toNamed(Routes.KOMPOSISI);
@@ -107,7 +145,7 @@ class TambahKomposisiView extends StatelessWidget {
       }
     } else {
       // Update existing komposisi
-      final ok = await controller.updateKomposisi(komposisi!.id);
+      final ok = await controller.updateKomposisi(widget.komposisi!.id);
       if (ok) {
         Get.toNamed(Routes.KOMPOSISI);
         CustomSnackBar.showCustomSnackBar(

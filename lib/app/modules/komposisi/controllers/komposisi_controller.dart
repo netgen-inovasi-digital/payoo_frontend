@@ -38,6 +38,16 @@ class KomposisiController extends GetxController {
 	final hargaJualController = TextEditingController();
 	final satuanController = TextEditingController();
 
+	// Add selectedSatuan for dropdown
+	var selectedSatuan = ''.obs;
+
+	// Add method to set satuan
+	void setSatuan(String satuan) {
+		selectedSatuan.value = satuan;
+		// Clear error when user selects
+		satuanError.value = '';
+	}
+
 	bool validateForm() {
 		hasAttemptedSubmit.value = true;
 		namaError.value = '';
@@ -105,15 +115,14 @@ class KomposisiController extends GetxController {
 			}
 		}
 		
-		// Validate satuan (required and must be one of allowed values)
-		final satuanText = satuanController.text.trim();
-		if (satuanText.isEmpty) {
-			satuanError.value = 'Satuan tidak boleh kosong';
+		// Validate satuan (now using dropdown)
+		if (selectedSatuan.value.trim().isEmpty) {
+			satuanError.value = 'Satuan harus dipilih';
 			isValid = false;
 		} else {
-			final allowedSatuan = ['pcs', 'gr', 'lembar'];
-			if (!allowedSatuan.contains(satuanText)) {
-				satuanError.value = 'Satuan harus salah satu dari: pcs, gr, atau lembar';
+			final allowedSatuan = ['pcs', 'gr', 'kg', 'ml', 'liter', 'lembar', 'slice', 'butir', 'pack', 'botol'];
+			if (!allowedSatuan.contains(selectedSatuan.value)) {
+				satuanError.value = 'Satuan tidak valid';
 				isValid = false;
 			}
 		}
@@ -169,7 +178,7 @@ class KomposisiController extends GetxController {
 			'name': namaController.text.trim(),
 			'cost_price': double.tryParse(hargaModalController.text.trim()) ?? 0,
 			'selling_price': double.tryParse(hargaJualController.text.trim()) ?? 0,
-			'unit': satuanController.text.trim(),
+			'unit': selectedSatuan.value,  // Use selectedSatuan instead of controller
 		};
 		bool success = false;
 		await BaseClient.safeApiCall(
@@ -218,7 +227,7 @@ class KomposisiController extends GetxController {
 			'name': namaController.text.trim(),
 			'cost_price': double.tryParse(hargaModalController.text.trim()) ?? 0,
 			'selling_price': double.tryParse(hargaJualController.text.trim()) ?? 0,
-			'unit': satuanController.text.trim(),
+			'unit': selectedSatuan.value,  // Use selectedSatuan instead of controller
 		};
 		bool success = false;
 		await BaseClient.safeApiCall(
@@ -289,6 +298,7 @@ class KomposisiController extends GetxController {
 		hargaModalController.clear();
 		hargaJualController.clear();
 		satuanController.clear();
+		selectedSatuan.value = '';  // Reset dropdown selection
 		statusCreate.value = ApiCallStatus.holding;
 		errorCreate.value = '';
 		statusUpdate.value = ApiCallStatus.holding;
