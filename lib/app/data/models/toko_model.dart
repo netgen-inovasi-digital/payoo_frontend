@@ -8,6 +8,7 @@ class Toko {
   final String email;
   final String address;
   final String phone;
+  String photo;
   final User user;
   final String? createdAt;
   final String? updatedAt;
@@ -20,6 +21,7 @@ class Toko {
     required this.address,
     required this.phone,
     required this.user,
+    required this.photo,
     this.createdAt,
     this.updatedAt,
   });
@@ -36,6 +38,7 @@ class Toko {
       email: json['email']?.toString() ?? '',
       address: json['address']?.toString() ?? '',
       phone: json['phone']?.toString() ?? '',
+      photo: json['photo']?.toString() ?? '',
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
       user: User(
@@ -57,6 +60,7 @@ class Toko {
         'email': email,
         'address': address,
         'phone': phone,
+        'photo': photo,
         'user' : user.toJson(),
       };
 }

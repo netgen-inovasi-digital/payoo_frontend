@@ -190,10 +190,12 @@ class CustomDrawerMenu extends StatelessWidget {
           ),
         ),
         const SizedBox(
-          height: 20,
+          height: 10,
         ),
         // Menu Items
-        ListTile(
+        ListTile(      
+          tileColor: Colors.white,
+          contentPadding: const EdgeInsets.only(left: 19),
           leading: const FaIcon(
             FontAwesomeIcons.database,
             color: LightThemeColors.primaryColor,
@@ -202,9 +204,9 @@ class CustomDrawerMenu extends StatelessWidget {
           title: const Text(
             "Produk",
             style: TextStyle(
-                fontFamily: 'Quicksand',
-                fontWeight: FontWeight.w600,
-                fontSize: 16),
+          fontFamily: 'Quicksand',
+          fontWeight: FontWeight.w600,
+          fontSize: 16),
           ),
           onTap: () {
             // Aksi saat produk dipilih
@@ -215,13 +217,15 @@ class CustomDrawerMenu extends StatelessWidget {
           height: 10,
         ),
         ListTile(
+          tileColor: Colors.white,
+          contentPadding: const EdgeInsets.only(left: 19),
           leading: const Icon(Icons.shopping_cart,
               color: LightThemeColors.primaryColor, size: 25),
           title: const Text("Transaksi Penjualan",
               style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+            fontSize: 16)),
           onTap: () {
             // Aksi saat transaksi dipilih
             Get.toNamed(Routes.TRANSAKSI);
@@ -231,6 +235,8 @@ class CustomDrawerMenu extends StatelessWidget {
           height: 10,
         ),
         ListTile(
+          tileColor: Colors.white,
+          contentPadding: const EdgeInsets.only(left: 19),
           leading: const Icon(
             Icons.receipt_long,
             color: LightThemeColors.primaryColor,
@@ -238,9 +244,9 @@ class CustomDrawerMenu extends StatelessWidget {
           ),
           title: const Text("Laporan",
               style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+            fontSize: 16)),
           onTap: () {
             // Aksi saat laporan dipilih
             Get.toNamed(Routes.LAPORAN, arguments: userController.user.value?.shopId);
@@ -250,7 +256,8 @@ class CustomDrawerMenu extends StatelessWidget {
           height: 10,
         ),
         ListTile(
-          contentPadding: const EdgeInsets.only(left: 20),
+          tileColor: Colors.white,
+          contentPadding: const EdgeInsets.only(left: 19),
           leading: const FaIcon(
             FontAwesomeIcons.user,
             color: LightThemeColors.primaryColor,
@@ -258,9 +265,9 @@ class CustomDrawerMenu extends StatelessWidget {
           ),
           title: const Text("Edit Akun",
               style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+            fontSize: 16)),
           onTap: () {
             // Aksi saat edit akun dipilih
             Get.to(() => AkunDetailView());
@@ -270,6 +277,8 @@ class CustomDrawerMenu extends StatelessWidget {
           height: 10,
         ),
         ListTile(
+          tileColor: Colors.white,
+          contentPadding: const EdgeInsets.only(left: 19),
           leading: const Icon(
             Icons.info,
             color: LightThemeColors.primaryColor,
@@ -277,9 +286,9 @@ class CustomDrawerMenu extends StatelessWidget {
           ),
           title: const Text("Tentang Payoo",
               style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+            fontSize: 16)),
           onTap: () {
             // Aksi saat tentang dipilih
             Get.toNamed(Routes.TENTANG_PAYOO);
@@ -289,6 +298,8 @@ class CustomDrawerMenu extends StatelessWidget {
           height: 10,
         ),
         ListTile(
+          tileColor: Colors.white,
+          contentPadding: const EdgeInsets.only(left: 19),
           leading: const Icon(
             Icons.logout,
             color: LightThemeColors.primaryColor,
@@ -296,9 +307,9 @@ class CustomDrawerMenu extends StatelessWidget {
           ),
           title: const Text("Logout",
               style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16)),
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+            fontSize: 16)),
           onTap: () {
             // Aksi saat logout: gunakan method logout pada controller agar tidak gunakan controller yang sudah disposed
             final controller = Get.find<LoginController>();

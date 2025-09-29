@@ -30,7 +30,7 @@ class Komposisi {
       shopId: json['shop_id'] is int
           ? json['shop_id']
           : int.tryParse(json['shop_id']?.toString() ?? ''),
-      namaKomposisi: json['name']?.toString() ?? '-',
+      namaKomposisi: _getNamaKomposisi(json),
       hargaModal: _toDouble(json['cost_price']),
       hargaJual: _toDouble(json['selling_price']),
       satuan: json['unit']?.toString() ?? '',
@@ -39,7 +39,9 @@ class Komposisi {
       stokKomposisi: json['stock'] is int
           ? json['stock']
           : int.tryParse(json['stock']?.toString() ?? '0') ?? 0,
-      quantity: 0,
+      quantity: json['quantity'] is int
+          ? json['quantity']
+          : int.tryParse(json['quantity']?.toString() ?? '0') ?? 0,
     );
   }
 
@@ -48,6 +50,7 @@ class Komposisi {
         'cost_price': hargaModal,
         'selling_price': hargaJual,
         'unit': satuan,
+        'quantity': quantity,
       };
 
   static double _toDouble(dynamic v) {
@@ -55,6 +58,26 @@ class Komposisi {
     if (v is double) return v;
     if (v is int) return v.toDouble();
     return double.tryParse(v.toString()) ?? 0;
+  }
+
+  
+  // Helper method untuk mendapatkan nama komposisi dari berbagai field yang mungkin
+  static String _getNamaKomposisi(Map<String, dynamic> json) {
+    // Coba berbagai kemungkinan field name
+    final possibleFields = [
+      'name',                // Field utama yang paling umum
+      'composition_name',    // Field yang ada di kode sebelumnya
+    ];
+    
+    for (String field in possibleFields) {
+      final value = json[field]?.toString();
+      if (value != null && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    
+    // Fallback jika tidak ada field yang cocok
+    return 'Nama tidak tersedia';
   }
 }
 

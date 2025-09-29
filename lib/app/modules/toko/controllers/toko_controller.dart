@@ -12,6 +12,7 @@ import 'package:payoo/config/utils/storage_manager.dart';
 class TokoController extends GetxController {
   // State list
   var statusList = ApiCallStatus.holding.obs;
+  var imageLink = ''.obs;
   var list = <Toko>[].obs;
   var toko = Rx<Toko?>(null);
   var errorList = ''.obs;
@@ -162,7 +163,9 @@ class TokoController extends GetxController {
       'name': controllerNamaToko.text.trim(),
       'address': controllerAlamatToko.text.trim(),
       'phone': controllerTeleponToko.text.trim(),
+      'photo' : imageLink.value.isNotEmpty ? imageLink.value : toko.value!.photo,
     };
+    print( payload );
     bool success = false;
     await BaseClient.safeApiCall(
       url,

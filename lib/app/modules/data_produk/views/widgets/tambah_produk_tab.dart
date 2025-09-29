@@ -64,16 +64,6 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
           children: [
             const SizedBox(height: 20),
             _buildImageUpload(imageController, controller),
-            const SizedBox(height: 10),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.camera_alt_outlined,
-                    color: Color(0xFF2FA36B), size: 22),
-                SizedBox(width: 32),
-                Icon(Icons.image_outlined, color: Color(0xFF2FA36B), size: 22),
-              ],
-            ),
             const SizedBox(height: 40),
             _buildTextField('nama produk*', controller.namaController),
             const SizedBox(height: 16),

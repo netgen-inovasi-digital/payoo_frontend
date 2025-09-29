@@ -121,12 +121,6 @@ class KomposisiController extends GetxController {
 		return isValid;
 	}
 
-	@override
-	void onInit() {
-		fetchKomposisi();
-		super.onInit();
-	}
-
 	Future<void> fetchKomposisi() async {
 		statusList.value = ApiCallStatus.loading;
 		errorList.value = '';

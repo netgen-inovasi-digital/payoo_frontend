@@ -116,7 +116,6 @@ class AkunController extends GetxController {
             emailController.text = parsed.data!.email ?? '';
             phoneController.text = parsed.data!.phone ?? '';
           }
-          print('user updated: ${user.value?.email}');
           
           statusUpdate.value = ApiCallStatus.success;
           success = true;
@@ -150,7 +149,7 @@ class AkunController extends GetxController {
     statusUpdate.value = ApiCallStatus.loading;
     errorUpdate.value = '';
         
-    final url = Constants.baseUrl + Constants.ACCOUNT_PROFILE;
+    const url = Constants.baseUrl + Constants.ACCOUNT_CHANGE_PASSWORD;
     final token = StorageManager().read<String>('token');
     
     final payload = {
@@ -172,8 +171,6 @@ class AkunController extends GetxController {
       data: payload,
       onSuccess: (response) {
         try {
-          
-
           final parsed = ApiResponse<User>.fromJson(
             response.data,
             (json) => User.fromJson(json),
@@ -229,12 +226,25 @@ class AkunController extends GetxController {
     }
     resetForm();
   }
+  void onClosePasswordUpdate() {
+    passwordUpdate.value = ApiCallStatus.holding;
+    errorUpdate.value = '';
+    oldPasswordController.clear();
+    newPasswordController.clear();
+  }
+  void onCloseUpdate() {
+    namaController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+  }
 
   @override
   void onClose() {
     namaController.dispose();
     emailController.dispose();
     phoneController.dispose();
+    oldPasswordController.dispose();
+    newPasswordController.dispose();
     super.onClose();
   }
 }

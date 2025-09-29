@@ -28,8 +28,9 @@ class _LaporanDetailViewState extends State<LaporanDetailView> {
     // Delay API call until after the first frame is built
     SchedulerBinding.instance.addPostFrameCallback((_) {
       controller.fetchOrderDetail(orderId: widget.orderId);
-    });
+    }); 
   }
+
 
   
   @override

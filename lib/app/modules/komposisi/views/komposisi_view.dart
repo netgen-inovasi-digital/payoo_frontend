@@ -25,6 +25,20 @@ class _KomposisiViewState extends State<KomposisiView> {
   final KomposisiController controller = Get.find<KomposisiController>();
 
   @override
+  void initState() {
+    super.initState();
+    controller.fetchKomposisi();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshData();
+    });
+  }
+
+  Future<void> _refreshData() async {
+    await controller.fetchKomposisi();
+    _filterKomposisi(_searchQuery);
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -39,6 +53,9 @@ class _KomposisiViewState extends State<KomposisiView> {
   void _onKomposisiTap(Komposisi komposisi) {
     Get.to(() => DetailKomposisiView(komposisi: komposisi));
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -12,6 +12,11 @@ class GantiPasswordView extends GetView<AkunController> {
   const GantiPasswordView({super.key});
 
   _changePassword() async {
+    if (controller.oldPasswordController.text.isEmpty || controller.newPasswordController.text.isEmpty) {
+      Get.snackbar('Error', 'Semua field harus diisi',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
     bool success = await controller.changePassword();
     if (success) {
 
@@ -71,12 +76,14 @@ class GantiPasswordView extends GetView<AkunController> {
                           controller: controller.oldPasswordController,
                           label: 'Password Lama*',
                           initialValue: '',
+                          keyboardType: TextInputType.visiblePassword,
                         ),
                         const SizedBox(height: 20),
                         CustomAkunTextField(
                           controller: controller.newPasswordController,
                           label: 'Password Baru*',  
                           initialValue: '',
+                          keyboardType: TextInputType.visiblePassword,
                         ),
                         const SizedBox(height: 90),
                         Padding(

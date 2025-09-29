@@ -9,7 +9,7 @@ class TransaksiBerhasilView extends StatelessWidget {
   final double bayar;
   final double harga;
   final int orderId;
-
+  
   @override
   Widget build(BuildContext context) {
     final double kembalian = bayar - harga;
@@ -93,7 +93,7 @@ class TransaksiBerhasilView extends StatelessWidget {
                     textColor: Colors.white,
                     onPressed: () {
                       // TODO: Implement aksi transaksi baru
-                      Get.offAndToNamed(Routes.DASHBOARD);
+                      Get.offAllNamed(Routes.DASHBOARD);
                     },
                   ),
                   const SizedBox(height: 15),

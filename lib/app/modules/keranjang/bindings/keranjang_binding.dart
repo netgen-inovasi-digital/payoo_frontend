@@ -5,6 +5,6 @@ import '../controllers/keranjang_controller.dart';
 class KeranjangBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<KeranjangController>(() => KeranjangController());
+   Get.lazyPut<KeranjangController>(() => KeranjangController());
   }
 }

@@ -23,6 +23,7 @@ class KeranjangController extends GetxController {
   final hargaModalController = TextEditingController();
   final hargaJualController = TextEditingController();
   final satuanController = TextEditingController();
+  final notesController = TextEditingController();
   var shopId = 0.obs;
   var userId = 0.obs;
   // State update
@@ -90,7 +91,9 @@ class KeranjangController extends GetxController {
       'user_id': userId.value.toString(),
       'shop_id': shopId.value.toString(),
       'status': 'pending',
-      'notes': notes ?? '',
+      'notes': notesController.text.isNotEmpty
+          ? notesController.text
+          : (notes ?? ''),
       'total': totalPrice.toStringAsFixed(2),
       'amount_paid': paymentAmount.value
           .toStringAsFixed(2), // ✅ Add amount_paid at order level
@@ -140,6 +143,7 @@ class KeranjangController extends GetxController {
     // ✅ Proper cleanup
     product.clear();
     countItem.clear();
+    notesController.clear();
     super.onClose();
   }
 
@@ -149,7 +153,7 @@ class KeranjangController extends GetxController {
       product.clear();
       countItem.clear();
 
-      Future.microtask(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         product.assignAll(args);
 
         for (var prod in args) {
