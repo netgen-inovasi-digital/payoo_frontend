@@ -149,6 +149,14 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                           fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 5),
+                    Text(
+                      'Stok : ${produk.stock}',
+                      style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 5),
                     // Only show compositions section if there are compositions
                     if (produk.compositions.isNotEmpty) ...[
                       const SizedBox(height: 5),
@@ -183,7 +191,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                                   ),
                                 ),
                                 Text(
-                                  'Rp ${composition.hargaModal} (${composition.satuan})',
+                                  '${composition.quantity} ${composition.satuan}',
                                   style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black,

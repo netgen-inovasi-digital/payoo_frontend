@@ -89,7 +89,7 @@ class _KomposisiCardState extends State<KomposisiCard> {
                         ),
                       ),
                       Text(
-                        "Stok = ${widget.komposisi.stokKomposisi}pcs",
+                        "Stok = ${widget.komposisi.stokKomposisi} ${widget.komposisi.satuan}",
                         style: TextStyle(
                           color: Colors.grey.shade700,
                           fontWeight: FontWeight.w700,
