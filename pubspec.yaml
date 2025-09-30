@@ -45,6 +45,8 @@ dependencies:
   flutter_svg: ^2.0.10+1
   font_awesome_flutter: ^10.8.0
   image_picker: ^1.2.0
+  print_bluetooth_thermal: ^1.1.6
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:
