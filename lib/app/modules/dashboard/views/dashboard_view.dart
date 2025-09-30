@@ -7,14 +7,16 @@ import 'package:payoo/app/modules/dashboard/controllers/dashboard_controller.dar
 import 'package:payoo/app/modules/dashboard/views/widgets/custom_card.dart';
 import 'package:payoo/app/modules/dashboard/views/widgets/custom_card_premium.dart';
 import 'package:payoo/app/modules/dashboard/views/widgets/profile_header.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 
 class DashboardView extends StatelessWidget {
   DashboardView({super.key});
+  final DashboardController dashboardController = Get.put<DashboardController>(DashboardController());
 
-  final DashboardController dashboardController =
-      Get.put<DashboardController>(DashboardController());
+  void refreshData() {
+    dashboardController.loadData();
+  }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,10 +24,10 @@ class DashboardView extends StatelessWidget {
       drawer: CustomDrawerMenu(),
       body: Obx(
         () {
-          if (dashboardController.status.value == LoadingStatus.loading) {
+          if (dashboardController.status.value == ApiCallStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (dashboardController.status.value == LoadingStatus.error) {
+          if (dashboardController.status.value == ApiCallStatus.error) {
             return Center(
               child: Text(
                 'Error: ${dashboardController.errorMessage.value}',
@@ -75,23 +77,23 @@ class DashboardView extends StatelessWidget {
                     mainAxisSpacing: 16.0,
                     childAspectRatio: 3 / 2,
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    children: const [
+                    children: [
                       CustomCard(
-                          title: 'Jumlah Produk', label: 'Total', value: '178'),
+                          title: 'Jumlah Produk', label: 'Total', value: dashboardController.dashboardData.value?.productQuantity.toString() ?? '0'),
                       CustomCard(
                           title: 'Kategori Produk',
                           label: 'Total',
-                          value: '20'),
+                        value: dashboardController.dashboardData.value?.categoryQuantity.toString() ?? '0'),
                       CustomCard(
-                          title: 'Akun Karyawan', label: 'Total', value: '2'),
+                          title: 'Komposisi Produk', label: 'Total', value: dashboardController.dashboardData.value?.compositionQuantity.toString() ?? '0'),
                       CustomCard(
                           title: 'Jumlah Transaksi',
-                          label: '25-10-2022',
-                          value: '89'),
+                          label: dashboardController.dashboardData.value?.date ?? '0',
+                          value: dashboardController.dashboardData.value?.transactionCount.toString() ?? '0'),
                       CustomCard(
                           title: 'Pendapatan',
-                          label: '25-10-2022',
-                          value: '10.000.000'),
+                          label: dashboardController.dashboardData.value?.date ?? '0',
+                          value: dashboardController.dashboardData.value?.revenue.toString() ?? '0'),
                       CustomCardPremium(
                           title: 'Keuntungan', description: 'Payoo Premium'),
                       CustomCardPremium(

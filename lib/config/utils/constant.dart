@@ -45,7 +45,7 @@ class Constants {
   static const REPORTS_ORDERS = "/reports/{shop_id}/orders";
   //upload
   static const UPLOAD = '/upload';
-
+  static const DASHBOARD = '/dashboard';
   // ================== API LAIN (Lokasi) ==================
   static const baseUrllokasi = 'https://alamat.thecloudalert.com/api';
   static const lokasiProvinsiUrl = '$baseUrllokasi/provinsi/get';
