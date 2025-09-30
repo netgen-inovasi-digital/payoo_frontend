@@ -20,6 +20,11 @@ class StokController extends GetxController {
   var statusCreate = ApiCallStatus.holding.obs;
   var errorCreate = ''.obs;
 
+  // State for products with stock
+  var statusProductsStock = ApiCallStatus.holding.obs;
+  var productsStock = <ProductWithStock>[].obs;
+  var errorProductsStock = ''.obs;
+
   // Form validation states
   var quantityError = ''.obs;
   var dateError = ''.obs;
@@ -174,6 +179,54 @@ class StokController extends GetxController {
     clearValidationErrors();
     statusCreate.value = ApiCallStatus.holding;
     errorCreate.value = '';
+  }
+
+  Future<bool> fetchProductsWithStock() async {
+    statusProductsStock.value = ApiCallStatus.loading;
+    errorProductsStock.value = '';
+    const url = Constants.baseUrl + Constants.STOCKS_PRODUCTS_SHOP;
+    final token = StorageManager().read<String>('token');
+
+    bool success = false;
+    await BaseClient.safeApiCall(
+      url,
+      RequestType.get,
+      headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+      onSuccess: (response) async {
+        try {
+          // Parse response as list directly from data field
+          final responseData = response.data;
+          if (responseData != null && responseData['data'] is List) {
+            final List<dynamic> dataList = responseData['data'];
+            final List<ProductWithStock> products = dataList
+                .map((json) => ProductWithStock.fromJson(json))
+                .toList();
+            
+            productsStock.assignAll(products);
+            statusProductsStock.value = ApiCallStatus.success;
+            success = true;
+          } else {
+            throw Exception('Invalid response format');
+          }
+        } catch (e) {
+          errorProductsStock.value = 'Error parsing response: $e';
+          statusProductsStock.value = ApiCallStatus.error;
+          print('Parsing error: $e');
+        }
+      },
+      onError: (e) {
+        errorProductsStock.value = e.toString();
+        statusProductsStock.value = ApiCallStatus.error;
+        print('API Error: $e');
+      },
+    );
+
+    if (statusProductsStock.value == ApiCallStatus.loading) {
+      statusProductsStock.value = ApiCallStatus.error;
+      errorProductsStock.value = 'Request timeout';
+    }
+
+    return success;
   }
 
   @override

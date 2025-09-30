@@ -1,4 +1,4 @@
-import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/data/models/stok_model.dart';
 import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/modules/stok/views/widgets/stok_info.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class StokDetailView extends StatelessWidget {
-  final Komposisi stok;
+  final ProductWithStock stok;
 
   const StokDetailView({super.key, required this.stok});
 

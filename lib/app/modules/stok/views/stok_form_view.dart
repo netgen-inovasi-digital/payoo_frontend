@@ -3,16 +3,15 @@ import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/components/custom_snackbar.dart';
-import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/data/models/stok_model.dart';
 import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
-import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
 import 'package:payoo/app/modules/stok/views/widgets/stok_info.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 
 class StokFormView extends StatefulWidget {
-  final Komposisi stok;
+  final ProductWithStock stok;
   const StokFormView({super.key, required this.stok});
 
   @override
@@ -45,7 +44,7 @@ class _StokFormViewState extends State<StokFormView> {
         int.tryParse(stokController.quantityController.text) ?? 0;
     
     // Business rule validation for reducing stock
-    if (_mode == 2 && currentQuantity > widget.stok.stokKomposisi) {
+    if (_mode == 2 && currentQuantity > widget.stok.stock) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'Error', 
         message: 'Jumlah pengurangan melebihi stok yang ada'
@@ -64,12 +63,11 @@ class _StokFormViewState extends State<StokFormView> {
       // Reset form after success
       stokController.resetForm();
       
-      // Navigate back using route name (like komposisi)
+      // Navigate back using route name
       Get.toNamed(Routes.STOK);
       
-      // Refresh the komposisi data 
-      final komposisiController = Get.find<KomposisiController>();
-      komposisiController.fetchKomposisi();
+      // Refresh the products with stock data 
+      stokController.fetchProductsWithStock();
       
       // Show success message
       CustomSnackBar.showCustomSnackBar(

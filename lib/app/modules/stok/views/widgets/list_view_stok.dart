@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/data/models/stok_model.dart';
 import '../stok_detail_view.dart';
 import 'package:get/get.dart';
 
 class ListViewStok extends StatelessWidget {
-	final List<Komposisi> stokList;
+	final List<ProductWithStock> stokList;
 
 	const ListViewStok({
 		super.key,
@@ -41,14 +41,14 @@ class ListViewStok extends StatelessWidget {
 											mainAxisAlignment: MainAxisAlignment.spaceBetween,
 											children: [
 												Text(
-													item.namaKomposisi,
+													item.name,
 													style: const TextStyle(
 														fontWeight: FontWeight.bold,
 														fontSize: 18,
 													),
 												),
 												Text(
-													formatRupiah( item.hargaJual),
+													formatRupiah(item.sellingPrice),
 													style: const TextStyle(
 														fontWeight: FontWeight.bold,
 														fontSize: 15,
@@ -61,14 +61,14 @@ class ListViewStok extends StatelessWidget {
 											mainAxisAlignment: MainAxisAlignment.spaceBetween,
 											children: [
 												Text(
-													formatRupiah(item.hargaModal),
+													formatRupiah(item.costPrice),
 													style: const TextStyle(
 														color: Colors.grey,
 														fontSize: 13,
 													),
 												),
 												Text(
-													'Stok = ${item.stokKomposisi} pcs',
+													'Stok = ${item.stock} ${item.unit ?? 'pcs'}',
 													style: const TextStyle(
 														color: Colors.grey,
 														fontSize: 13,
