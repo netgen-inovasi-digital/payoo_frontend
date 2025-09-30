@@ -1,9 +1,6 @@
 // app/modules/data_produk/views/widgets/product_card.dart
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_product_image.dart';
-import 'package:payoo/config/theme/light_theme.dart';
 import '../data/models/produk_model.dart';
 
 class ProductCard extends StatelessWidget {
@@ -73,7 +70,14 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+                      Text(
+                        "Stok = ${produk.stock}",
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ],
