@@ -177,6 +177,33 @@ class _StokFormViewState extends State<StokFormView> {
                        stokController.quantityError.value.isNotEmpty,
               errorText: stokController.quantityError.value,
             )),
+            const SizedBox(height: 16),
+
+            // Buy Price field - only show when mode is "Tambah" (in)
+            if (_mode == 1) ...[
+              Obx(() => CustomTextField(
+                hintText: 'Harga Beli*',
+                controller: stokController.buyPriceController,
+                keyboardType: TextInputType.number,
+                width: double.infinity,
+                height: 50,
+                hasError: stokController.hasAttemptedSubmit.value && 
+                         stokController.buyPriceError.value.isNotEmpty,
+                errorText: stokController.buyPriceError.value,
+              )),
+              const SizedBox(height: 16),
+            ],
+
+            // Notes field - always show
+            Obx(() => CustomTextField(
+              hintText: 'Catatan',
+              controller: stokController.notesController,
+              width: double.infinity,
+              height: 80,
+              hasError: stokController.hasAttemptedSubmit.value && 
+                       stokController.notesError.value.isNotEmpty,
+              errorText: stokController.notesError.value,
+            )),
           ],
         ),
       ),

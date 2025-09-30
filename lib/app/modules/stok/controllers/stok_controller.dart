@@ -13,6 +13,8 @@ class StokController extends GetxController {
   var error = ''.obs;
   TextEditingController quantityController = TextEditingController();
   TextEditingController dateController = TextEditingController();
+  TextEditingController buyPriceController = TextEditingController();
+  TextEditingController notesController = TextEditingController();
   
   // State create
   var statusCreate = ApiCallStatus.holding.obs;
@@ -21,12 +23,16 @@ class StokController extends GetxController {
   // Form validation states
   var quantityError = ''.obs;
   var dateError = ''.obs;
+  var buyPriceError = ''.obs;
+  var notesError = ''.obs;
   var hasAttemptedSubmit = false.obs;
 
-  bool validateForm() {
+  bool validateForm(String type) {
     hasAttemptedSubmit.value = true;
     quantityError.value = '';
     dateError.value = '';
+    buyPriceError.value = '';
+    notesError.value = '';
     
     bool isValid = true;
     
@@ -56,18 +62,43 @@ class StokController extends GetxController {
       isValid = false;
     }
     
+    // Validate buy price only for "in" type
+    if (type == 'in') {
+      final buyPriceText = buyPriceController.text.trim();
+      if (buyPriceText.isEmpty) {
+        buyPriceError.value = 'Harga beli tidak boleh kosong';
+        isValid = false;
+      } else {
+        final buyPrice = double.tryParse(buyPriceText);
+        if (buyPrice == null) {
+          buyPriceError.value = 'Harga beli harus berupa angka';
+          isValid = false;
+        } else if (buyPrice <= 0) {
+          buyPriceError.value = 'Harga beli harus lebih dari 0';
+          isValid = false;
+        } else if (buyPrice > 999999999) {
+          buyPriceError.value = 'Harga beli terlalu besar';
+          isValid = false;
+        }
+      }
+    }
+    
+    // Notes is optional, no validation needed
+    
     return isValid;
   }
 
   void clearValidationErrors() {
     quantityError.value = '';
     dateError.value = '';
+    buyPriceError.value = '';
+    notesError.value = '';
     hasAttemptedSubmit.value = false;
   }
 
   Future<bool> createStock(int komposisId, String type) async {
     // Validate form before making API call
-    if (!validateForm()) {
+    if (!validateForm(type)) {
       return false;
     }
 
@@ -85,11 +116,17 @@ class StokController extends GetxController {
     }
 
     final payload = {
+      'product_id': categoryId,
       'quantity': int.tryParse(quantityController.text.trim()) ?? 0,
-      'date': dateController.text.trim(),
-      'composition_id': categoryId,
       'type': type,
+      'notes': notesController.text.trim(),
+      'date': dateController.text.trim(),
     };
+
+    // Add buy_price only for "in" type
+    if (type == 'in') {
+      payload['buy_price'] = double.tryParse(buyPriceController.text.trim()) ?? 0;
+    }
 
     bool success = false;
     await BaseClient.safeApiCall(
@@ -132,6 +169,8 @@ class StokController extends GetxController {
   void resetForm() {
     quantityController.clear();
     dateController.clear();
+    buyPriceController.clear();
+    notesController.clear();
     clearValidationErrors();
     statusCreate.value = ApiCallStatus.holding;
     errorCreate.value = '';
@@ -141,6 +180,8 @@ class StokController extends GetxController {
   void onClose() {
     quantityController.dispose();
     dateController.dispose();
+    buyPriceController.dispose();
+    notesController.dispose();
     super.onClose();
   }
 }
