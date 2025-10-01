@@ -31,7 +31,7 @@ class _StrukViewState extends State<StrukView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: "Struk Penjualan",
-        onPressed: () => Get.offAllNamed(Routes.DASHBOARD),
+        onPressed: () => Get.toNamed(Routes.DASHBOARD),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),

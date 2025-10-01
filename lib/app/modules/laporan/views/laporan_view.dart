@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/app/components/custom_dropdown.dart';
 import 'package:payoo/app/components/custom_grey_dropdown.dart';
 import 'package:payoo/app/modules/laporan/controllers/laporan_controller.dart';
 import 'package:payoo/app/modules/laporan/views/riwayat_transaksi_view.dart';
 import 'package:payoo/app/modules/laporan/views/widgets/laporan_card.dart';
 import 'package:payoo/app/services/api_call_status.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class LaporanView extends StatefulWidget {
   const LaporanView({super.key});
@@ -73,7 +73,7 @@ class _LaporanViewState extends State<LaporanView> {
                     leftLabel: 'Total Pemasukan',
                     rigthLabel: 'Total Transaksi',
                     leftValue:
-                        "RP. ${controller.reportSummary.value?.totalRevenue ?? 0}",
+                        formatRupiah(controller.reportSummary.value?.totalRevenue ?? 0),
                     rigthValue: 
                         "${controller.reportSummary.value?.totalTransactions ?? 0}"),
               );

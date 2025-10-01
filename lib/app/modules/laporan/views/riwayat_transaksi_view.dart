@@ -5,6 +5,7 @@ import 'package:payoo/app/modules/laporan/controllers/laporan_controller.dart';
 import 'package:payoo/app/modules/laporan/views/laporan_detail_view.dart';
 import 'package:payoo/app/modules/laporan/views/widgets/laporan_card.dart';
 import 'package:payoo/app/services/api_call_status.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class RiwayatTransaksiView extends StatefulWidget {
   const RiwayatTransaksiView({super.key, required this.apiPeriod});
@@ -61,8 +62,8 @@ class _RiwayatTransaksiViewState extends State<RiwayatTransaksiView> {
                 child: LaporanCard(
                   leftLabel: 'Total',
                   rigthLabel: 'Jumlah Item',
-                  leftValue: 'Rp ${order.total ?? 0}',
-                  rigthValue: '${order.totalItems ?? 0}',
+                  leftValue: formatRupiah(order.total),
+                  rigthValue: '${order.totalItems}',
                 ),
               ),
             );

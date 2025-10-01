@@ -1,3 +1,6 @@
+// Export currency formatter for global access
+export 'currency_formatter.dart';
+
 class Constants {
   // ================== BACKEND PAYOO ==================
   // Ganti sesuai environment (dev/staging/prod)

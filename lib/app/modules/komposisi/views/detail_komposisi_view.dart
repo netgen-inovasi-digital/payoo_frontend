@@ -7,6 +7,7 @@ import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
 import 'package:payoo/app/modules/komposisi/views/tambah_komposisi_view.dart';
 import 'package:payoo/app/services/api_call_status.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class DetailKomposisiView extends StatelessWidget {
   const DetailKomposisiView({super.key, required this.komposisi});
@@ -28,10 +29,10 @@ class DetailKomposisiView extends StatelessWidget {
                 label: 'Nama komposisi', value: komposisi.namaKomposisi),
             const SizedBox(height: 12),
             _buildDetailRow(
-                label: 'Harga modal', value: 'Rp. ${komposisi.hargaModal}'),
+                label: 'Harga modal', value: formatRupiah(komposisi.hargaModal)),
             const SizedBox(height: 12),
             _buildDetailRow(
-                label: 'Harga jual', value: 'Rp. ${komposisi.hargaJual}'),
+                label: 'Harga jual', value: formatRupiah(komposisi.hargaJual)),
             const SizedBox(height: 12),
             _buildDetailRow(
                 label: 'Stok komposisi', value: '${komposisi.stokKomposisi}'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payoo/app/data/models/stok_model.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 
 class StokInfo extends StatelessWidget {
@@ -17,7 +18,7 @@ class StokInfo extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Harga ${stok.type == 'composition' ? 'komposisi' : 'produk'} : Rp. ${stok.costPrice.toStringAsFixed(0)}',
+          'Harga ${stok.type == 'composition' ? 'komposisi' : 'produk'} : ${formatRupiah(stok.costPrice)}',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         const SizedBox(height: 12),

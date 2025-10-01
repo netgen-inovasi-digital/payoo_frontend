@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payoo/app/data/models/stok_model.dart';
+import 'package:payoo/config/utils/constant.dart';
 import '../stok_detail_view.dart';
 import 'package:get/get.dart';
 
@@ -11,9 +12,7 @@ class ListViewStok extends StatelessWidget {
 		required this.stokList,
 	});
 
-	String formatRupiah(double value) {
-		return 'Rp.${value.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")},-';
-	}
+
 
 	@override
 	Widget build(BuildContext context) {
