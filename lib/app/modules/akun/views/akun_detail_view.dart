@@ -53,7 +53,7 @@ class _AkunDetailViewState extends State<AkunDetailView> {
               return Center(child: Text('Error: ${userController.error.value}'));
             }
             return SingleChildScrollView(
-              child: Column(
+              child: Column(    
                 children: [
                   const SizedBox(height: 60),
                   // Editable image

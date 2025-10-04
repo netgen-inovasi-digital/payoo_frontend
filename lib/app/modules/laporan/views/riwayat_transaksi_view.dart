@@ -61,7 +61,7 @@ class _RiwayatTransaksiViewState extends State<RiwayatTransaksiView> {
                 child: LaporanCard(
                   leftLabel: 'Total',
                   rigthLabel: 'Jumlah Item',
-                  leftValue: 'Rp ${order.total ?? 0}',
+                  leftValue: 'Rp ${order.total.toStringAsFixed(0) ?? 0},-',
                   rigthValue: '${order.totalItems ?? 0}',
                 ),
               ),

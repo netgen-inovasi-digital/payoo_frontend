@@ -39,7 +39,7 @@ class Constants {
   static const ORDER_BY_ID = '/orders/{id}';
   static const ORDER_STATUS = '/orders/status/{id}'; //put
   static const ORDERS = '/orders'; //post
-
+  static const DASHBOARD = '/dashboard';
   //reports
   static const REPORTS_SUMMARY = "/reports/{shop_id}/summary";
   static const REPORTS_ORDERS = "/reports/{shop_id}/orders";

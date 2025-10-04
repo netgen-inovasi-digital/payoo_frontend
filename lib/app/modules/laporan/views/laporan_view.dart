@@ -73,7 +73,7 @@ class _LaporanViewState extends State<LaporanView> {
                     leftLabel: 'Total Pemasukan',
                     rigthLabel: 'Total Transaksi',
                     leftValue:
-                        "RP. ${controller.reportSummary.value?.totalRevenue ?? 0}",
+                        "RP. ${controller.reportSummary.value?.totalRevenue.toStringAsFixed(0) ?? 0},-",
                     rigthValue: 
                         "${controller.reportSummary.value?.totalTransactions ?? 0}"),
               );
