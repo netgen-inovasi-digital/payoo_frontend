@@ -24,8 +24,10 @@ class KeranjangController extends GetxController {
   final hargaJualController = TextEditingController();
   final satuanController = TextEditingController();
   final notesController = TextEditingController();
+  RxString selectedPaymentMethod = 'cash'.obs;
   var shopId = 0.obs;
   var userId = 0.obs;
+
   // State update
   var statusUpdate = ApiCallStatus.holding.obs;
   var errorUpdate = ''.obs;
@@ -37,7 +39,6 @@ class KeranjangController extends GetxController {
     _loadAkun();
   }
 
-  // Fixed createOrder method in KeranjangController
   Future<bool> createOrder({String? notes}) async {
     status.value = ApiCallStatus.loading;
     error.value = '';
@@ -73,8 +74,6 @@ class KeranjangController extends GetxController {
         'product_id': prod.id,
         'quantity': quantity,
         'price': prod.sellingPrice,
-        // Remove amount_paid from individual items since it should be at order level
-        // 'amount_paid': paymentAmount.value, // ❌ Remove this line
       };
     }).toList();
 
@@ -87,19 +86,29 @@ class KeranjangController extends GetxController {
     // Get current timestamp for created_at and updated_at
     final now = DateTime.now().toString().split('.')[0].replaceAll('T', ' ');
 
+    // Calculate change money
+    final changeAmount = paymentAmount.value - totalPrice;
+
+    // Default tax rate (can be made configurable)
+    final taxRate = 0.0; // 0% tax by default
+    final taxAmount = totalPrice * taxRate;
+
     final payload = {
       'user_id': userId.value.toString(),
       'shop_id': shopId.value.toString(),
-      'status': 'pending',
+      'status': 'pending', // Consider making this configurable
       'notes': notesController.text.isNotEmpty
           ? notesController.text
           : (notes ?? ''),
       'total': totalPrice.toStringAsFixed(2),
-      'amount_paid': paymentAmount.value
-          .toStringAsFixed(2), // ✅ Add amount_paid at order level
+      'amount_paid': paymentAmount.value.toStringAsFixed(2),
       'created_at': now,
       'updated_at': now,
-      'order_items': orderItems
+      'order_items': orderItems,
+      'payment_method': selectedPaymentMethod.value,
+      'change_money': changeAmount.toStringAsFixed(2),
+      'tax': taxAmount.toStringAsFixed(2),
+      'discount': '0%', // Use string format to match expected output
     };
 
     bool success = false;
@@ -227,8 +236,6 @@ class KeranjangController extends GetxController {
 
     return total;
   }
-
-  get selectedPaymentMethod => null;
 
   // ✅ Helper method for clearing cart
   void clearCart() {

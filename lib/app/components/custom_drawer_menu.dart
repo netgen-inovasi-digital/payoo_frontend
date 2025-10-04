@@ -10,19 +10,32 @@ import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 import 'package:payoo/config/utils/storage_manager.dart';
 
-class CustomDrawerMenu extends StatelessWidget {
-  CustomDrawerMenu({super.key});
+class CustomDrawerMenu extends StatefulWidget {
+  const CustomDrawerMenu({super.key});
+
+  @override
+  State<CustomDrawerMenu> createState() => _CustomDrawerMenuState();
+}
+
+class _CustomDrawerMenuState extends State<CustomDrawerMenu> {
   final AkunController userController = Get.put(AkunController());
+
+  @override
+  void initState() {
+    super.initState();
+    userController.fetchUser();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: Obx(() {
         if (userController.status.value == ApiCallStatus.error) {
-          return Center(child: Text("Error loading user data"));
+          return const Center(child: Text("Error loading user data"));
         }
 
         if (userController.status.value == ApiCallStatus.loading) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
         return _succes_drawer();
       }),
@@ -193,7 +206,7 @@ class CustomDrawerMenu extends StatelessWidget {
           height: 10,
         ),
         // Menu Items
-        ListTile(      
+        ListTile(
           tileColor: Colors.white,
           contentPadding: const EdgeInsets.only(left: 19),
           leading: const FaIcon(

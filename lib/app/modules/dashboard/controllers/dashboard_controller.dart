@@ -20,6 +20,12 @@ class DashboardController extends GetxController {
     super.onInit();
     loadData();
   }
+    @override
+  void onReady() {
+    super.onReady();
+    // This will be called when the page is shown
+    loadData();
+  }
   
   Future<void> loadData() async {
     try {
@@ -46,5 +52,35 @@ class DashboardController extends GetxController {
       status.value = LoadingStatus.error;
       errorMessage.value = e.toString();
     }
+  }
+  
+  Future<void> refreshData() async {
+    // Check if we're already loading data
+    if (status.value == LoadingStatus.loading) {
+      return; // Already loading, don't trigger again
+    }
+    
+    // Use microtask to ensure this doesn't happen during build
+    await Future.microtask(() async {
+      try {
+        status.value = LoadingStatus.loading;
+        
+        // Add your data loading logic here
+        await Future.delayed(const Duration(milliseconds: 100)); // Small delay
+        
+        // Load your toko data
+        await tokoController.fetchToko();
+        
+        // Load user data if needed
+        await userController.fetchUser();
+        
+        // Load any other data you need
+        
+        status.value = LoadingStatus.success;
+      } catch (e) {
+        status.value = LoadingStatus.error;
+        errorMessage.value = e.toString();
+      }
+    });
   }
 }
