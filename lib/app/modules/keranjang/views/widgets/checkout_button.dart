@@ -11,14 +11,17 @@ import 'package:payoo/config/theme/light_theme.dart';
 
 class CheckoutButton extends StatefulWidget {
   CheckoutButton({super.key, required this.price, required this.controller});
+
   final String price;
   final KeranjangController controller;
-  var expanded = false;
+
   @override
   State<CheckoutButton> createState() => _CheckoutButtonState();
 }
 
 class _CheckoutButtonState extends State<CheckoutButton> {
+  bool expanded = false; // Moved to state class
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -34,6 +37,7 @@ class _CheckoutButtonState extends State<CheckoutButton> {
               top: 12,
               right: 25,
               left: 25,
+              bottom: 12, // Added bottom padding
             ),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -65,152 +69,66 @@ class _CheckoutButtonState extends State<CheckoutButton> {
                     ),
                     Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.more_vert),
+                      icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
                       onPressed: () {
                         setState(() {
-                          widget.expanded = !widget.expanded;
+                          expanded = !expanded;
                         });
                       },
                     ),
                   ],
                 ),
-
-// Add this AnimatedContainer for the note
-                AnimatedContainer(
+                // Animated note field
+                AnimatedSize(
                   duration: const Duration(milliseconds: 300),
-                  height: widget.expanded ? 100 : 0,
-                  child: widget.expanded
-                      ? Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 10.0,top: 5),
-                            child: TextField(
-                              controller: widget.controller.notesController,
-                              style: TextStyle(fontSize: 14),
-                              decoration: InputDecoration(
-                                hintText: 'Catatan untuk pesanan Anda',
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Colors.black,
-                                    width: 1,
-                                  ),
+                  curve: Curves.easeInOut,
+                  child: expanded
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 10.0, top: 5),
+                          child: TextField(
+                            controller: widget.controller.notesController,
+                            style: TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: 'Catatan untuk pesanan Anda',
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.black,
+                                  width: 1,
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Colors.black,
-                                    width: 1,
-                                  ),
-                                ),
-                                contentPadding: EdgeInsets.all(8),
                               ),
-                              maxLines: 3,
-                              onChanged: (value) {
-                                // Store note value if needed
-                              },
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.black,
+                                  width: 1,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.all(8),
                             ),
+                            maxLines: 3,
+                            onChanged: (value) {
+                              // Store note value if needed
+                            },
                           ),
                         )
-                      : const SizedBox(),
-                )
+                      : const SizedBox.shrink(),
+                ),
               ],
             ),
           ),
-
           // Green Button
           CustomSaveButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => PembayaranModal(
-                    controller: widget.controller,
-                  ),
-                );
-
-                // showDialog(
-                //   context: context,
-                //   builder: (dialogContext) {
-                //     return AlertDialog(
-                //       contentPadding: EdgeInsets.zero,
-                //       shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.circular(20),
-                //       ),
-                //       content: Container(
-                //         height: 160,
-                //         decoration: BoxDecoration(
-                //           borderRadius: BorderRadius.circular(15),
-                //         ),
-                //         child: Row(
-                //           mainAxisSize: MainAxisSize.min,
-                //           children: [
-                //             // Take Away Option
-                //             Expanded(
-                //               child: InkWell(
-                //                 onTap: () {
-                //                   // Take away logic
-                //                   Get.to(StrukUserView());
-                //                 },
-                //                 child: Container(
-                //                   padding: const EdgeInsets.all(15),
-                //                   decoration: const BoxDecoration(
-                //                     color: Colors.white,
-                //                     borderRadius: BorderRadius.only(
-                //                       topLeft: Radius.circular(20),
-                //                       bottomLeft: Radius.circular(20),
-                //                     ),
-                //                   ),
-                //                   child: const Center(
-                //                     child: Text(
-                //                       "Take Away",
-                //                       style: TextStyle(
-                //                         color: Color(0xFF2E7D32),
-                //                         fontWeight: FontWeight.bold,
-                //                         fontSize: 16,
-                //                       ),
-                //                     ),
-                //                   ),
-                //                 ),
-                //               ),
-                //             ),
-
-                //             // Makan Ditempat Option
-                //             Expanded(
-                //               child: InkWell(
-                //                 onTap: () {
-                //                   Get.to(StrukUserView());
-                //                   // Dine in logic
-                //                 },
-                //                 child: Container(
-                //                   padding: const EdgeInsets.all(15),
-                //                   decoration: const BoxDecoration(
-                //                     color: Color(0xFF2E7D32), // Green
-                //                     borderRadius: BorderRadius.only(
-                //                       topRight: Radius.circular(20),
-                //                       bottomRight: Radius.circular(20),
-                //                     ),
-                //                   ),
-                //                   child: const Center(
-                //                     child: Text(
-                //                       "Makan Ditempat",
-                //                       textAlign: TextAlign.center,
-                //                       style: TextStyle(
-                //                         color: Colors.white,
-                //                         fontWeight: FontWeight.bold,
-                //                         fontSize: 16,
-                //                       ),
-                //                     ),
-                //                   ),
-                //                 ),
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //       ),
-                //     );
-                //   },
-                // );
-              },
-              label: "Lanjutkan Pesanan")
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => PembayaranModal(
+                  controller: widget.controller,
+                ),
+              );
+            },
+            label: "Lanjutkan Pesanan",
+          )
         ],
       ),
     );
