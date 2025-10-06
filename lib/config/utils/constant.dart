@@ -1,3 +1,6 @@
+// Export currency formatter for global access
+export 'currency_formatter.dart';
+
 class Constants {
   // ================== BACKEND PAYOO ==================
   // Ganti sesuai environment (dev/staging/prod)
@@ -32,6 +35,7 @@ class Constants {
   // Stocks
   static const STOCKS_CREATE = '/stocks'; // POST
   static const STOCKS_BY_COMPOSITION_ID = '/stocks/{composition_id}';
+  static const STOCKS_PRODUCTS_SHOP = '/stocks/products/shop'; // GET - New endpoint
 
   // Orders
   static const ORDER_USER = '/orders/user/{user_id}'; 

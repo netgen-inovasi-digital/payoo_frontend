@@ -8,6 +8,7 @@ import 'package:payoo/app/modules/data_produk/views/tambah_produk_view.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class DetailProdukView extends StatefulWidget {
   const DetailProdukView({super.key, required this.produkId});
@@ -134,7 +135,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                     ),
                     const SizedBox(height: 30),
                     Text(
-                      'Harga Jual : Rp ${produk.sellingPrice}',
+                      'Harga Jual : ${formatRupiah(produk.sellingPrice)}',
                       style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,
@@ -142,7 +143,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      'Harga Modal : Rp ${produk.costPrice}',
+                      'Harga Modal : ${formatRupiah(produk.costPrice)}',
                       style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,

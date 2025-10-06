@@ -1,8 +1,7 @@
 import 'package:get/get.dart';
 import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
-import 'package:payoo/app/data/models/komposisi_model.dart';
-import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
+import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'widgets/list_view_stok.dart';
@@ -17,17 +16,16 @@ class StokView extends StatefulWidget {
 
 class _StokViewState extends State<StokView> {
   late TextEditingController _searchController;
-  late KomposisiController komposisiController;
-  String _searchQuery = '';
+  late StokController stokController;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    komposisiController = Get.put(KomposisiController());
+    stokController = Get.put(StokController());
     // Use post frame callback to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      komposisiController.fetchKomposisi();
+      stokController.fetchProductsWithStock();
     });
   }
 
@@ -37,8 +35,8 @@ class _StokViewState extends State<StokView> {
     // Refresh data when returning to this page
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (komposisiController.list.isEmpty) {
-          komposisiController.fetchKomposisi();
+        if (stokController.productsStock.isEmpty) {
+          stokController.fetchProductsWithStock();
         }
       });
     }
@@ -50,9 +48,9 @@ class _StokViewState extends State<StokView> {
     super.dispose();
   }
 
-  void _filterKomposisi(String query) {
+  void _filterProducts(String query) {
     setState(() {
-      _searchQuery = query;
+      // Search filtering is handled in the build method directly
     });
   }
 
@@ -71,38 +69,53 @@ class _StokViewState extends State<StokView> {
             child: SearchInputField(
               verticalPadding: 15,
               controller: _searchController,
-              onSearchChanged: _filterKomposisi,
-              hintText: 'Cari komposisi (nama)',
+              onSearchChanged: _filterProducts,
+              hintText: 'Cari produk (nama)',
             ),
           ),
           // List Stok
           Expanded(
             child: Obx(
               () {
-                if (komposisiController.statusList.value ==
+                if (stokController.statusProductsStock.value ==
                     ApiCallStatus.loading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (komposisiController.statusList.value ==
+                if (stokController.statusProductsStock.value ==
                     ApiCallStatus.error) {
-                  return const Center(
-                    child: Text(
-                      'Terjadi kesalahan saat memuat data',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Terjadi kesalahan saat memuat data',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          stokController.errorProductsStock.value,
+                          style: const TextStyle(fontSize: 14, color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => stokController.fetchProductsWithStock(),
+                          child: const Text('Coba Lagi'),
+                        ),
+                      ],
                     ),
                   );
                 }
-                final stokList = komposisiController.list;
-                final filteredList = stokList.where((item) {
+                final productsList = stokController.productsStock;
+                final filteredList = productsList.where((item) {
                   final searchTerm = _searchController.text.toLowerCase();
-                  return item.namaKomposisi.toLowerCase().contains(searchTerm);
+                  return item.name.toLowerCase().contains(searchTerm);
                 }).toList();
 
                 if (filteredList.isEmpty) {
                   return const Center(
                     child: Text(
-                      'Data komposisi tidak ditemukan',
+                      'Data produk tidak ditemukan',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),

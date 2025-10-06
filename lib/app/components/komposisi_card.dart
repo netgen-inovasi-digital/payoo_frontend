@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class KomposisiCard extends StatefulWidget {
   final Komposisi komposisi;
@@ -24,9 +25,9 @@ class KomposisiCard extends StatefulWidget {
 class _KomposisiCardState extends State<KomposisiCard> {
   String getFormattedPrice(int quantity, double price) {
     if (quantity == 0 || !widget.useQuantities) {
-      return "Rp.${price.toStringAsFixed(0)},-";
+      return formatRupiah(price);
     }
-    return " $quantity x Rp.${price.toStringAsFixed(0)},-";
+    return " $quantity x ${formatRupiah(price)}";
   }
 
   @override
@@ -65,7 +66,7 @@ class _KomposisiCardState extends State<KomposisiCard> {
                         overflow: TextOverflow.ellipsis,
                       ), widget.useQuantities ? _buildInputButton(widget.komposisi) : Flexible(
                         child: Text(
-                          "Rp.${widget.komposisi.hargaJual.toStringAsFixed(0)},-",
+                          formatRupiah(widget.komposisi.hargaJual),
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
@@ -80,7 +81,7 @@ class _KomposisiCardState extends State<KomposisiCard> {
                     children: [
                       Flexible(
                         child: Text(
-                          widget.useQuantities ? getFormattedPrice(widget.komposisi.quantity, widget.komposisi.hargaJual) : "Rp.${widget.komposisi.hargaModal.toStringAsFixed(0)},-",
+                          widget.useQuantities ? getFormattedPrice(widget.komposisi.quantity, widget.komposisi.hargaJual) : formatRupiah(widget.komposisi.hargaModal),
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontWeight: FontWeight.w700,

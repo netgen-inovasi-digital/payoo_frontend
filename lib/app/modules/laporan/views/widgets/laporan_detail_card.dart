@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payoo/app/components/custom_product_image.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class LaporanDetailCard extends StatelessWidget {
   final Produk produk;
@@ -47,7 +48,7 @@ class LaporanDetailCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "$count x Rp.${produk.sellingPrice} = Rp.${totalPrice.toStringAsFixed(0)}",
+                      "$count x ${formatRupiah(produk.sellingPrice)} = ${formatRupiah(totalPrice)}",
                       style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w700,
