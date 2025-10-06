@@ -7,25 +7,53 @@ import 'package:payoo/app/modules/dashboard/controllers/dashboard_controller.dar
 import 'package:payoo/app/modules/dashboard/views/widgets/custom_card.dart';
 import 'package:payoo/app/modules/dashboard/views/widgets/custom_card_premium.dart';
 import 'package:payoo/app/modules/dashboard/views/widgets/profile_header.dart';
+import 'package:payoo/app/services/api_call_status.dart';
 
 class DashboardView extends StatelessWidget {
   DashboardView({super.key});
+  final DashboardController dashboardController = Get.put<DashboardController>(DashboardController());
 
-  final DashboardController dashboardController =
-      Get.put<DashboardController>(DashboardController());
+  void refreshData() {
+    dashboardController.loadData();
+  }
 
-  
   @override
   Widget build(BuildContext context) {
+    // Refresh data every time this page is built/navigated to
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      dashboardController.refreshData();
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: CustomDrawerMenu(),
+      drawer: Obx(() {
+        // Pass static data from dashboard controller to drawer
+        if (dashboardController.status.value == ApiCallStatus.loading) {
+          return const Drawer(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final userPhoto = dashboardController.userController.user.value?.photo;
+        final userName = dashboardController.userController.user.value?.name ?? 'Nama Pemilik';
+        final userEmail = dashboardController.userController.user.value?.email ?? 'Email';
+        final userPhone = dashboardController.userController.user.value?.phone ?? '08115100900';
+        final shopId = dashboardController.userController.user.value?.shopId;
+
+        return CustomDrawerMenu(
+          photo: userPhoto,
+          name: userName,
+          email: userEmail,
+          phone: userPhone,
+          shopId: shopId,
+        );
+      }),
       body: Obx(
         () {
-          if (dashboardController.status.value == LoadingStatus.loading) {
+          if (dashboardController.status.value == ApiCallStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (dashboardController.status.value == LoadingStatus.error) {
+          if (dashboardController.status.value == ApiCallStatus.error) {
             return Center(
               child: Text(
                 'Error: ${dashboardController.errorMessage.value}',
@@ -45,7 +73,6 @@ class DashboardView extends StatelessWidget {
                     padding: const EdgeInsets.all(30),
                     child: Builder(
                       builder: (context) {
-                        // Gunakan Builder untuk mendapatkan konteks yang benar
                         return ProfileHeader(
                           photo: dashboardController.tokoController.toko.value?.photo ?? '',
                           businessName: dashboardController
@@ -75,28 +102,32 @@ class DashboardView extends StatelessWidget {
                     mainAxisSpacing: 16.0,
                     childAspectRatio: 3 / 2,
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    children: const [
+                    children: [
                       CustomCard(
-                          title: 'Jumlah Produk', label: 'Total', value: '178'),
+                          title: 'Jumlah Produk', 
+                          label: 'Total', 
+                          value: dashboardController.dashboardData.value?.productQuantity.toString() ?? '0'),
                       CustomCard(
                           title: 'Kategori Produk',
                           label: 'Total',
-                          value: '20'),
+                          value: dashboardController.dashboardData.value?.categoryQuantity.toString() ?? '0'),
                       CustomCard(
-                          title: 'Akun Karyawan', label: 'Total', value: '2'),
+                          title: 'Komposisi Produk', 
+                          label: 'Total', 
+                          value: dashboardController.dashboardData.value?.compositionQuantity.toString() ?? '0'),
                       CustomCard(
                           title: 'Jumlah Transaksi',
-                          label: '25-10-2022',
-                          value: '89'),
+                          label: dashboardController.dashboardData.value?.date ?? '0',
+                          value: dashboardController.dashboardData.value?.transactionCount.toString() ?? '0'),
                       CustomCard(
                           title: 'Pendapatan',
-                          label: '25-10-2022',
-                          value: '10.000.000'),
-                      CustomCardPremium(
+                          label: dashboardController.dashboardData.value?.date ?? '0',
+                          value: dashboardController.dashboardData.value?.revenue.toString() ?? '0'),
+                      const CustomCardPremium(
                           title: 'Keuntungan', description: 'Payoo Premium'),
-                      CustomCardPremium(
+                      const CustomCardPremium(
                           title: 'Pelanggan', description: 'Payoo Premium'),
-                      CustomCardPremium(
+                      const CustomCardPremium(
                           title: 'Bahan Baku Habis',
                           description: 'Payoo Premium'),
                     ],

@@ -9,9 +9,15 @@ class KeranjangModel {
   final String updatedAt;
   final double amountPaid;
   final String discount;
+  final String paymentMethod;
+  final double changeMoney;
+  final double tax;
   final List<OrderItem> orderItems;
 
-  KeranjangModel({
+  KeranjangModel(
+    this.paymentMethod,
+    this.changeMoney,
+    this.tax, {
     required this.id,
     required this.userId,
     required this.shopId,
@@ -26,6 +32,9 @@ class KeranjangModel {
   });
   factory KeranjangModel.fromJson(Map<String, dynamic> json) {
     return KeranjangModel(
+      json['payment_method'] ?? '',
+      json['change_money'] != null ? double.parse(json['change_money'].toString()) : 0.0,
+      json['tax'] != null ? double.parse(json['tax'].toString()) : 0.0,
       id: int.parse(json['id'].toString()),
       userId: int.parse(json['user_id'].toString()),
       shopId: int.parse(json['shop_id'].toString()),
@@ -42,7 +51,7 @@ class KeranjangModel {
               .map((item) => OrderItem.fromJson(item))
               .toList()
           : [],
-      discount: '',
+      discount: json['discount'] ?? '0%',
     );
   }
 
@@ -57,9 +66,13 @@ class KeranjangModel {
       'created_at': createdAt,
       'updated_at': updatedAt,
       'amount_paid': amountPaid,
+      'payment_method': paymentMethod,
+      'change_money': changeMoney,
+      'tax': tax,
+      'discount': discount,
       'order_items': orderItems.map((item) => item.toJson()).toList(),
     };
-  }
+  } 
 }
 
 class OrderItem {
