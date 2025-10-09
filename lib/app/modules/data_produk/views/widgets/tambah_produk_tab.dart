@@ -50,7 +50,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
     if (widget.isEdit) {
       _loadProdukCategories();
     } else {
-      controller.resetCreateForm();                                                               
+      controller.resetCreateForm();
     }
   }
 
@@ -76,19 +76,28 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                 isNumber: true),
             const SizedBox(height: 16),
 
-            // Komposisi info section
-            if (widget.selectedKomposisi.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              _buildKomposisiInfo(),
-            ],
+            // Komposisi info section - UPDATED
+            Obx(() {
+              // Always read from the controller, which is the single source of truth
+              if (controller.selectedKomposisi.isNotEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: _buildKomposisiInfo(),
+                );
+              }
+              // Return an empty widget if there are no compositions
+              return const SizedBox.shrink();
+            }),
 
             const SizedBox(height: 80),
 
             Obx(() {
-              final isCreateLoading = controller.statusCreate.value == ApiCallStatus.loading;
-              final isUpdateLoading = controller.statusUpdate.value == ApiCallStatus.loading;
+              final isCreateLoading =
+                  controller.statusCreate.value == ApiCallStatus.loading;
+              final isUpdateLoading =
+                  controller.statusUpdate.value == ApiCallStatus.loading;
               final isLoading = isCreateLoading || isUpdateLoading;
-              
+
               return CustomSaveButton(
                 onPressed: isLoading ? () {} : () => _submitProduk(),
                 label: isLoading ? 'MENYIMPAN...' : 'SIMPAN',
@@ -101,6 +110,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
     );
   }
 
+  // UPDATED METHOD
   Widget _buildKomposisiInfo() {
     return Container(
       width: double.infinity,
@@ -117,7 +127,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Komposisi (${widget.selectedKomposisi.length})',
+                'Komposisi (${controller.selectedKomposisi.length})', // Read from controller
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2FA36B),
@@ -137,7 +147,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             ],
           ),
           const SizedBox(height: 8),
-          ...widget.selectedKomposisi.take(3).map(
+          ...controller.selectedKomposisi.take(3).map( // Read from controller
                 (komposisi) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Text(
@@ -146,9 +156,9 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                   ),
                 ),
               ),
-          if (widget.selectedKomposisi.length > 3)
+          if (controller.selectedKomposisi.length > 3) // Read from controller
             Text(
-              'dan ${widget.selectedKomposisi.length - 3} lainnya...',
+              'dan ${controller.selectedKomposisi.length - 3} lainnya...',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -194,12 +204,13 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
       }
     }
 
-    // Set selected category and komposisi to controller
+    // Set selected category to controller
     controller.setKategori(controller.selectedKategoriId.value);
-    controller.setKomposisi(widget.selectedKomposisi);
     
+    // DELETED: controller.setKomposisi(widget.selectedKomposisi);
+
     bool success = false;
-    
+
     try {
       // Submit produk
       if (!widget.isEdit) {
@@ -215,17 +226,17 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
           Get.back(); // Go back to data produk view if needed
         }
 
-        _showSuccessSnackbar(widget.isEdit 
-          ? 'Produk berhasil diperbarui' 
-          : 'Produk berhasil ditambahkan');
-          
+        _showSuccessSnackbar(widget.isEdit
+            ? 'Produk berhasil diperbarui'
+            : 'Produk berhasil ditambahkan');
+
         // Refresh the product list to show updated data
         await controller.fetchProduk();
       } else {
-        final errorMessage = widget.isEdit 
-          ? controller.errorUpdate.value
-          : controller.errorCreate.value;
-          
+        final errorMessage = widget.isEdit
+            ? controller.errorUpdate.value
+            : controller.errorCreate.value;
+
         _showErrorSnackbar(errorMessage.isNotEmpty
             ? errorMessage
             : 'Gagal ${widget.isEdit ? "memperbarui" : "menambahkan"} produk');
@@ -290,12 +301,12 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                       ApiCallStatus.loading) {
                     return const CircularProgressIndicator();
                   }
-                  
+
                   // Show current image if available
-                  final currentImageUrl = controller.linkImage.value.isNotEmpty 
-                    ? controller.linkImage.value 
-                    : controller.produk.value?.photo;
-                    
+                  final currentImageUrl = controller.linkImage.value.isNotEmpty
+                      ? controller.linkImage.value
+                      : controller.produk.value?.photo;
+
                   if (currentImageUrl != null && currentImageUrl.isNotEmpty) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
