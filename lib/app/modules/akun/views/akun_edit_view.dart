@@ -62,9 +62,9 @@ class _AkunEditViewState extends State<AkunEditView> {
 
                         if (success && imageUploadService.image.value != null) {
                         
-                          setState(() {
+                
                             userController.imageLink.value = imageUploadService.image.value!.url;
-                          });
+                          
                         } else {
                           Get.snackbar('Error', 'Gagal mengunggah gambar',
                               snackPosition: SnackPosition.BOTTOM);

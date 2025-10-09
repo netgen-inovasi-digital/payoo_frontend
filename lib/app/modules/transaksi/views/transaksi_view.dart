@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:payoo/app/components/custom_footer_clip_path.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
-import 'package:payoo/app/components/custom_app_bar_clip_path.dart';
-import 'package:payoo/app/components/custom_header_clip_path.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
 import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/empty_state.dart';
 import 'package:payoo/app/components/product_card.dart';
 import 'package:payoo/app/modules/keranjang/controllers/keranjang_controller.dart';
+import 'package:payoo/app/modules/keranjang/views/widgets/keranjang_modal.dart';
+import 'package:payoo/app/modules/keranjang/views/widgets/pembayaran_modal.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
-import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
@@ -23,19 +21,31 @@ class TransaksiView extends StatefulWidget {
 
 class _TransaksiViewState extends State<TransaksiView> {
   final TextEditingController _searchController = TextEditingController();
-  List<Produk> _filteredProducts = [];
-  final List<Produk> _cartItems = [];
+  late final ProdukController _produkController;
+  late final KeranjangController _keranjangController;
   String _searchQuery = '';
-  final ProdukController _produkController =
-      Get.put<ProdukController>(ProdukController());
 
   @override
   void initState() {
     super.initState();
-    _produkController.fetchProduk();
-    _searchController.addListener(() {
-      _filterProducts(_searchController.text);
-    });
+    
+    // Initialize controllers properly
+    if (Get.isRegistered<ProdukController>()) {
+      _produkController = Get.find<ProdukController>();
+    } else {
+      _produkController = Get.put<ProdukController>(ProdukController());
+    }
+    
+    if (Get.isRegistered<KeranjangController>()) {
+      _keranjangController = Get.find<KeranjangController>();
+    } else {
+      _keranjangController = Get.put<KeranjangController>(KeranjangController());
+    }
+    
+    // Fetch products only if list is empty
+    if (_produkController.list.isEmpty) {
+      _produkController.fetchProduk();
+    }
   }
 
   @override
@@ -44,167 +54,177 @@ class _TransaksiViewState extends State<TransaksiView> {
     super.dispose();
   }
 
-  void _filterProducts(String query) {
+  List<Produk> _getFilteredProducts() {
+    if (_searchQuery.isEmpty) {
+      return _produkController.list;
+    } else {
+      return _produkController.list.where((product) {
+        return product.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+  }
+
+  void _onSearchChanged(String query) {
     setState(() {
       _searchQuery = query;
-      if (query.isEmpty) {
-        _filteredProducts = _produkController.list;
-      } else {
-        _filteredProducts = _produkController.list.where((product) {
-          return product.name.toLowerCase().contains(query.toLowerCase());
-        }).toList();
-      }
     });
   }
 
   void _onProductTap(Produk product) {
-    setState(() {
-      if (!_cartItems.contains(product)) {
-        _cartItems.add(product);
-      } else {
-        _cartItems.remove(product);
-      }
-    });
+    // Check if product is already in cart
+    bool isInCart = _keranjangController.product.any((p) => p.id == product.id);
+    
+    if (!isInCart) {
+      // Add product to cart and show modal
+      _keranjangController.addProduct(product);
+      keranjangModal(
+        context: context,
+        produk: product,
+        controller: _keranjangController,
+        produkId: product.id,
+      );
+    } else {
+      // Remove product from cart
+      _keranjangController.removeProduct(product.id);
+    }
   }
 
-  double get _totalPrice {
-    return _cartItems.fold(0, (sum, item) => sum + item.sellingPrice);
+  bool _isProductInCart(Produk product) {
+    return _keranjangController.product.any((p) => p.id == product.id);
+  }
+
+  Future<void> _refreshData() async {
+    await _produkController.fetchProduk();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Produk> produkList = _produkController.list;
-    if (_searchQuery.isEmpty) {
-      _filteredProducts = produkList;
-    } else {
-      _filteredProducts = produkList.where((product) {
-        return product.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      }).toList();
-    }
     return Scaffold(
       appBar: const CustomAppBar(title: 'Transaksi', dividerLine: false),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 30.0, vertical: 10.0),
-                child: SearchInputField(
-                  controller: _searchController,
-                  onSearchChanged: _filterProducts,
-                  hintText: 'cari produk (kode | nama)',
-                ),
-              ),
-              Container(
-                height: 1.0,
-                color: LightThemeColors.accentColor,
-              ),
-              if (_searchQuery.isNotEmpty && _filteredProducts.isEmpty)
-                const Expanded(
-                  child: EmptyState(
-                    title: 'Produk tidak ditemukan',
-                    subtitle: 'Coba kata kunci lain',
-                    icon: Icons.search_off,
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 30.0, vertical: 10.0),
+                  child: SearchInputField(
+                    controller: _searchController,
+                    onSearchChanged: _onSearchChanged,
+                    hintText: 'cari produk (kode | nama)',
                   ),
-                )
-              else
-                Obx(() {
-                  if (_produkController.statusList.value ==
-                      ApiCallStatus.loading) {
-                    return const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (_produkController.statusList.value ==
-                      ApiCallStatus.error) {
-                    return Expanded(
-                      child: EmptyState(
+                ),
+                Container(
+                  height: 1.0,
+                  color: LightThemeColors.accentColor,
+                ),
+                Expanded(
+                  child: Obx(() {
+                    if (_produkController.statusList.value ==
+                        ApiCallStatus.loading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    
+                    if (_produkController.statusList.value ==
+                        ApiCallStatus.error) {
+                      return EmptyState(
                         title: 'Gagal memuat',
                         subtitle: _produkController.errorList.value,
                         icon: Icons.error_outline,
-                      ),
-                    );
-                  }
-                  return Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(
-                        bottom: 100.0,
-                      ),
-                      itemCount: _filteredProducts.length,
+                      );
+                    }
+
+                    // Calculate filtered products inside Obx
+                    final displayProducts = _getFilteredProducts();
+
+                    // Check if search has no results
+                    if (_searchQuery.isNotEmpty && displayProducts.isEmpty) {
+                      return const EmptyState(
+                        title: 'Produk tidak ditemukan',
+                        subtitle: 'Coba kata kunci lain',
+                        icon: Icons.search_off,
+                      );
+                    }
+
+                    // Check if there are no products at all
+                    if (_produkController.list.isEmpty) {
+                      return const EmptyState(
+                        title: 'Belum ada produk',
+                        subtitle: 'Tambah produk terlebih dahulu',
+                        icon: Icons.inventory_2_outlined,
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 100.0),
+                      itemCount: displayProducts.length,
                       itemBuilder: (context, index) {
-                        final product = _filteredProducts[index];
-                        return ProductCard(
-                          cardColor: _cartItems.contains(product)
+                        final product = displayProducts[index];
+                        return Obx(() => ProductCard(
+                          cardColor: _isProductInCart(product)
                               ? const Color(0xFFD9D9D9)
                               : Colors.white,
                           produk: product,
                           onTap: () => _onProductTap(product),
+                        ));
+                      },
+                    );
+                  }),
+                ),
+              ],
+            ),
+
+            // Cart Bottom Sheet
+            Obx(() {
+              if (_keranjangController.product.isNotEmpty) {
+                return Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20, horizontal: 40),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => PembayaranModal(
+                            controller: _keranjangController,
+                          ),
                         );
                       },
-                    ),
-                  );
-                }),
-            ],
-          ),
-          // Cart Bottom Sheet
-          if (_cartItems.isNotEmpty)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 25, horizontal: 40),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // ✅ OPTION 1: Register controller if not exists
-                    KeranjangController keranjangController;
-
-                    try {
-                      keranjangController = Get.find<KeranjangController>();
-                    } catch (e) {
-                      // Controller not found, create it
-                      keranjangController = Get.put(KeranjangController());
-                    }
-
-                    // Clear existing items first
-                    keranjangController.clearCart();
-
-                    // Add selected items to controller
-                    for (var item in _cartItems) {
-                      keranjangController.addProduct(item);
-                    }
-
-                    // Navigate to keranjang
-                    Get.toNamed(Routes.KERANJANG);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: LightThemeColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.shopping_cart, color: Colors.white),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        'Rp.${_totalPrice.toStringAsFixed(0)}  |  ${_cartItems.length} Item',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: LightThemeColors.primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 18.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.shopping_cart, color: Colors.white),
+                          const SizedBox(width: 8.0),
+                          Text(
+                            'Rp.${_keranjangController.totalPrice.toStringAsFixed(0)}  |  ${_keranjangController.totalItems.toStringAsFixed(0)} Item',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-        ],
+                );
+              }
+              return const SizedBox();
+            }),
+          ],
+        ),
       ),
     );
   }

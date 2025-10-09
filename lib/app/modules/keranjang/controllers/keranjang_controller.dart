@@ -12,6 +12,7 @@ import 'package:payoo/config/utils/storage_manager.dart';
 
 class KeranjangController extends GetxController {
   var countItem = <int, int>{}.obs;
+
   var status = ApiCallStatus.holding.obs;
   var keranjang = Rx<KeranjangModel?>(null);
   var error = ''.obs;
@@ -236,6 +237,18 @@ class KeranjangController extends GetxController {
 
     return total;
   }
+
+   double get totalItems {
+    double total = 0;
+
+    for (var prod in product) {
+      int quantity = countItem[prod.id] ?? 0;
+      total += quantity;
+    }
+
+    return total;
+   }
+
 
   // ✅ Helper method for clearing cart
   void clearCart() {

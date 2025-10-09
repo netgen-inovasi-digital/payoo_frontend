@@ -60,7 +60,6 @@ class _LoginViewState extends State<LoginView> {
                               child: GestureDetector(
                                 onTap: () {
                                   passwordSee = !passwordSee;
-                                  setState(() {});
                                 },
                                 child: Icon(
                                   passwordSee

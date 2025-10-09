@@ -9,13 +9,14 @@ import 'package:payoo/app/modules/keranjang/controllers/keranjang_controller.dar
 void keranjangModal({
   required BuildContext context,
   required Produk produk,
+  required int produkId,
   required KeranjangController controller,
 }) {
   showDialog(
     context: context,
     builder: (context) {
       // Ambil jumlah item saat ini dari controller
-      int count = controller.getProductCount(produk.id);
+      int count = 1;
 
       // Gunakan StatefulBuilder agar state 'count' di dalam dialog bisa diperbarui
       return StatefulBuilder(
@@ -60,7 +61,7 @@ void keranjangModal({
                                   ),
                                 ),
                                 Text(
-                                  "${controller.getProductCount(produk.id)} item",
+                                  "${controller.getProductCount(produkId)} item",
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Color(0xFF999999),

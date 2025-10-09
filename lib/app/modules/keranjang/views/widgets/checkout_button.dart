@@ -10,8 +10,9 @@ import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class CheckoutButton extends StatefulWidget {
-  CheckoutButton({super.key, required this.price, required this.controller});
-
+  CheckoutButton({super.key, required this.price, required this.controller, required this.cartItems, required this.totalPrice});
+  final double totalPrice;
+  final List cartItems;
   final String price;
   final KeranjangController controller;
 
@@ -25,7 +26,7 @@ class _CheckoutButtonState extends State<CheckoutButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -127,7 +128,7 @@ class _CheckoutButtonState extends State<CheckoutButton> {
                 ),
               );
             },
-            label: "Lanjutkan Pesanan",
+            label:'Rp.${widget.totalPrice.toStringAsFixed(0)}  |  ${widget.cartItems.length} Item',
           )
         ],
       ),

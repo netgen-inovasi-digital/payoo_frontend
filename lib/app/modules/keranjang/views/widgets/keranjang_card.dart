@@ -72,6 +72,7 @@ class KeranjangCard extends StatelessWidget {
                             keranjangModal(
                               context: context,
                               produk: produk,
+                              produkId: produk.id,
                               controller: controller,
                             );
                           },

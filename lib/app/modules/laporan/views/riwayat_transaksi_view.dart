@@ -1,3 +1,5 @@
+// lib/app/modules/laporan/views/riwayat_transaksi_view.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
@@ -7,34 +9,21 @@ import 'package:payoo/app/modules/laporan/views/widgets/laporan_card.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/config/utils/constant.dart';
 
-class RiwayatTransaksiView extends StatefulWidget {
-  const RiwayatTransaksiView({super.key, required this.apiPeriod});
+class RiwayatTransaksiView extends StatelessWidget { // 1. Change to StatelessWidget
+  RiwayatTransaksiView({super.key, required this.apiPeriod});
 
   final String apiPeriod;
-
-  @override
-  State<RiwayatTransaksiView> createState() => _RiwayatTransaksiViewState();
-}
-
-class _RiwayatTransaksiViewState extends State<RiwayatTransaksiView> {
-  late LaporanController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    try {
-      controller = Get.find<LaporanController>();
-    } catch (e) {
-      controller = Get.put(LaporanController());
-    }
-    controller.fetchOrderReport( period: widget.apiPeriod);
-  }
+  
+  // 2. Find the controller directly in the build method
+  final LaporanController controller = Get.find<LaporanController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Riwayat Transaksi'),
       body: Obx(() {
+        // The rest of your build method remains exactly the same.
+        // It will now display the data that was already loaded.
         if (controller.statusOrderReport.value == ApiCallStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }

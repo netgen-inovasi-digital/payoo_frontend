@@ -14,7 +14,7 @@ class DashboardView extends StatelessWidget {
   final DashboardController dashboardController = Get.put<DashboardController>(DashboardController());
 
   void refreshData() {
-    dashboardController.loadData();
+    dashboardController.loadData();    
   }
 
   @override
@@ -83,7 +83,7 @@ class DashboardView extends StatelessWidget {
                                       ?.address ??
                                   'Alamat Toko',
                           ownerName: dashboardController.userController.user.value?.name ?? 'Nama Pemilik',
-                          phoneNumber: dashboardController.userController.user.value?.phone ?? 'Nomor Telepon',
+                          phoneNumber: dashboardController.tokoController.toko.value?.phone ?? 'Nomor Telepon',
                           onEditProfile: () {},
                           onAccountUpgrade: () {},
                         );

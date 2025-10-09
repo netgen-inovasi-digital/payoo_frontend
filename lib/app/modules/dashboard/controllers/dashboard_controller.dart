@@ -48,12 +48,13 @@ class DashboardController extends GetxController {
       }
       
       if (userController.user.value != null) {
-        // First fetch shop data
-        await fetchShopData();
-        
-        // Then fetch toko data if shop ID is available
+        // Run fetchShopData and fetchUser concurrently
+        await Future.wait([
+          fetchShopData(),
+          userController.fetchUser(),
+        ]);
+        // Then fetch toko data after user data is available
         await tokoController.fetchTokoById(userController.user.value!.shopId);
-              
         status.value = ApiCallStatus.success;
       } else {
         status.value = ApiCallStatus.error;

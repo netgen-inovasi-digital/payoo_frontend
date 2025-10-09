@@ -1,3 +1,4 @@
+import 'dart:convert';
 
 class OrderReport {
   final String id;
@@ -7,6 +8,9 @@ class OrderReport {
   final String notes;
   final double total;
   final double amountPaid;
+  final double changeMoney;
+  final double tax;
+  final String paymentMethod;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int totalItems;
@@ -19,6 +23,9 @@ class OrderReport {
     required this.notes,
     required this.total,
     required this.amountPaid,
+    required this.changeMoney,
+    required this.tax,
+    required this.paymentMethod,
     required this.createdAt,
     required this.updatedAt,
     required this.totalItems,
@@ -26,16 +33,20 @@ class OrderReport {
 
   factory OrderReport.fromJson(Map<String, dynamic> json) {
     return OrderReport(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
-      shopId: json['shop_id'] as String,
-      status: json['status'] as String,
-      notes: json['notes'] as String,
-      total: double.parse(json['total'] as String),
-      amountPaid: double.parse(json['amount_paid'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-      totalItems: int.parse(json['total_items'] as String),
+      id: json['id'].toString(),
+      userId: json['user_id'].toString(),
+      shopId: json['shop_id'].toString(),
+      status: json['status'] ?? '',
+      notes: json['notes'] ?? '',
+      total: double.tryParse(json['total'].toString()) ?? 0.0,
+      amountPaid: double.tryParse(json['amount_paid'].toString()) ?? 0.0,
+      changeMoney: double.tryParse(json['change_money'].toString()) ?? 0.0,
+      tax: double.tryParse(json['tax'].toString()) ?? 0.0,
+      paymentMethod: json['payment_method'] ?? '',
+      // FIX: Handle the specific date format by replacing the space with a 'T'.
+      createdAt: DateTime.parse(json['created_at'].toString().replaceFirst(' ', 'T')),
+      updatedAt: DateTime.parse(json['updated_at'].toString().replaceFirst(' ', 'T')),
+      totalItems: int.tryParse(json['total_items'].toString()) ?? 0,
     );
   }
 
@@ -48,6 +59,9 @@ class OrderReport {
       'notes': notes,
       'total': total.toString(),
       'amount_paid': amountPaid.toString(),
+      'change_money': changeMoney.toString(),
+      'tax': tax.toString(),
+      'payment_method': paymentMethod,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'total_items': totalItems.toString(),
@@ -62,6 +76,9 @@ class OrderReport {
     String? notes,
     double? total,
     double? amountPaid,
+    double? changeMoney,
+    double? tax,
+    String? paymentMethod,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? totalItems,
@@ -74,6 +91,9 @@ class OrderReport {
       notes: notes ?? this.notes,
       total: total ?? this.total,
       amountPaid: amountPaid ?? this.amountPaid,
+      changeMoney: changeMoney ?? this.changeMoney,
+      tax: tax ?? this.tax,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       totalItems: totalItems ?? this.totalItems,
@@ -81,23 +101,64 @@ class OrderReport {
   }
 }
 
-class OrdersReport {
-  final List<OrderReport> orders;
+class DateRange {
+  final DateTime start;
+  final DateTime end;
 
-  OrdersReport({required this.orders});
+  DateRange({
+    required this.start,
+    required this.end,
+  });
 
-  factory OrdersReport.fromJson(Map<String, dynamic> json) {
-    final ordersList = json['orders'] as List;
-    final orders = ordersList
-        .map((orderJson) => OrderReport.fromJson(orderJson))
-        .toList();
-    
-    return OrdersReport(orders: orders);
+  factory DateRange.fromJson(Map<String, dynamic> json) {
+    return DateRange(
+      // FIX: Handle the specific date format by replacing the space with a 'T'.
+      start: DateTime.parse(json['start'].toString().replaceFirst(' ', 'T')),
+      end: DateTime.parse(json['end'].toString().replaceFirst(' ', 'T')),
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'orders': orders.map((order) => order.toJson()).toList(),
+      'start': start.toIso8601String(),
+      'end': end.toIso8601String(),
+    };
+  }
+}
+
+class OrdersReport {
+  final List<OrderReport> orders;
+  final int totalOrders;
+  final String period;
+  final DateRange dateRange;
+
+  OrdersReport({
+    required this.orders,
+    required this.totalOrders,
+    required this.period,
+    required this.dateRange,
+  });
+
+  // FIX: This factory now works directly with the 'data' object from your API response.
+  factory OrdersReport.fromJson(Map<String, dynamic> json) {
+    // The 'json' parameter is now expected to be the 'data' object itself.
+    final ordersList = json['orders'] as List;
+    final orders = ordersList.map((e) => OrderReport.fromJson(e)).toList();
+
+    return OrdersReport(
+      orders: orders,
+      totalOrders: json['total_orders'] ?? 0,
+      period: json['period'] ?? '',
+      dateRange: DateRange.fromJson(json['date_range']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'orders': orders.map((o) => o.toJson()).toList(),
+      'total_orders': totalOrders,
+      'period': period,
+      'date_range': dateRange.toJson(),
     };
   }
 }
@@ -113,8 +174,8 @@ class ReportSummary {
 
   factory ReportSummary.fromJson(Map<String, dynamic> json) {
     return ReportSummary(
-      totalRevenue: double.parse(json['total_revenue'] as String),
-      totalTransactions: json['total_transactions'] as int,
+      totalRevenue: double.tryParse(json['total_revenue'].toString()) ?? 0.0,
+      totalTransactions: json['total_transactions'] ?? 0,
     );
   }
 

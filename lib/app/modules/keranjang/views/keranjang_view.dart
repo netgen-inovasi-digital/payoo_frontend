@@ -164,7 +164,7 @@ class KeranjangView extends GetView<KeranjangController> {
             child: CircularProgressIndicator(),
           );
         }
-        return CheckoutButton(price: controller.totalPrice.toStringAsFixed(0), controller: controller);
+        return CheckoutButton(price: controller.totalPrice.toStringAsFixed(0), controller: controller, cartItems: [], totalPrice: controller.totalPrice);
       }),
     );
   }

@@ -38,32 +38,38 @@ class ProfileHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    alignment: Alignment.centerLeft,
-                    width: 200,
-                    height: 50,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 0.0), // Geser ikon ke kiri
-                      // Tombol menu (ikon tiga garis)
-                      child: IconButton(
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
-                        icon: const FaIcon(
-                          FontAwesomeIcons.bars,
-                          size: 25,
-                        ),
-                        color: Colors.white,
-                      ),
+                  alignment: Alignment.centerLeft,
+                  width: 200,
+                  height: 50,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 0.0), // Geser ikon ke kiri
+                    // Tombol menu (ikon tiga garis)
+                    child: IconButton(
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                    icon: const FaIcon(
+                      FontAwesomeIcons.bars,
+                      size: 25,
+                    ),
+                    color: Colors.white,
                     ),
                   ),
-                  Text(
+                  ),
+                  SizedBox(
+                  width: 200,
+                  child: Text(
                     businessName,
                     style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                     ),
+                    softWrap: true,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   ),
                 ],
               ),
@@ -215,7 +221,11 @@ class ProfileHeader extends StatelessWidget {
                   color: Colors.white, size: 20),
               const SizedBox(width: 8.0),
               Text(
-                phoneNumber,
+                phoneNumber.startsWith('+62') 
+                  ? phoneNumber 
+                  : phoneNumber.startsWith('0') 
+                    ? '+62${phoneNumber.substring(1)}' 
+                    : '+62$phoneNumber',
                 style: const TextStyle(
                     fontSize: 12,
                     color: Colors.white,

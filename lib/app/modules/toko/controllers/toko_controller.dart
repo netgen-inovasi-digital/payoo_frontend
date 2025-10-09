@@ -163,7 +163,7 @@ class TokoController extends GetxController {
       'name': controllerNamaToko.text.trim(),
       'address': controllerAlamatToko.text.trim(),
       'phone': controllerTeleponToko.text.trim(),
-      'photo' : imageLink.value.isNotEmpty ? imageLink.value : toko.value!.photo,
+      'photo': imageLink.value.isNotEmpty ? imageLink.value : toko.value!.photo,
     };
     print( payload );
     bool success = false;
