@@ -21,7 +21,7 @@ class KategoriView extends GetView<KategoriController> {
       // ================= AppBar Custom =================
       appBar: CustomAppBar(
         title: 'Data Kategori',
-        onPressed: () => Get.toNamed(Routes.PRODUK),
+        onPressed: () => Get.back(),
       ),
       // ================= Body =================
       body: Padding(

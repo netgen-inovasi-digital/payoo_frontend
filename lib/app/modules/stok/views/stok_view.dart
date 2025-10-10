@@ -59,7 +59,7 @@ class _StokViewState extends State<StokView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Manajemen Stok',
-        onPressed: () => Get.toNamed(Routes.PRODUK),
+        onPressed: () => Get.back(),
       ),
       body: Column(
         children: [

@@ -91,7 +91,7 @@ class _DataProdukViewState extends State<DataProdukView> {
       appBar: CustomAppBar(
         title: 'Data Produk',
         dividerLine: false,
-        onPressed: () => Get.toNamed(Routes.PRODUK),
+        onPressed: () => Get.back(),
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,

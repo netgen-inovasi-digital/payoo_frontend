@@ -64,8 +64,8 @@ class _StokFormViewState extends State<StokFormView> {
       stokController.resetForm();
       
       // Navigate back using route name
-      Get.toNamed(Routes.STOK);
-      
+      Get.back();
+      Get.back();
       // Refresh the products with stock data 
       stokController.fetchProductsWithStock();
       

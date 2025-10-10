@@ -129,7 +129,7 @@ class _TambahKomposisiViewState extends State<TambahKomposisiView> {
     if (widget.komposisi == null) {
       final ok = await controller.createKomposisi();
       if (ok) {
-        Get.toNamed(Routes.KOMPOSISI);
+        Get.back(); // Go back to previous screen
         CustomSnackBar.showCustomSnackBar(
           title: 'Sukses', 
           message: 'Komposisi berhasil dibuat'
@@ -144,6 +144,7 @@ class _TambahKomposisiViewState extends State<TambahKomposisiView> {
         }
       }
     } else {
+      Get.back(); Get.back(); 
       // Update existing komposisi
       final ok = await controller.updateKomposisi(widget.komposisi!.id);
       if (ok) {

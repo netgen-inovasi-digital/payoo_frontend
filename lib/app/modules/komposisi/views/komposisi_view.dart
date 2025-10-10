@@ -89,7 +89,7 @@ class _KomposisiViewState extends State<KomposisiView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Data Komposisi', 
-        onPressed: () => Get.toNamed(Routes.PRODUK),
+        onPressed: () => Get.back(),
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
