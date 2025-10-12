@@ -24,6 +24,7 @@ class _TransaksiViewState extends State<TransaksiView> {
   late final ProdukController _produkController;
   late final KeranjangController _keranjangController;
   String _searchQuery = '';
+  bool _expanded = false;
 
   @override
   void initState() {
@@ -176,48 +177,146 @@ class _TransaksiViewState extends State<TransaksiView> {
               ],
             ),
 
-            // Cart Bottom Sheet
+            // Cart Bottom Sheet with Notes
             Obx(() {
               if (_keranjangController.product.isNotEmpty) {
                 return Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 40),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => PembayaranModal(
-                            controller: _keranjangController,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Animated Notes Container
+                      AnimatedContainer(
+                        margin: const EdgeInsets.symmetric(horizontal: 70),
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.only(
+                          top: 2,
+                          right: 15,
+                          left: 15,
+                          bottom: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: LightThemeColors.primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 18.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, -2),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Price Row with Expand Button
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Notes",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const Spacer(),
+                                IconButton(
+                                  icon: Icon(_expanded 
+                                      ? Icons.expand_less 
+                                      : Icons.expand_more),
+                                  onPressed: () {
+                                    setState(() {
+                                      _expanded = !_expanded;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            // Animated note field
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                              child: _expanded
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(
+                                          bottom: 10.0, top: 5),
+                                      child: TextField(
+                                        controller: _keranjangController.notesController,
+                                        style: const TextStyle(fontSize: 14),
+                                        decoration: InputDecoration(
+                                          hintText: 'Catatan untuk pesanan Anda',
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: const BorderSide(
+                                              color: Colors.black,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: const BorderSide(
+                                              color: Colors.black,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          contentPadding: const EdgeInsets.all(8),
+                                        ),
+                                        maxLines: 3,
+                                        onChanged: (value) {
+                                          // Note value automatically saved in controller
+                                        },
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.shopping_cart, color: Colors.white),
-                          const SizedBox(width: 8.0),
-                          Text(
-                            'Rp.${_keranjangController.totalPrice.toStringAsFixed(0)}  |  ${_keranjangController.totalItems.toStringAsFixed(0)} Item',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
+                      
+                      // Save Button
+                      Container(
+                        padding: const EdgeInsets.only(
+                            left: 40, right: 40 , bottom: 20),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => PembayaranModal(
+                                controller: _keranjangController,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: LightThemeColors.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 18.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0),
                             ),
                           ),
-                        ],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.shopping_cart, color: Colors.white),
+                              const SizedBox(width: 8.0),
+                              Text(
+                                'Rp.${_keranjangController.totalPrice.toStringAsFixed(0)}  |  ${_keranjangController.totalItems.toStringAsFixed(0)} Item',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 );
               }

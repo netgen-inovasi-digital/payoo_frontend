@@ -61,7 +61,8 @@ class _PembayaranModalState extends State<PembayaranModal> {
     final success = await controller.createOrder();
 
     if (success) {
-      Get.to(TransaksiBerhasilView(
+      Get.back(); // Close the modal
+      Get.off(TransaksiBerhasilView(
         bayar: controller.paymentAmount.value,
         harga: price,
         orderId: controller.orderId.value,
