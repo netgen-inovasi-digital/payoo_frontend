@@ -46,3 +46,38 @@ class AuthData {
 		);
 	}
 }
+
+class ForgetPasswordModel {
+  final String email;
+
+  ForgetPasswordModel({required this.email});
+
+  factory ForgetPasswordModel.fromJson(Map<String, dynamic> json) {
+    return ForgetPasswordModel(
+      email: json['email']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+      };
+}
+
+class ForgetPasswordVerify {
+  final String email;
+  final String otp;
+
+  ForgetPasswordVerify({required this.email, required this.otp});
+
+  factory ForgetPasswordVerify.fromJson(Map<String, dynamic> json) {
+    return ForgetPasswordVerify(
+      email: json['email']?.toString() ?? '',
+      otp: json['otp']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'otp': otp,
+      };
+}

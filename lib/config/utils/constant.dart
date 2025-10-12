@@ -9,12 +9,14 @@ class Constants {
   // Auth
   static const AUTH_REGISTER = '/auth/register';
   static const AUTH_LOGIN = '/auth/login';
+  static const ACCOUNT_FORGOT_PASSWORD = '/auth/forgot-password';
+  static const ACCOUNT_FORGOT_PASSWORD_VERIFY = '/auth/forgot-password/verify-otp';
+  static const ACCOUNT_RESET_PASSWORD = '/auth/reset-password';
 
   // Account
   static const ACCOUNT_PROFILE = '/account/profile';
   static const ACCOUNT_UPDATE_PROFILE = '/account/profile'; // PUT
   static const ACCOUNT_CHANGE_PASSWORD = '/account/change-password';
-
   // Products
   static const PRODUCTS = '/products';
   static const PRODUCT_BY_ID = '/products/{id}';

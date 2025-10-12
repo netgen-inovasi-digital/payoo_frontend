@@ -53,7 +53,6 @@ class GantiPasswordView extends GetView<AkunController> {
                   photo:
                      controller.user.value?.photo ?? 'http://t1.gstatic.com/licensed-image?q=tbn:ANd9GcR0NrOJEpfjkM0zxD-aO9b-bWqW3mhY57jPMg3aSbxTYO__R4jOvx8T2Oa7Fm9yxXOGg4B_ns3SZaZGCiBOPQw',
                   onEdit: () {
-                    print("Edit button tapped");
                   },
                 ),
                 const SizedBox(height: 60),

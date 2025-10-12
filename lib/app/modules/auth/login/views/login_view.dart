@@ -15,149 +15,183 @@ class LoginView extends StatefulWidget {
   State<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _LoginViewState extends State<LoginView> with RouteAware  {
   bool passwordSee = true;
   final LoginController loginController = Get.find<LoginController>();
 
   @override
+  void initState() {
+    super.initState();
+    // Clear form when first entering the screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loginController.clearForm();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clear form when leaving the screen
+    loginController.clearForm();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Stack(
-              children: [
-                Column(
-                  children: [
-                    const SizedBox(height: 250),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 120),
-                          // TextField Email
-                          Obx(() => CustomTextField(
-                            hintText: 'Email',
-                            controller: loginController.email,
-                            keyboardType: TextInputType.emailAddress,
-                            hasError: loginController.hasAttemptedSubmit.value && 
-                                     loginController.emailError.value.isNotEmpty,
-                            errorText: loginController.emailError.value,
-                          )),
-                          const SizedBox(height: 20),
-                          // TextField Password
-                          Obx(() => CustomTextField(
-                            hintText: 'Kata Sandi',
-                            controller: loginController.password,
-                            obscureText: passwordSee,
-                            hasError: loginController.hasAttemptedSubmit.value && 
-                                     loginController.passwordError.value.isNotEmpty,
-                            errorText: loginController.passwordError.value,
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: GestureDetector(
-                                onTap: () {
-                                  passwordSee = !passwordSee;
+    return PopScope(
+       canPop: true,
+       onPopInvokedWithResult: (didPop,result) {
+         if (didPop) {
+           loginController.clearForm();
+         }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  Column(
+                    children: [
+                      const SizedBox(height: 250),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 120),
+                            // TextField Email
+                            Obx(() => CustomTextField(
+                                  hintText: 'Email',
+                                  controller: loginController.email,
+                                  keyboardType: TextInputType.emailAddress,
+                                  hasError: loginController
+                                          .hasAttemptedSubmit.value &&
+                                      loginController.emailError.value.isNotEmpty,
+                                  errorText: loginController.emailError.value,
+                                )),
+                            const SizedBox(height: 20),
+                            // TextField Password
+                            Obx(() => CustomTextField(
+                                  hintText: 'Kata Sandi',
+                                  controller: loginController.password,
+                                  obscureText: passwordSee,
+                                  hasError:
+                                      loginController.hasAttemptedSubmit.value &&
+                                          loginController
+                                              .passwordError.value.isNotEmpty,
+                                  errorText: loginController.passwordError.value,
+                                  suffixIcon: Padding(
+                                    padding: const EdgeInsets.only(right: 20),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        passwordSee = !passwordSee;
+                                      },
+                                      child: Icon(
+                                        passwordSee
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                        color: passwordSee
+                                            ? LightThemeColors.textHintColor
+                                            : LightThemeColors.bodyTextColor,
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                            const SizedBox(height: 20),
+                            Obx(() {
+                              if (loginController.status.value ==
+                                  ApiCallStatus.loading) {
+                                return const CircularProgressIndicator();
+                              }
+                              final success = loginController.status.value ==
+                                      ApiCallStatus.success &&
+                                  (loginController.apiResponse.value?.isSuccess ??
+                                      false);
+                              return CustomButton(
+                                height: 50,
+                                width: 280,
+                                label: success ? 'Berhasil' : 'Masuk',
+                                onPressed: () async {
+                                  await loginController.login();
+                                  final resp = loginController.apiResponse.value;
+                                  if (loginController.status.value ==
+                                          ApiCallStatus.success &&
+                                      (resp?.isSuccess ?? false)) {
+                                    Get.toNamed(Routes.DASHBOARD);
+                                  } else if (loginController
+                                      .errorMessage.isNotEmpty) {
+                                    Get.snackbar('Login Gagal',
+                                        loginController.errorMessage.value,
+                                        backgroundColor: Colors.redAccent,
+                                        colorText: Colors.white);
+                                  }
                                 },
-                                child: Icon(
-                                  passwordSee
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: passwordSee
-                                      ? LightThemeColors.textHintColor
-                                      : LightThemeColors.bodyTextColor,
-                                ),
-                              ),
-                            ),
-                          )),
-                          const SizedBox(height: 20),
-                          Obx(() {
-                            if (loginController.status.value == ApiCallStatus.loading) {
-                              return const CircularProgressIndicator();
-                            }
-                            final success = loginController.status.value == ApiCallStatus.success &&
-                                (loginController.apiResponse.value?.isSuccess ?? false);
-                            return CustomButton(
-                              height: 50,
-                              width: 280,
-                              label: success ? 'Berhasil' : 'Masuk',
-                              onPressed: () async {
-                                await loginController.login();
-                                final resp = loginController.apiResponse.value;
-                                if (loginController.status.value == ApiCallStatus.success &&
-                                    (resp?.isSuccess ?? false)) {
-                                  Get.toNamed(Routes.DASHBOARD);
-                                } else if (loginController.errorMessage.isNotEmpty) {
-                                  Get.snackbar('Login Gagal', loginController.errorMessage.value,
-                                      backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                }
-                              },
-                            );
-                          }),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Belum Punya Akun? Daftar ',
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w600),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Get.toNamed(Routes.DAFTAR);
-                                },
-                                child: const Text(
-                                  'Disini.',
+                              );
+                            }),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Belum Punya Akun? Daftar ',
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline),
+                                      fontSize: 12, fontWeight: FontWeight.w600),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: () {
-                              Get.toNamed(Routes.PEMULIHAN);
-                            },
-                            child: const Text(
-                              'Lupa Kata Sandi?',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline),
+                                GestureDetector(
+                                  onTap: () {
+                                    Get.toNamed(Routes.DAFTAR);
+                                  },
+                                  child: const Text(
+                                    'Disini.',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: () {
+                                Get.toNamed(Routes.PEMULIHAN);
+                              },
+                              child: const Text(
+                                'Lupa Kata Sandi?',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const CustomHeaderClipPath(
-                  height: 350,
-                  strokeWidth: 20,
-                  children: [
-                    Text(
-                      "PAYOO",
-                      style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white),
-                    ),
-                    Text("Point of Sales",
+                    ],
+                  ),
+                  const CustomHeaderClipPath(
+                    height: 350,
+                    strokeWidth: 20,
+                    children: [
+                      Text(
+                        "PAYOO",
                         style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 40,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white)),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                            color: Colors.white),
+                      ),
+                      Text("Point of Sales",
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

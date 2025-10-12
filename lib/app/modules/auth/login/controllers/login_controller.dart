@@ -111,6 +111,14 @@ class LoginController extends GetxController {
     hasAttemptedSubmit.value = false;
   }
 
+  void clearForm() {
+    email.clear();
+    password.clear();
+    emailError.value = '';
+    passwordError.value = '';
+    hasAttemptedSubmit.value = false;
+    errorMessage.value = '';
+  }
   @override
   void onClose() {
     email.dispose();

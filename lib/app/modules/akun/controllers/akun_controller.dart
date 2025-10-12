@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/data/models/auth_model.dart';
 import 'package:payoo/app/data/models/user_model.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/services/api_response.dart';
@@ -12,7 +13,7 @@ class AkunController extends GetxController {
   var status = ApiCallStatus.holding.obs;
   var user = Rx<User?>(null);
   var error = ''.obs;
-  
+
   // State update
   var passwordUpdate = ApiCallStatus.holding.obs;
   var statusUpdate = ApiCallStatus.holding.obs;
@@ -203,8 +204,7 @@ class AkunController extends GetxController {
   }
 
 
-
-
+  
   void fillProfile(){
     if (user.value != null) {
       namaController.text = user.value!.name ?? '';
@@ -212,6 +212,7 @@ class AkunController extends GetxController {
       phoneController.text = user.value!.phone ?? ''; 
     }
   }
+  
 
   void resetForm() {
     statusUpdate.value = ApiCallStatus.holding;

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_button.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
+import 'package:payoo/app/modules/auth/pemulihan/controllers/pemulihan_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 
 class FormEmail extends StatelessWidget {
   final VoidCallback onPemulihan;
-
-  const FormEmail({super.key, required this.onPemulihan});
+  final PemulihanController pemulihanController;
+  const FormEmail({super.key, required this.onPemulihan, required this.pemulihanController});
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +16,9 @@ class FormEmail extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-
+        
         // TextField email
-        const CustomTextField(hintText: 'alamat email'),
+        CustomTextField(hintText: 'alamat email', controller: pemulihanController.forgetPasswordController),
         const SizedBox(height: 20),
 
         // Tombol Masuk
