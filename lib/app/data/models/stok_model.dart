@@ -83,17 +83,18 @@ class ProductWithStock {
     return null;
   }
 }
-
 class Stock {
   final int id;
-  final int productId; // Changed from compositionId to match API response
+  final int productId; // Use product_id from API
   int quantity;
-  final StockType type;
-  final double? buyPrice; // Add buy_price field
-  final String? notes; // Add notes field
-  final DateTime? date; // Make nullable for cases like "0000-00-00 00:00:00"
+  final String? type;
+  final double? buyPrice;
+  final String? notes;
+  final DateTime? date; // Can be null (e.g. "0000-00-00 00:00:00")
   final DateTime createdAt;
-  final DateTime? updatedAt; // Make nullable
+  final DateTime? updatedAt;
+  final String productName;
+  final String? productType; // "product" or "composition"
 
   Stock({
     required this.id,
@@ -105,61 +106,56 @@ class Stock {
     this.date,
     required this.createdAt,
     this.updatedAt,
+    required this.productName,
+    this.productType,
   });
 
   factory Stock.fromJson(Map<String, dynamic> json) {
     return Stock(
       id: _parseInt(json['id']) ?? 0,
-      productId: _parseInt(json['product_id']) ?? 0, // Use product_id from API
+      productId: _parseInt(json['product_id']) ?? 0,
       quantity: _parseInt(json['quantity']) ?? 0,
-      type: StockType.fromString(json['type']?.toString() ?? 'in'),
+      type: json['type']?.toString(),
       buyPrice: _parseDouble(json['buy_price']),
       notes: json['notes']?.toString(),
       date: _parseDateTime(json['date']),
       createdAt: _parseDateTime(json['created_at']) ?? DateTime.now(),
       updatedAt: _parseDateTime(json['updated_at']),
+      productName: json['product_name']?.toString() ?? '',
+      productType: json['product_type']?.toString(),
     );
   }
 
-  // Helper method untuk parsing int dengan null safety
   static int? _parseInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;
     if (value is double) return value.toInt();
-    if (value is String) {
-      return int.tryParse(value);
-    }
+    if (value is String) return int.tryParse(value);
     return null;
   }
 
-  // Helper method untuk parsing double dengan null safety
   static double? _parseDouble(dynamic value) {
     if (value == null) return null;
     if (value is double) return value;
     if (value is int) return value.toDouble();
-    if (value is String) {
-      return double.tryParse(value);
-    }
+    if (value is String) return double.tryParse(value);
     return null;
   }
 
-  // Helper method untuk parsing DateTime dengan null safety
   static DateTime? _parseDateTime(dynamic value) {
     if (value == null) return null;
     if (value is String && value.isNotEmpty) {
       try {
-        // Handle invalid dates like "0000-00-00 00:00:00"
-        if (value.startsWith('0000-00-00')) {
-          return null;
-        }
-        return DateTime.parse(value);
-      } catch (e) {
+        if (value.startsWith('0000-00-00')) return null;
+        final normalized = value.contains('T') ? value : value.replaceFirst(' ', 'T');
+        return DateTime.parse(normalized);
+      } catch (_) {
         return null;
       }
     }
     return null;
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -171,28 +167,8 @@ class Stock {
       'date': date?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'product_name': productName,
+      'product_type': productType,
     };
-  }
-}
-
-enum StockType {
-  stockIn,
-  stockOut;
-  
-  static StockType fromString(String? value) {
-    if (value == null) return StockType.stockIn; // Default fallback
-    switch (value.toLowerCase()) {
-      case 'in':
-        return StockType.stockIn;
-      case 'out':
-        return StockType.stockOut;
-      default:
-        return StockType.stockIn; // Default fallback instead of throwing
-    }
-  }
-  
-  @override
-  String toString() {
-    return this == StockType.stockIn ? 'in' : 'out';
   }
 }

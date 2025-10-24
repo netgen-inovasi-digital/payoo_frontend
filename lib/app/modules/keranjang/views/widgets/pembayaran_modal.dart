@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:payoo/app/components/currency_input.dart';
 import 'package:payoo/app/modules/keranjang/controllers/keranjang_controller.dart';
 import 'package:payoo/app/modules/transaksi/views/transaksi_berhasil_view.dart';
+import 'package:payoo/config/utils/constant.dart';
 
 class PembayaranModal extends StatefulWidget {
   final KeranjangController controller;
@@ -23,11 +25,52 @@ class _PembayaranModalState extends State<PembayaranModal> {
 
   String? selectedMethod = 'cash';
 
+  double get diskonAmount {
+    return double.tryParse(widget.controller.diskonController.text) ?? 0;
+  }
+
+  double get totalSetelahDiskon {
+    final total = widget.controller.totalPrice - diskonAmount;
+    return total > 0 ? total : 0;
+  }
+
+  void _updateKembalian() {
+    final bayar = double.tryParse(widget.controller.enteredAmount.text) ?? 0;
+    final total = widget.controller.totalPrice;
+    final diskon = double.tryParse(widget.controller.diskonController.text) ?? 0;
+    
+    final totalSetelahDiskon = total - diskon;
+    final kembalian = bayar - totalSetelahDiskon;
+    
+    widget.controller.kembalianController.text = 
+        kembalian > 0 ? kembalian.toStringAsFixed(0) : '0';
+  }
+
+  void _onBayarChanged(String value) {
+    final numericOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+    widget.controller.enteredAmount.text = numericOnly;
+    _updateKembalian();
+    setState(() {});
+  }
+
+  void _onDiskonChanged(String value) {
+    final numericOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+    widget.controller.diskonController.text = numericOnly;
+    _updateKembalian();
+    setState(() {});
+  }
+
+  void _onKembalianChanged(String value) {
+    final numericOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+    widget.controller.kembalianController.text = numericOnly;
+    setState(() {});
+  }
+
   Future<void> _handlePay() async {
     final controller = widget.controller;
 
     if (controller.enteredAmount.text.trim().isEmpty) {
-      controller.enteredAmount.text = controller.totalPrice.toString();
+      controller.enteredAmount.text = totalSetelahDiskon.toString();
     }
 
     if (controller.countItem.isEmpty) {
@@ -42,8 +85,7 @@ class _PembayaranModalState extends State<PembayaranModal> {
     }
 
     final enteredAmountValue = double.tryParse(controller.enteredAmount.text);
-    if (enteredAmountValue == null ||
-        enteredAmountValue < controller.totalPrice) {
+    if (enteredAmountValue == null || enteredAmountValue < totalSetelahDiskon) {
       Get.snackbar(
         'Error',
         'Jumlah uang tidak mencukupi',
@@ -57,14 +99,13 @@ class _PembayaranModalState extends State<PembayaranModal> {
     controller.paymentAmount.value = enteredAmountValue;
     controller.selectedPaymentMethod.value = selectedMethod ?? 'cash';
 
-    final price = controller.totalPrice;
+    final price = totalSetelahDiskon;
     final success = await controller.createOrder();
 
     if (success) {
-      Get.back(); // Close the modal
+      Get.back();
       Get.off(TransaksiBerhasilView(
-        bayar: controller.paymentAmount.value,
-        harga: price,
+        kembalian: double.tryParse(controller.kembalianController.text) ?? 0,
         orderId: controller.orderId.value,
       ));
     } else {
@@ -85,13 +126,16 @@ class _PembayaranModalState extends State<PembayaranModal> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         padding: const EdgeInsets.all(32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Pilih Metode Pembayaran',
+                'Detail Pesanan',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -100,7 +144,107 @@ class _PembayaranModalState extends State<PembayaranModal> {
               ),
               const SizedBox(height: 16),
 
-              // ✅ Grid layout 3 di baris pertama, 2 di baris kedua
+              // Detail Pesanan
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  children: [
+                    // List produk
+                    Obx(() => Column(
+                          children: controller.product.map((prod) {
+                            final qty = controller.countItem[prod.id] ?? 0;
+                            final subtotal = prod.sellingPrice * qty;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '${prod.name} (${qty}x)',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    formatRupiah(subtotal),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        )),
+                    const Divider(height: 16, color: Color(0xFFE0E0E0)),
+
+                    // Subtotal
+                    Obx(() => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Subtotal',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              formatRupiah(controller.totalPrice),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        )),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Input Bayar
+              CurrencyInput(
+                label: 'Bayar',
+                hintText: formatRupiah(totalSetelahDiskon),
+                onChanged: _onBayarChanged,
+                valueController: controller.enteredAmount,
+              ),
+              const SizedBox(height: 16),
+
+              // Input Diskon
+              CurrencyInput(
+                label: 'Diskon',
+                hintText: 'Rp. 0',
+                onChanged: _onDiskonChanged,
+                valueController: controller.diskonController,
+              ),
+              
+              const SizedBox(height: 16),
+
+              // Input Kembalian
+              CurrencyInput(
+                label: 'Kembalian',
+                hintText: 'Rp. 0',
+                onChanged: _onKembalianChanged,
+                valueController: controller.kembalianController,
+              ),
+
+              const SizedBox(height: 16),
+              // Grid layout metode pembayaran
               Column(
                 children: [
                   Row(
@@ -124,70 +268,6 @@ class _PembayaranModalState extends State<PembayaranModal> {
                     }).toList(),
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 24),
-              const Text(
-                'Masukkan jumlah uang',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ Input jumlah uang
-              Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Center(
-                  child: IntrinsicWidth(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Rp. ',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF9E9E9E),
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                        Flexible(
-                          child: TextField(
-                            controller: controller.enteredAmount,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                              hintText: controller.totalPrice.toString(),
-                              hintStyle: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF9E9E9E),
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF9E9E9E),
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
 
               const SizedBox(height: 32),
@@ -257,15 +337,13 @@ class _PembayaranModalState extends State<PembayaranModal> {
         });
       },
       child: Container(
-        width: 75, // 🔹 Lebih kecil dari sebelumnya (90)
-        padding:
-            const EdgeInsets.symmetric(vertical: 8), // 🔹 Sedikit lebih rapat
+        width: 75,
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF4CAF50).withOpacity(0.1)
               : const Color(0xFFF5F5F5),
-          borderRadius:
-              BorderRadius.circular(10), // 🔹 Radius sedikit lebih kecil
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color:
                 isSelected ? const Color(0xFF4CAF50) : const Color(0xFFE0E0E0),
@@ -275,16 +353,11 @@ class _PembayaranModalState extends State<PembayaranModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey,
-              size: 16, // 🔹 Icon lebih kecil
-            ),
             const SizedBox(height: 3),
             Text(
               method['name']!,
               style: TextStyle(
-                fontSize: 13, // 🔹 Font lebih kecil
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? const Color(0xFF4CAF50) : Colors.black,
               ),

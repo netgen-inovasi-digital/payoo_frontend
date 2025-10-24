@@ -7,7 +7,7 @@ import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/my_theme.dart';
 
 Future<void> main() async {
-  //wait for bindings
+  //wait for bindingsx`
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize GetStorage first
@@ -34,7 +34,7 @@ Future<void> main() async {
   // await FcmHelper.initFcm();
 
   // // initialize local notifications service
-  // await AwesomeNotificationsHelper.init(); 
+  // await AwesomeNotificationsHe lper.init(); 
 
   runApp(ScreenUtilInit(
     //todo add your (Xd/Figma) artboard size
@@ -62,7 +62,7 @@ Future<void> main() async {
         },    
         initialRoute: AppPages.INITIAL,
         getPages: AppPages.routes,
-        
+   
       );
     },
   ));

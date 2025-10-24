@@ -16,7 +16,7 @@ class TokoController extends GetxController {
   var list = <Toko>[].obs;
   var toko = Rx<Toko?>(null);
   var errorList = ''.obs;
-  AkunController akunController = Get.find<AkunController>();
+  AkunController akunController = Get.put<AkunController>(AkunController());
   
   final controllerNamaToko = TextEditingController();
   final controllerAlamatToko = TextEditingController();

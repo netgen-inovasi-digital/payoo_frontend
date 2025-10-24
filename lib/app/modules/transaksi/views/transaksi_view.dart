@@ -29,20 +29,21 @@ class _TransaksiViewState extends State<TransaksiView> {
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize controllers properly
     if (Get.isRegistered<ProdukController>()) {
       _produkController = Get.find<ProdukController>();
     } else {
       _produkController = Get.put<ProdukController>(ProdukController());
     }
-    
+
     if (Get.isRegistered<KeranjangController>()) {
       _keranjangController = Get.find<KeranjangController>();
     } else {
-      _keranjangController = Get.put<KeranjangController>(KeranjangController());
+      _keranjangController =
+          Get.put<KeranjangController>(KeranjangController());
     }
-    
+
     // Fetch products only if list is empty
     if (_produkController.list.isEmpty) {
       _produkController.fetchProduk();
@@ -72,19 +73,16 @@ class _TransaksiViewState extends State<TransaksiView> {
   }
 
   void _onProductTap(Produk product) {
-    // Check if product is already in cart
-    bool isInCart = _keranjangController.product.any((p) => p.id == product.id);
-    
-    if (!isInCart) {
-      // Add product to cart and show modal
+    if (_keranjangController.getProductCount(product.id) <= 0) {
       _keranjangController.addProduct(product);
-      keranjangModal(
-        context: context,
-        produk: product,
-        controller: _keranjangController,
-        produkId: product.id,
-      );
-    } else {
+    }
+    keranjangModal(
+      context: context,
+      produk: product,
+      controller: _keranjangController,
+      produkId: product.id,
+    );
+    if (_keranjangController.getProductCount(product.id) < 1) {
       // Remove product from cart
       _keranjangController.removeProduct(product.id);
     }
@@ -127,7 +125,7 @@ class _TransaksiViewState extends State<TransaksiView> {
                         ApiCallStatus.loading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    
+
                     if (_produkController.statusList.value ==
                         ApiCallStatus.error) {
                       return EmptyState(
@@ -164,12 +162,12 @@ class _TransaksiViewState extends State<TransaksiView> {
                       itemBuilder: (context, index) {
                         final product = displayProducts[index];
                         return Obx(() => ProductCard(
-                          cardColor: _isProductInCart(product)
-                              ? const Color(0xFFD9D9D9)
-                              : Colors.white,
-                          produk: product,
-                          onTap: () => _onProductTap(product),
-                        ));
+                              cardColor: _isProductInCart(product)
+                                  ? const Color(0xFFD9D9D9)
+                                  : Colors.white,
+                              produk: product,
+                              onTap: () => _onProductTap(product),
+                            ));
                       },
                     );
                   }),
@@ -227,8 +225,8 @@ class _TransaksiViewState extends State<TransaksiView> {
                                 ),
                                 const Spacer(),
                                 IconButton(
-                                  icon: Icon(_expanded 
-                                      ? Icons.expand_less 
+                                  icon: Icon(_expanded
+                                      ? Icons.expand_less
                                       : Icons.expand_more),
                                   onPressed: () {
                                     setState(() {
@@ -247,25 +245,30 @@ class _TransaksiViewState extends State<TransaksiView> {
                                       padding: const EdgeInsets.only(
                                           bottom: 10.0, top: 5),
                                       child: TextField(
-                                        controller: _keranjangController.notesController,
+                                        controller: _keranjangController
+                                            .notesController,
                                         style: const TextStyle(fontSize: 14),
                                         decoration: InputDecoration(
-                                          hintText: 'Catatan untuk pesanan Anda',
+                                          hintText:
+                                              'Catatan untuk pesanan Anda',
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             borderSide: const BorderSide(
                                               color: Colors.black,
                                               width: 1,
                                             ),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             borderSide: const BorderSide(
                                               color: Colors.black,
                                               width: 1,
                                             ),
                                           ),
-                                          contentPadding: const EdgeInsets.all(8),
+                                          contentPadding:
+                                              const EdgeInsets.all(8),
                                         ),
                                         maxLines: 3,
                                         onChanged: (value) {
@@ -278,11 +281,11 @@ class _TransaksiViewState extends State<TransaksiView> {
                           ],
                         ),
                       ),
-                      
+
                       // Save Button
                       Container(
                         padding: const EdgeInsets.only(
-                            left: 40, right: 40 , bottom: 20),
+                            left: 40, right: 40, bottom: 20),
                         child: ElevatedButton(
                           onPressed: () {
                             showDialog(
@@ -302,7 +305,8 @@ class _TransaksiViewState extends State<TransaksiView> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.shopping_cart, color: Colors.white),
+                              const Icon(Icons.shopping_cart,
+                                  color: Colors.white),
                               const SizedBox(width: 8.0),
                               Text(
                                 'Rp.${_keranjangController.totalPrice.toStringAsFixed(0)}  |  ${_keranjangController.totalItems.toStringAsFixed(0)} Item',

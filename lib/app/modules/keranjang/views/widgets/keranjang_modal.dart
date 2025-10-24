@@ -16,7 +16,7 @@ void keranjangModal({
     context: context,
     builder: (context) {
       // Ambil jumlah item saat ini dari controller
-      int count = 1;
+      int count = controller.getProductCount(produkId);
 
       // Gunakan StatefulBuilder agar state 'count' di dalam dialog bisa diperbarui
       return StatefulBuilder(

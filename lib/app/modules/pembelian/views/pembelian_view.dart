@@ -3,20 +3,20 @@ import 'package:payoo/app/components/SearchInputField.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/components/custom_footer_clip_path.dart';
 import 'package:payoo/app/data/models/stok_model.dart';
+import 'package:payoo/app/modules/pembelian/views/Pembelian_form_view.dart';
+import 'package:payoo/app/modules/pembelian/views/widget/list_view_pembelian.dart';
 import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
-import 'package:payoo/app/modules/stok/views/stok_form_view.dart';
 import 'package:payoo/app/services/api_call_status.dart';
-import 'widgets/list_view_stok.dart';
 import 'package:flutter/material.dart';
 
-class StokView extends StatefulWidget {
-  const StokView({super.key});
+class PembelianView extends StatefulWidget {
+  const PembelianView({super.key});
 
   @override
-  State<StokView> createState() => _StokViewState();
+  State<PembelianView> createState() => _PembelianViewState();
 }
 
-class _StokViewState extends State<StokView> {
+class _PembelianViewState extends State<PembelianView> {
   late final TextEditingController _searchController;
   late final StokController _stokController;
 
@@ -25,9 +25,9 @@ class _StokViewState extends State<StokView> {
     super.initState();
     _searchController = TextEditingController();
     _stokController = Get.put(StokController());
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _stokController.fetchStockList();
+      _stokController.fetchStockList(pembelian: true, refresh: true);
     });
   }
 
@@ -41,7 +41,7 @@ class _StokViewState extends State<StokView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Manajemen Stok',
+        title: 'Pembelian',
         onPressed: () => Get.back(),
       ),
       body: Stack(
@@ -56,7 +56,8 @@ class _StokViewState extends State<StokView> {
                   verticalPadding: 15,
                   controller: _searchController,
                   onSearchChanged: (_) {
-                    _stokController.searchStokList(search: _searchController.text);
+                    _stokController.searchStokList(
+                        search: _searchController.text);
                   },
                   hintText: 'Cari produk (nama)',
                 ),
@@ -65,38 +66,35 @@ class _StokViewState extends State<StokView> {
               Expanded(
                 child: Obx(() {
                   final status = _stokController.statusListStock.value;
-                  
                   if (status == ApiCallStatus.loading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  
                   if (status == ApiCallStatus.error) {
                     return _buildErrorState();
                   }
-                  
                   if (_stokController.listStock.isEmpty) {
                     return _buildEmptyState();
                   }
-                    return NotificationListener<ScrollNotification>(
+                  return NotificationListener<ScrollNotification>(
                     onNotification: (scrollInfo) {
                       if (scrollInfo.metrics.pixels >=
                               scrollInfo.metrics.maxScrollExtent - 200 &&
                           !_stokController.isLoadingMore.value &&
                           _stokController.hasMoreData.value) {
-                        _stokController.loadMoreStocks();
+                        _stokController.loadMoreStocks(pembelian: true);
                       }
                       return false;
                     },
                     child: Column(
                       children: [
                         Expanded(
-                          child: ListViewStok(
+                          child: ListViewPembelian(
                             stokList: _stokController.listStock,
                           ),
                         ),
                         if (_stokController.isLoadingMore.value)
                           const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
+                            padding: EdgeInsets.symmetric(vertical: 0),
                             child: CircularProgressIndicator(),
                           ),
                       ],
@@ -119,7 +117,7 @@ class _StokViewState extends State<StokView> {
                   children: [
                     FloatingActionButton(
                       shape: const CircleBorder(),
-                      onPressed: () => Get.to(() => const StokFormView()),
+                      onPressed: () => Get.to(() => const PembelianFormView()),
                       backgroundColor: Colors.white,
                       elevation: 4,
                       child: const Icon(

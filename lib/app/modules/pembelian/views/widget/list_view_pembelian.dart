@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:payoo/app/data/models/stok_model.dart';
+import 'package:payoo/app/modules/pembelian/views/pembelian_detail_view.dart';
 import 'package:payoo/app/modules/stok/views/stok_detail_view.dart';
 import 'package:payoo/config/utils/constant.dart';
 import 'package:get/get.dart';
 
-class ListViewStok extends StatelessWidget {
+class ListViewPembelian extends StatelessWidget {
   final List<Stock> stokList;
 
-  const ListViewStok({
+  const ListViewPembelian({
     super.key,
     required this.stokList,
   });
 
   @override
   Widget build(BuildContext context) {
-    
     return ListView.builder(
-      padding: const EdgeInsets.only(
-        bottom: 120.0,
-      ),
+      padding: const EdgeInsets.only(bottom: 120.0),
       itemCount: stokList.length,
       itemBuilder: (context, index) {
         final item = stokList[index];
-        final isStockIn = item.type == "in";
         return GestureDetector(
           onTap: () {
-            Get.to(() => StokDetailView(stok: item));
+            Get.to(() => PembelianDetailView(stok: item));
           },
           child: Container(
             width: double.infinity,
@@ -49,32 +46,11 @@ class ListViewStok extends StatelessWidget {
                           fontSize: 18,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isStockIn
-                              ? Colors.green.shade50
-                              : Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isStockIn
-                                ? Colors.green.shade200
-                                : Colors.red.shade200,
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          isStockIn ? "Masuk" : "Keluar",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                            color: isStockIn
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
-                          ),
+                      Text(
+                        formatRupiah(item.buyPrice),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ],

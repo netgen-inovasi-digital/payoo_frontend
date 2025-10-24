@@ -96,7 +96,23 @@ class _ProdukViewState extends State<ProdukView> {
                       height: 30,
                     ),
                     CustomButtonOutline(
-                      label: 'Manajemen Stok',
+                      label: 'Pembelian',
+                      onPressed: () {
+                        Get.toNamed(Routes.PEMBELIAN);
+                      },
+                      width: 280,
+                      height: 50,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.truck,
+                        size: 14,
+                        color: LightThemeColors.primaryColor,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 30,
+                    ),
+                    CustomButtonOutline(
+                      label: 'stok opname',
                       onPressed: () {
                         Get.toNamed(Routes.STOK);
                       },
@@ -113,7 +129,7 @@ class _ProdukViewState extends State<ProdukView> {
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

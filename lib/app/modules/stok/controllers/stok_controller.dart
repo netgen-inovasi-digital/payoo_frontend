@@ -25,6 +25,15 @@ class StokController extends GetxController {
   var productsStock = <ProductWithStock>[].obs;
   var errorProductsStock = ''.obs;
 
+  // Pagination states untuk list stok
+  var statusListStock = ApiCallStatus.holding.obs;
+  var errorListStock = ''.obs;
+  var listStock = <Stock>[].obs;
+  var currentPage = 1.obs;
+  var totalPages = 1.obs;
+  var isLoadingMore = false.obs;
+  var hasMoreData = true.obs;
+  
   // Form validation states
   var quantityError = ''.obs;
   var dateError = ''.obs;
@@ -88,8 +97,6 @@ class StokController extends GetxController {
       }
     }
     
-    // Notes is optional, no validation needed
-    
     return isValid;
   }
 
@@ -101,8 +108,7 @@ class StokController extends GetxController {
     hasAttemptedSubmit.value = false;
   }
 
-  Future<bool> createStock(int komposisId, String type) async {
-    // Validate form before making API call
+  Future<bool> createStock(int produkId, String type, String produkName) async {
     if (!validateForm(type)) {
       return false;
     }
@@ -112,23 +118,16 @@ class StokController extends GetxController {
     const url = Constants.baseUrl + Constants.STOCKS_CREATE;
     final token = StorageManager().read<String>('token');
 
-    // Parse category_id to integer
-    final categoryId = int.tryParse(komposisId.toString());
-    if (categoryId == null) {
-      errorCreate.value = 'Invalid category selected';
-      statusCreate.value = ApiCallStatus.error;
-      return false;
-    }
-
     final payload = {
-      'product_id': categoryId,
+      'product_id': produkId,
+      'product_name': produkName,
+      'product_type': 'product',
       'quantity': int.tryParse(quantityController.text.trim()) ?? 0,
       'type': type,
       'notes': notesController.text.trim(),
       'date': dateController.text.trim(),
     };
 
-    // Add buy_price only for "in" type
     if (type == 'in') {
       payload['buy_price'] = double.tryParse(buyPriceController.text.trim()) ?? 0;
     }
@@ -146,7 +145,8 @@ class StokController extends GetxController {
             (json) => Stock.fromJson(json),
           );
           if (parsed.data != null) {
-            stok = Rx<Stock?>(parsed.data);
+            stok.value = parsed.data;
+            listStock.insert(0, parsed.data!);
           }
           statusCreate.value = ApiCallStatus.success;
           success = true;
@@ -181,6 +181,152 @@ class StokController extends GetxController {
     errorCreate.value = '';
   }
 
+  Future<bool> searchStokList({required String search}) async {
+    statusListStock.value = ApiCallStatus.loading;
+    errorListStock.value = '';
+    final url = '${Constants.baseUrl}${Constants.STOCKS}?search=${search}';
+    final token = StorageManager().read<String>('token');
+    bool success = false;
+    await BaseClient.safeApiCall(
+      url,
+      RequestType.get,
+      headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+      onSuccess: (response) async {
+        try {
+          final responseData = response.data;
+          if (responseData != null && responseData['data'] is List) {
+            final List<dynamic> dataList = responseData['data'];
+            final List<Stock> stocks = dataList
+                .map((json) => Stock.fromJson(json))
+                .toList();
+            listStock.assignAll(stocks);
+            statusListStock.value = ApiCallStatus.success;
+            success = true;
+          } else {
+            throw Exception('Invalid response format');
+          }
+        } catch (e) {
+          errorListStock.value = 'Error parsing response: $e';
+          statusListStock.value = ApiCallStatus.error;
+          print('Parsing error: $e');
+        }
+      },
+      onError: (e) {
+        errorListStock.value = e.toString();
+        statusListStock.value = ApiCallStatus.error;
+        print('API Error: $e');
+      },
+    );
+
+    if (statusListStock.value == ApiCallStatus.loading) {
+      statusListStock.value = ApiCallStatus.error;
+      errorListStock.value = 'Request timeout';
+    }
+
+    return success;
+  } 
+  
+
+  // Fetch stock list dengan pagination
+  Future<bool> fetchStockList({bool refresh = false, bool isLoadMore = false, bool pembelian = false}) async {
+    // Jika refresh, reset pagination
+    if (refresh) {
+      currentPage.value = 1;
+      hasMoreData.value = true;
+      listStock.clear();
+    }
+
+    // Only set loading status if it's not a load more operation
+    if (!isLoadMore) {
+      statusListStock.value = ApiCallStatus.loading;
+    }
+    errorListStock.value = '';
+    
+    // Build URL dengan query parameter pagination
+    final url = '${Constants.baseUrl}${Constants.STOCKS}?page=${currentPage.value}&per_page=100${pembelian ? '&type=in' : ''}';
+    final token = StorageManager().read<String>('token');
+
+    bool success = false;
+    await BaseClient.safeApiCall(
+      url,
+      RequestType.get,
+      headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+      onSuccess: (response) async {
+        try {
+          final responseData = response.data;
+          if (responseData != null && responseData['data'] is List) {
+            final List<dynamic> dataList = responseData['data'];
+            final List<Stock> stocks = dataList
+                .map((json) => Stock.fromJson(json))
+                .toList();
+            
+            // Jika refresh, replace semua data. Jika tidak, append
+            if (refresh) {
+              listStock.assignAll(stocks);
+            } else {
+              listStock.addAll(stocks);
+            }
+            
+            // Parse pagination metadata dari response
+            if (responseData['meta'] != null && 
+                responseData['meta']['pagination'] != null) {
+              final pagination = responseData['meta']['pagination'];
+              currentPage.value = pagination['current_page'] ?? currentPage.value;
+              totalPages.value = pagination['total_pages'] ?? 1;
+              
+              // Check apakah masih ada data selanjutnya
+              hasMoreData.value = currentPage.value < totalPages.value;
+            } else {
+              // Jika tidak ada meta, cek dari jumlah data yang diterima
+              hasMoreData.value = stocks.length >= 10;
+            }
+            
+            // Only update status if it's not a load more operation
+            if (!isLoadMore) {
+              statusListStock.value = ApiCallStatus.success;
+            }
+            success = true;
+          } else {
+            throw Exception('Invalid response format');
+          }
+        } catch (e) {
+          errorListStock.value = 'Error parsing response: $e';
+          if (!isLoadMore) {
+            statusListStock.value = ApiCallStatus.error;
+          }
+          print('Parsing error: $e');
+        }
+      },
+      onError: (e) {
+        errorListStock.value = e.toString();
+        if (!isLoadMore) {
+          statusListStock.value = ApiCallStatus.error;
+        }
+        print('API Error: $e');
+      },
+    );
+
+    if (statusListStock.value == ApiCallStatus.loading) {
+      statusListStock.value = ApiCallStatus.error;
+      errorListStock.value = 'Request timeout';
+    }
+
+    return success;
+  }
+
+  // Load more stocks untuk infinite scroll
+  Future<void> loadMoreStocks({bool pembelian = false}) async {
+    // Jangan load jika sedang loading atau sudah tidak ada data lagi
+    if (isLoadingMore.value || !hasMoreData.value) return;
+    
+    isLoadingMore.value = true;
+    currentPage.value++;
+
+    await fetchStockList(isLoadMore: true, pembelian: pembelian);
+
+    isLoadingMore.value = false;
+  }
+
   Future<bool> fetchProductsWithStock() async {
     statusProductsStock.value = ApiCallStatus.loading;
     errorProductsStock.value = '';
@@ -194,10 +340,9 @@ class StokController extends GetxController {
       headers: token != null ? {'Authorization': 'Bearer $token'} : null,
       onSuccess: (response) async {
         try {
-          // Parse response as list directly from data field
-          final responseData = response.data;
-          if (responseData != null && responseData['data'] is List) {
-            final List<dynamic> dataList = responseData['data'];
+          final stockLis = response.data;
+          if (stockLis != null && stockLis['data'] is List) {
+            final List<dynamic> dataList = stockLis['data'];
             final List<ProductWithStock> products = dataList
                 .map((json) => ProductWithStock.fromJson(json))
                 .toList();

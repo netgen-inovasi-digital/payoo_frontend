@@ -18,13 +18,15 @@ class KeranjangController extends GetxController {
   var error = ''.obs;
   var product = <Produk>[].obs;
   var paymentAmount = 0.0.obs;
-  AkunController userController = Get.find<AkunController>();
+  AkunController userController = Get.put<AkunController>(AkunController());
   final enteredAmount = TextEditingController();
   final namaController = TextEditingController();
   final hargaModalController = TextEditingController();
   final hargaJualController = TextEditingController();
   final satuanController = TextEditingController();
   final notesController = TextEditingController();
+  final kembalianController = TextEditingController();
+  final diskonController   = TextEditingController();
   RxString selectedPaymentMethod = 'cash'.obs;
   var shopId = 0.obs;
   var userId = 0.obs;
@@ -87,9 +89,6 @@ class KeranjangController extends GetxController {
     // Get current timestamp for created_at and updated_at
     final now = DateTime.now().toString().split('.')[0].replaceAll('T', ' ');
 
-    // Calculate change money
-    final changeAmount = paymentAmount.value - totalPrice;
-
     // Default tax rate (can be made configurable)
     final taxRate = 0.0; // 0% tax by default
     final taxAmount = totalPrice * taxRate;
@@ -107,9 +106,9 @@ class KeranjangController extends GetxController {
       'updated_at': now,
       'order_items': orderItems,
       'payment_method': selectedPaymentMethod.value,
-      'change_money': changeAmount.toStringAsFixed(2),
+      'change_money': kembalianController.text,
       'tax': taxAmount.toStringAsFixed(2),
-      'discount': '0%', // Use string format to match expected output
+      'discount': diskonController  .text, // Use string format to match expected output
     };
 
     bool success = false;
@@ -148,9 +147,13 @@ class KeranjangController extends GetxController {
     return success;
   }
 
+
   @override
   void onClose() {
     // ✅ Proper cleanup
+    enteredAmount.dispose();
+    diskonController  .dispose();
+    kembalianController.dispose();
     product.clear();
     countItem.clear();
     notesController.clear();

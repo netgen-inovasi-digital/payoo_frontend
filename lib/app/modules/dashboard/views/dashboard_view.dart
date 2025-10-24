@@ -9,21 +9,32 @@ import 'package:payoo/app/modules/dashboard/views/widgets/custom_card_premium.da
 import 'package:payoo/app/modules/dashboard/views/widgets/profile_header.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 
-class DashboardView extends StatelessWidget {
-  DashboardView({super.key});
-  final DashboardController dashboardController = Get.put<DashboardController>(DashboardController());
+class DashboardView extends StatefulWidget {
+  const DashboardView({super.key});
 
-  void refreshData() {
-    dashboardController.loadData();    
+  @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
+  final DashboardController dashboardController = Get.find<DashboardController>();
+  bool _hasLoadedData = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load data only once when the screen is first initialized
+    // Use addPostFrameCallback to ensure it runs AFTER build is complete
+    if (!_hasLoadedData) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        dashboardController.refreshData();
+      });
+      _hasLoadedData = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Refresh data every time this page is built/navigated to
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      dashboardController.refreshData();
-    });
-
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: Obx(() {
@@ -111,10 +122,10 @@ class DashboardView extends StatelessWidget {
                           title: 'Kategori Produk',
                           label: 'Total',
                           value: dashboardController.dashboardData.value?.categoryQuantity.toString() ?? '0'),
-                      CustomCard(
-                          title: 'Komposisi Produk', 
-                          label: 'Total', 
-                          value: dashboardController.dashboardData.value?.compositionQuantity.toString() ?? '0'),
+                      // CustomCard(
+                      //     title: 'Komposisi Produk', 
+                      //     label: 'Total', 
+                      //     value: dashboardController.dashboardData.value?.compositionQuantity.toString() ?? '0'),
                       CustomCard(
                           title: 'Jumlah Transaksi',
                           label: dashboardController.dashboardData.value?.date ?? '0',
@@ -123,13 +134,13 @@ class DashboardView extends StatelessWidget {
                           title: 'Pendapatan',
                           label: dashboardController.dashboardData.value?.date ?? '0',
                           value: dashboardController.dashboardData.value?.revenue.toString() ?? '0'),
-                      const CustomCardPremium(
-                          title: 'Keuntungan', description: 'Payoo Premium'),
-                      const CustomCardPremium(
-                          title: 'Pelanggan', description: 'Payoo Premium'),
-                      const CustomCardPremium(
-                          title: 'Bahan Baku Habis',
-                          description: 'Payoo Premium'),
+                      // const CustomCardPremium(
+                      //     title: 'Keuntungan', description: 'Payoo Premium'),
+                      // const CustomCardPremium(
+                      //     title: 'Pelanggan', description: 'Payoo Premium'),
+                      // const CustomCardPremium(
+                      //     title: 'Bahan Baku Habis',
+                      //     description: 'Payoo Premium'),
                     ],
                   ),
                 ),
@@ -141,3 +152,4 @@ class DashboardView extends StatelessWidget {
     );
   }
 }
+  

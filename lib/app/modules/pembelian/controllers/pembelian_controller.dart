@@ -1,0 +1,7 @@
+import 'package:get/get.dart';
+
+import '../../../../config/utils/constant.dart';
+import '../../../services/api_call_status.dart';
+import '../../../services/base_client.dart';
+
+class PembelianController extends GetxController {}

@@ -23,6 +23,8 @@ import 'package:payoo/app/modules/komposisi/bindings/komposisi_binding.dart';
 import 'package:payoo/app/modules/komposisi/views/komposisi_view.dart';
 import 'package:payoo/app/modules/laporan/bindings/laporan_binding.dart';
 import 'package:payoo/app/modules/laporan/views/laporan_view.dart';
+import 'package:payoo/app/modules/pembelian/bindings/pembelian_binding.dart';
+import 'package:payoo/app/modules/pembelian/views/pembelian_view.dart';
 import 'package:payoo/app/modules/produk/bindings/produk_binding.dart';
 import 'package:payoo/app/modules/produk/views/produk_view.dart';
 import 'package:payoo/app/modules/splash/bindings/splash_binding.dart';
@@ -146,5 +148,10 @@ class AppPages {
         name: Routes.KERANJANG,
         page: () =>  KeranjangView(),
         binding: KeranjangBinding()),
+    GetPage(
+        name: Routes.PEMBELIAN,
+        page: () =>  PembelianView(),
+        binding: PembelianBinding()),
+
   ];
 }

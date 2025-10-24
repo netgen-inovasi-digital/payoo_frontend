@@ -5,14 +5,12 @@ import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/config/theme/light_theme.dart';
 
 class TransaksiBerhasilView extends StatelessWidget {
-  const TransaksiBerhasilView({super.key, required this.bayar, required this.harga, required this.orderId});
-  final double bayar;
-  final double harga;
+  const TransaksiBerhasilView({super.key, required this.kembalian, required this.orderId});
+  final double kembalian;
   final int orderId;
   
   @override
   Widget build(BuildContext context) {
-    final double kembalian = bayar - harga;
 
     return Scaffold(
       backgroundColor: Colors.white,

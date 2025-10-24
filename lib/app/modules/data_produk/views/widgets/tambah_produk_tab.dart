@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:payoo/app/components/currency_input.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/data/models/komposisi_model.dart';
 import 'package:payoo/app/modules/kategori/controllers/kategori_controller.dart';
+import 'package:payoo/app/modules/keranjang/views/widgets/pembayaran_modal.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
@@ -69,13 +71,19 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             const SizedBox(height: 16),
             _buildCategoryDropdown(),
             const SizedBox(height: 16),
-            _buildTextField('harga jual*', controller.hargaJualController,
-                isNumber: true),
+            _buildTextField('Stok*', controller.stokController,isNumber: true),
             const SizedBox(height: 16),
-            _buildTextField('harga modal', controller.hargaModalController,
-                isNumber: true),
+            CurrencyInput(
+              valueController: controller.hargaJualController,
+              hintText: 'harga jual*',
+              enabled: true, label: '',
+            ),
             const SizedBox(height: 16),
-
+            CurrencyInput(
+              valueController: controller.hargaModalController,
+              hintText: 'harga modal*',
+              enabled: true, label: '',
+            ),
             // Komposisi info section - UPDATED
             Obx(() {
               // Always read from the controller, which is the single source of truth
@@ -301,7 +309,6 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                       ApiCallStatus.loading) {
                     return const CircularProgressIndicator();
                   }
-
                   // Show current image if available
                   final currentImageUrl = controller.linkImage.value.isNotEmpty
                       ? controller.linkImage.value

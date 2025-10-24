@@ -3,27 +3,25 @@ import 'package:get/get.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/components/custom_snackbar.dart';
+import 'package:payoo/app/data/models/komposisi_model.dart';
+import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 
-class StokFormView extends StatefulWidget {
-  const StokFormView({super.key});
+class PembelianFormView extends StatefulWidget {
+  const PembelianFormView({super.key});
 
   @override
-  State<StokFormView> createState() => _StokFormViewState();
+  State<PembelianFormView> createState() => _PembelianFormViewState();
 }
 
-class _StokFormViewState extends State<StokFormView> {
-  static const int _modeAdd = 1;
-  static const int _modeSubtract = 2;
-
-  int _mode = _modeAdd;
+class _PembelianFormViewState extends State<PembelianFormView> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int _selectedProdukId = 0;
-
+  late final KomposisiController _komposisiController;
   late final ProdukController _produkController;
   late final StokController _stokController;
 
@@ -36,8 +34,9 @@ class _StokFormViewState extends State<StokFormView> {
   void _initializeControllers() {
     _produkController = Get.put<ProdukController>(ProdukController());
     _stokController = Get.find<StokController>();
+    _komposisiController = Get.put<KomposisiController>(KomposisiController());
     _produkController.fetchProduk();
-    
+    _komposisiController.fetchKomposisi();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _stokController.clearValidationErrors();
     });
@@ -78,12 +77,12 @@ class _StokFormViewState extends State<StokFormView> {
         _selectedTime!.minute,
       );
       // Format as YYYY-MM-DD HH:mm:ss for API
-      _stokController.dateController.text = 
+      _stokController.dateController.text =
           '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} '
           '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:00';
     }
 
-    final stockType = _mode == _modeAdd ? 'in' : 'out';
+    const stockType = 'in';
     final success = await _stokController.createStock(
       _selectedProdukId,
       stockType,
@@ -101,20 +100,19 @@ class _StokFormViewState extends State<StokFormView> {
 
   void _handleSuccessfulSave() {
     _stokController.resetForm();
-    
+
     setState(() {
       _selectedProdukId = 0;
       _selectedDate = null;
       _selectedTime = null;
-      _mode = _modeAdd;
     });
-    
+
     Get.back();
-     _stokController.fetchStockList();
-    
+    _stokController.fetchStockList();
+
     CustomSnackBar.showCustomSnackBar(
       title: 'Sukses',
-      message: 'Stok berhasil diperbarui',
+      message: 'Pembelian berhasil diperbarui',
     );
   }
 
@@ -159,7 +157,7 @@ class _StokFormViewState extends State<StokFormView> {
   String _formatDateTimeForDisplay(DateTime date, TimeOfDay? time) {
     final dateStr = '${date.day.toString().padLeft(2, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-${date.year}';
-    
+
     if (time != null) {
       final timeStr = '${time.hour.toString().padLeft(2, '0')}:'
           '${time.minute.toString().padLeft(2, '0')}';
@@ -178,18 +176,14 @@ class _StokFormViewState extends State<StokFormView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            _buildModeSelector(),
-            const SizedBox(height: 16),
             _buildProdukDropdownWrapper(),
             const SizedBox(height: 16),
             _buildDatePicker(context),
             const SizedBox(height: 16),
             _buildQuantityField(),
             const SizedBox(height: 16),
-            if (_mode == _modeAdd) ...[
-              _buildBuyPriceField(),
-              const SizedBox(height: 16),
-            ],
+            _buildBuyPriceField(),
+            const SizedBox(height: 16),
             _buildNotesField(),
           ],
         ),
@@ -198,34 +192,10 @@ class _StokFormViewState extends State<StokFormView> {
     );
   }
 
-  Widget _buildModeSelector() {
-    return Row(
-      children: [
-        _buildRadioOption(_modeAdd, 'Tambah'),
-        const SizedBox(width: 16),
-        _buildRadioOption(_modeSubtract, 'Kurangi'),
-      ],
-    );
-  }
-
-  Widget _buildRadioOption(int value, String label) {
-    return Row(
-      children: [
-        Radio<int>(
-          value: value,
-          groupValue: _mode,
-          onChanged: (val) => setState(() => _mode = val ?? _modeAdd),
-          activeColor: const Color(0xFF36A86F),
-        ),
-        Text(label),
-      ],
-    );
-  }
-
   Widget _buildProdukDropdownWrapper() {
     return Obx(() {
       final status = _produkController.statusList.value;
-      
+
       if (status == ApiCallStatus.loading) {
         return const Center(
           child: Padding(
@@ -234,14 +204,14 @@ class _StokFormViewState extends State<StokFormView> {
           ),
         );
       }
-      
+
       if (status == ApiCallStatus.error) {
         return Text(
           'Error: ${_produkController.errorList.value}',
           style: const TextStyle(color: Colors.red),
         );
       }
-      
+
       return _buildProdukDropdown();
     });
   }
@@ -258,7 +228,7 @@ class _StokFormViewState extends State<StokFormView> {
         if (_produkController.list.isEmpty) {
           return _buildEmptyState('Tidak ada produk tersedia');
         }
-
+        final uniqueKomposisi = _komposisiController.list.toSet().toList();
         final uniqueProduk = _produkController.list.toSet().toList();
         final selectedValue = _getValidatedSelectedValue(uniqueProduk);
 
@@ -270,7 +240,8 @@ class _StokFormViewState extends State<StokFormView> {
               style: TextStyle(color: Colors.grey[500], fontSize: 15),
             ),
             isExpanded: true,
-            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
+            icon: const Icon(Icons.keyboard_arrow_down,
+                color: Colors.grey, size: 20),
             items: uniqueProduk.map((produk) {
               return DropdownMenuItem<String>(
                 value: produk.id.toString(),
@@ -289,15 +260,16 @@ class _StokFormViewState extends State<StokFormView> {
 
   String? _getValidatedSelectedValue(List<dynamic> uniqueProduk) {
     if (_selectedProdukId <= 0) return null;
-    
+
     final selectedValue = _selectedProdukId.toString();
-    final exists = uniqueProduk.any((produk) => produk.id.toString() == selectedValue);
-    
+    final exists =
+        uniqueProduk.any((produk) => produk.id.toString() == selectedValue);
+
     if (!exists) {
       _selectedProdukId = 0;
       return null;
     }
-    
+
     return selectedValue;
   }
 
@@ -324,62 +296,63 @@ class _StokFormViewState extends State<StokFormView> {
       onTap: () => _pickDateTime(context),
       child: AbsorbPointer(
         child: Obx(() => CustomTextField(
-          hintText: 'Tanggal*',
-          controller: _stokController.dateController,
-          width: double.infinity,
-          height: 50,
-          suffixIcon: const Icon(Icons.calendar_today, size: 18),
-          hasError: _stokController.hasAttemptedSubmit.value &&
-              _stokController.dateError.value.isNotEmpty,
-          errorText: _stokController.dateError.value,
-        )),
+              hintText: 'Tanggal*',
+              controller: _stokController.dateController,
+              width: double.infinity,
+              height: 50,
+              suffixIcon: const Icon(Icons.calendar_today, size: 18),
+              hasError: _stokController.hasAttemptedSubmit.value &&
+                  _stokController.dateError.value.isNotEmpty,
+              errorText: _stokController.dateError.value,
+            )),
       ),
     );
   }
 
   Widget _buildQuantityField() {
     return Obx(() => CustomTextField(
-      hintText: 'Jumlah Stok*',
-      controller: _stokController.quantityController,
-      keyboardType: TextInputType.number,
-      width: double.infinity,
-      height: 50,
-      hasError: _stokController.hasAttemptedSubmit.value &&
-          _stokController.quantityError.value.isNotEmpty,
-      errorText: _stokController.quantityError.value,
-    ));
+          hintText: 'Jumlah Stok*',
+          controller: _stokController.quantityController,
+          keyboardType: TextInputType.number,
+          width: double.infinity,
+          height: 50,
+          hasError: _stokController.hasAttemptedSubmit.value &&
+              _stokController.quantityError.value.isNotEmpty,
+          errorText: _stokController.quantityError.value,
+        ));
   }
 
   Widget _buildBuyPriceField() {
     return Obx(() => CustomTextField(
-      hintText: 'Harga Beli*',
-      controller: _stokController.buyPriceController,
-      keyboardType: TextInputType.number,
-      width: double.infinity,
-      height: 50,
-      hasError: _stokController.hasAttemptedSubmit.value &&
-          _stokController.buyPriceError.value.isNotEmpty,
-      errorText: _stokController.buyPriceError.value,
-    ));
+          hintText: 'Harga Beli*',
+          controller: _stokController.buyPriceController,
+          keyboardType: TextInputType.number,
+          width: double.infinity,
+          height: 50,
+          hasError: _stokController.hasAttemptedSubmit.value &&
+              _stokController.buyPriceError.value.isNotEmpty,
+          errorText: _stokController.buyPriceError.value,
+        ));
   }
 
   Widget _buildNotesField() {
     return Obx(() => CustomTextField(
-      hintText: 'Catatan',
-      controller: _stokController.notesController,
-      width: double.infinity,
-      height: 80,
-      hasError: _stokController.hasAttemptedSubmit.value &&
-          _stokController.notesError.value.isNotEmpty,
-      errorText: _stokController.notesError.value,
-    ));
+          hintText: 'Catatan',
+          controller: _stokController.notesController,
+          width: double.infinity,
+          height: 80,
+          hasError: _stokController.hasAttemptedSubmit.value &&
+              _stokController.notesError.value.isNotEmpty,
+          errorText: _stokController.notesError.value,
+        ));
   }
 
   Widget _buildBottomButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Obx(() {
-        final isLoading = _stokController.statusCreate.value == ApiCallStatus.loading;
+        final isLoading =
+            _stokController.statusCreate.value == ApiCallStatus.loading;
         return CustomSaveButton(
           onPressed: _onSave,
           label: isLoading ? 'Menyimpan...' : 'SIMPAN',

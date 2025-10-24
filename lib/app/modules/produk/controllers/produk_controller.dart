@@ -15,6 +15,7 @@ class ProdukController extends GetxController {
   final TextEditingController hargaModalController = TextEditingController();
   final TextEditingController hargaJualController = TextEditingController();
   final TextEditingController satuanController = TextEditingController();
+  final TextEditingController stokController = TextEditingController();
 
   // State list
   var linkImage = ''.obs;
@@ -258,6 +259,7 @@ class ProdukController extends GetxController {
       'photo': linkImage.value,
       'category_id': categoryId,
       'compositions': selectedKomposisi.map((c) => c.id).toList(),
+      'stock': int.tryParse(stokController.text.trim()) ?? 0,
     };
 
     print('Creating product with payload: $payload');
@@ -332,6 +334,7 @@ class ProdukController extends GetxController {
           : linkImage.value,
       'category_id': categoryId,
       'compositions': selectedKomposisi.map((c) => c.id).toList(),
+      'stock': int.tryParse(stokController.text.trim()) ?? 0,
     };
 
     bool success = false;
@@ -411,6 +414,7 @@ class ProdukController extends GetxController {
     hargaModalController.clear();
     hargaJualController.clear();
     satuanController.clear();
+    stokController.clear();
     produk.value = null;
     selectedKategoriId.value = '';
     selectedKomposisi.clear();
@@ -433,6 +437,7 @@ class ProdukController extends GetxController {
     hargaModalController.dispose();
     hargaJualController.dispose();
     satuanController.dispose();
+    stokController.dispose();
     linkImage.value = '';
     produk.value = null;
     super.onClose();
@@ -444,6 +449,7 @@ class ProdukController extends GetxController {
     hargaJualController.text = produk.sellingPrice.toString();
     selectedKategoriId.value = produk.kategori.id.toString();
     selectedKomposisi.value = produk.compositions ?? [];
+    stokController.text = produk.stock.toString();
     // Removed update() call to prevent build issues
   }
 }

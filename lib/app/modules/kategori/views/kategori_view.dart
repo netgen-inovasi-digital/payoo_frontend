@@ -66,6 +66,13 @@ class KategoriView extends GetView<KategoriController> {
                                 message: 'Kategori berhasil ditambahkan'
                               );
                               c.resetCreateForm();
+                            }else{
+                              CustomSnackBar.showCustomErrorSnackBar(
+                                title: 'Gagal Menyimpan', 
+                                message: c.errorCreate.value.isNotEmpty 
+                                  ? c.errorCreate.value 
+                                  : 'Terjadi kesalahan saat menyimpan kategori'
+                              );
                             } 
                           },
                         );
@@ -114,17 +121,17 @@ class KategoriView extends GetView<KategoriController> {
               ),
             ),
             // ========== Tombol Simpan ==========
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
-              child: CustomButton(
-                label: 'SIMPAN',
-                onPressed: () {
-                  Get.snackbar('Info', 'Semua perubahan sudah realtime');
-                },
-                width: double.infinity,
-                height: 54,
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
+            //   child: CustomButton(
+            //     label: 'SIMPAN',
+            //     onPressed: () {
+            //       Get.snackbar('Info', 'Semua perubahan sudah realtime');
+            //     },
+            //     width: double.infinity,
+            //     height: 54,
+            //   ),
+            // ),
           ],
         ),
       ),

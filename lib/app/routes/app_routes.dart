@@ -22,6 +22,7 @@ abstract class Routes {
   static const STRUK = _Paths.STRUK;
   static const LAPORAN = _Paths.LAPORAN;
   static const KERANJANG = _Paths.KERANJANG;
+  static const PEMBELIAN = _Paths.PEMBELIAN;
 }
 
 abstract class _Paths {
@@ -45,4 +46,5 @@ abstract class _Paths {
   static const STRUK = '/struk';
   static const LAPORAN = '/laporan';
   static const TENTANG_PAYOO = '/tentang_payoo';
+  static const PEMBELIAN = '/pembelian';
 }

@@ -22,17 +22,7 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadData();
-  }
-
-  // This is called every time the page becomes visible
-  @override
-  void onReady() {
-    super.onReady();
-    refreshData();
-  }
-  
-  
+  }  
   Future<void> loadData() async {
     try {
       status.value = ApiCallStatus.loading;
