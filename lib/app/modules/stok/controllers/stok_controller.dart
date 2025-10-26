@@ -41,6 +41,9 @@ class StokController extends GetxController {
   var notesError = ''.obs;
   var hasAttemptedSubmit = false.obs;
 
+  
+
+
   bool validateForm(String type) {
     hasAttemptedSubmit.value = true;
     quantityError.value = '';

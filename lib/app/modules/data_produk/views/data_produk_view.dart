@@ -22,7 +22,7 @@ class DataProdukView extends StatefulWidget {
 class _DataProdukViewState extends State<DataProdukView> {
   final TextEditingController _searchController = TextEditingController();
   late final ProdukController _produkController;
-  String _searchQuery = '';
+  final RxString _searchQuery = ''.obs; // Made reactive with GetX
 
   @override
   void initState() {
@@ -54,30 +54,33 @@ class _DataProdukViewState extends State<DataProdukView> {
   }
 
   List<Produk> _getFilteredProducts() {
-    if (_searchQuery.isEmpty) {
+    if (_searchQuery.value.isEmpty) {
       return _produkController.list;
     } else {
       return _produkController.list.where((product) {
-        return product.name.toLowerCase().contains(_searchQuery.toLowerCase());
+        return product.name.toLowerCase().contains(_searchQuery.value.toLowerCase());
       }).toList();
     }
   }
 
   void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query;
-    });
+    _searchQuery.value = query; // Update reactive variable instead of setState
   }
 
   void _onProductTap(Produk product) async {
     final result = await Get.to(() => DetailProdukView(produkId: product.id));
 
+    // If product was deleted or updated, refresh the list
     if (result == true && mounted) {
       _refreshData();
     }
   }
 
   Future<void> _onAddProductTap() async {
+    // IMPORTANT: Reset controller state before adding new product
+    _produkController.produk.value = null;
+    _produkController.resetCreateForm();
+    
     final result = await Get.to(() => const TambahProdukView());
 
     if (result == true && mounted) {
@@ -129,10 +132,11 @@ class _DataProdukViewState extends State<DataProdukView> {
                     }
 
                     // Calculate filtered products inside Obx
+                    // This will now react to _searchQuery changes
                     final displayProducts = _getFilteredProducts();
 
                     // Check if search has no results
-                    if (_searchQuery.isNotEmpty && displayProducts.isEmpty) {
+                    if (_searchQuery.value.isNotEmpty && displayProducts.isEmpty) {
                       return const EmptyState(
                         title: 'Produk tidak ditemukan',
                         subtitle: 'Coba kata kunci lain',

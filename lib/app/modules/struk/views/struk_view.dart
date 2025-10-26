@@ -8,9 +8,9 @@ import 'package:payoo/app/routes/app_pages.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 
 class StrukView extends StatefulWidget {
-  const StrukView({super.key, required this.orderId});
+  const StrukView({super.key, required this.orderId, required this.page});
   final int orderId;
-
+  final String page;
   @override
   State<StrukView> createState() => _StrukViewState();
 }
@@ -31,7 +31,15 @@ class _StrukViewState extends State<StrukView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: "Struk Penjualan",
-        onPressed: () => Get.offAllNamed(Routes.DASHBOARD),
+        onPressed: () {
+          if(widget.page == "transaksi"){
+            Get.back();
+            Get.back();
+          } else {
+            Get.back();
+          }
+
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),

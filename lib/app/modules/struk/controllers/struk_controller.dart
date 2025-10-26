@@ -18,7 +18,7 @@ import '../../../services/base_client.dart';
 class StrukController extends GetxController {
 var status = ApiCallStatus.holding.obs;
 var order = Rx<KeranjangModel?>(null);
-TokoController tokoController = Get.find<TokoController>();
+TokoController tokoController = Get.put<TokoController>(TokoController());
 var totalHarga = 0.0.obs;
 var returnAmount = 0.0.obs;
 var totalItem = 0.obs;

@@ -97,7 +97,7 @@ Widget build(BuildContext context) {
       padding: const EdgeInsets.all(12.0),
       child: CustomSaveButton(
         onPressed: () {
-          Get.to(() => StrukView(orderId: widget.orderId));
+          Get.to(() => StrukView(orderId: widget.orderId, page: "laporan",));
         },
         label: 'Lihat Struk',
       ),

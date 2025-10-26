@@ -280,7 +280,7 @@ class CustomDrawerMenu extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     fontSize: 16)),
             onTap: () {
-              final controller = Get.find<LoginController>();
+              final controller = Get.put<LoginController>(LoginController());
               controller.logout();
               Get.offAllNamed(Routes.LOGIN);
             },

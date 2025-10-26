@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/routes/app_pages.dart';
+import 'package:payoo/config/utils/storage_manager.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -10,15 +11,21 @@ class SplashView extends StatefulWidget {
 }
 
 class _SplashViewState extends State<SplashView> {
+  late bool isLoggedIn;
   @override
   void initState() {
     super.initState();
+    isLoggedIn = StorageManager().read('isLoggedIn') ?? false;
     const delay = Duration(seconds: 2);
     Future.delayed(delay, () => onTimerFinished());
   }
 
   void onTimerFinished() {
-    Get.offNamed(Routes.LOGIN);
+    if (isLoggedIn) {
+      Get.offNamed(Routes.DASHBOARD);
+    } else {
+      Get.offNamed(Routes.LOGIN);
+    }
   }
 
   Widget build(BuildContext context) {

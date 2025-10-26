@@ -75,6 +75,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             const SizedBox(height: 16),
             CurrencyInput(
               valueController: controller.hargaJualController,
+
               hintText: 'harga jual*',
               enabled: true, label: '',
             ),
@@ -193,6 +194,10 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
       _showErrorSnackbar('Harga jual harus diisi');
       return;
     }
+    if (controller.hargaModalController.text.trim().isEmpty) {
+      _showErrorSnackbar('Harga modal harus diisi');
+      return;
+    }
 
     // Validate price format
     final hargaJual = double.tryParse(controller.hargaJualController.text.trim());
@@ -228,6 +233,8 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
       }
 
       if (success) {
+         await controller.fetchProduk();
+         controller.produk.value = null;
         // Fixed navigation - don't call multiple routes
         Get.back(); // Go back to previous screen
         if (widget.isEdit) {
@@ -237,9 +244,6 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
         _showSuccessSnackbar(widget.isEdit
             ? 'Produk berhasil diperbarui'
             : 'Produk berhasil ditambahkan');
-
-        // Refresh the product list to show updated data
-        await controller.fetchProduk();
       } else {
         final errorMessage = widget.isEdit
             ? controller.errorUpdate.value

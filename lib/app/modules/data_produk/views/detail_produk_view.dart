@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:payoo/app/components/confirm_dialog.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
+import 'package:payoo/app/modules/data_produk/views/data_produk_view.dart';
 import 'package:payoo/app/modules/data_produk/views/tambah_produk_view.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/services/api_call_status.dart';
@@ -25,6 +26,7 @@ class _DetailProdukViewState extends State<DetailProdukView> {
   @override
   void initState() {
     super.initState();
+    controller.produk.value = null;
     // Fetch data only once when the widget initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchProdukById(widget.produkId);
@@ -214,10 +216,11 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                             child: ElevatedButton(
                               onPressed: () async {
                                 // Navigate to edit view and wait for result
-                                final result = await Get.to(() => const TambahProdukView(isEdit: true));
-                                
+                                final result = await Get.to(
+                                    () => const TambahProdukView(isEdit: true));
+
                                 // Refresh the product details after editing
-                                if (result == true || mounted) {
+                                if (result == true && mounted) {
                                   controller.fetchProdukById(widget.produkId);
                                 }
                               },
@@ -249,19 +252,35 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                                       confirmButtonColor:
                                           LightThemeColors.buttonColor,
                                       onConfirm: () async {
-                                        // Add your delete logic here
-                                        final success = await controller.deleteProduk(produk.id);
+                                        // Close the confirmation dialog
+                                        Get.back();
+
+                                        // Perform delete
+                                        final success = await controller
+                                            .deleteProduk(produk.id);
+
                                         if (success) {
-                                          Get.back(); // Close dialog
-                                          Get.back(); // Go back to previous screen
+                                          // Reset controller state to prevent issues
+                                          controller.produk.value = null;
+                                          
+                                          // Refresh the product list
+                                          await controller.fetchProduk();
+                                          
+                                          // Close detail view and return to data produk
+                                          if (mounted) {
+                                            Get.back(result: true);
+                                          }
+
+                                          // Show success message after navigation
                                           Get.snackbar(
-                                            'Success',
-                                            'Product deleted successfully',
+                                            'Berhasil',
+                                            'Produk berhasil dihapus',
                                             backgroundColor: Colors.green,
                                             colorText: Colors.white,
+                                            duration:
+                                                const Duration(seconds: 2),
                                           );
                                         } else {
-                                          Get.back(); // Close dialog
                                           Get.snackbar(
                                             'Error',
                                             controller.errorDelete.value,

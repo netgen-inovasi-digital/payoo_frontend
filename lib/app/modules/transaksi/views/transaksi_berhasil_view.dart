@@ -91,7 +91,7 @@ class TransaksiBerhasilView extends StatelessWidget {
                     textColor: Colors.white,
                     onPressed: () {
                       // TODO: Implement aksi transaksi baru
-                      Get.offAllNamed(Routes.DASHBOARD);
+                      Get.back();
                     },
                   ),
                   const SizedBox(height: 15),
@@ -100,10 +100,8 @@ class TransaksiBerhasilView extends StatelessWidget {
                     color: const Color(0xFFF5F5F5),
                     textColor: LightThemeColors.buttonColor,
                     onPressed: () {
-                      // First clear all screens and go to dashboard
-                      Get.offAllNamed(Routes.DASHBOARD);
                       // Then show StrukView
-                      Get.to(() => StrukView(orderId: orderId));
+                      Get.to(() => StrukView(orderId: orderId , page: "transaksi",));
                     },
                   ),
                 ],

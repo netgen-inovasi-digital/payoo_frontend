@@ -8,18 +8,17 @@ import 'package:payoo/config/utils/constant.dart';
 import 'package:payoo/config/utils/storage_manager.dart';
 
 class LoginController extends GetxController {
-  var status = ApiCallStatus.holding.obs; // status panggilan API
-  var errorMessage = ''.obs;             // pesan error
-  var apiResponse = Rxn<ApiResponse<AuthData>>(); // response generic
-
-  // Validation error messages (only shown after submit attempt)
+  var status = ApiCallStatus.holding.obs;
+  var errorMessage = ''.obs;
+  var apiResponse = Rxn<ApiResponse<AuthData>>();
+  
   var emailError = ''.obs;
   var passwordError = ''.obs;
   var hasAttemptedSubmit = false.obs;
-
+  
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
-
+  
   bool validateForm() {
     hasAttemptedSubmit.value = true;
     emailError.value = '';
@@ -27,7 +26,6 @@ class LoginController extends GetxController {
     
     bool isValid = true;
     
-    // Validate email
     final emailText = email.text.trim();
     if (emailText.isEmpty) {
       emailError.value = 'Email tidak boleh kosong';
@@ -37,7 +35,6 @@ class LoginController extends GetxController {
       isValid = false;
     }
     
-    // Validate password
     final passwordText = password.text.trim();
     if (passwordText.isEmpty) {
       passwordError.value = 'Kata sandi tidak boleh kosong';
@@ -49,20 +46,22 @@ class LoginController extends GetxController {
     
     return isValid;
   }
-
+  
   Future<void> login() async {
-    // Validate form before making API call
     if (!validateForm()) {
       return;
     }
-
+    
     status.value = ApiCallStatus.loading;
     errorMessage.value = '';
+    
     final payload = {
       'email': email.text.trim(),
       'password': password.text.trim(),
     };
+    
     const url = Constants.baseUrl + Constants.AUTH_LOGIN;
+    
     await BaseClient.safeApiCall(
       url,
       RequestType.post,
@@ -73,11 +72,24 @@ class LoginController extends GetxController {
             response.data,
             (json) => AuthData.fromJson(json),
           );
+          
           apiResponse.value = parsed;
+          
           if (parsed.data?.token != null) {
             final tokenToSave = parsed.data!.token;
+            
+            // Simpan token dan status login
             StorageManager().save('token', tokenToSave);
+            StorageManager().save('isLoggedIn', true);
+            
+            // Opsional: simpan data user lainnya jika perlu
+            if (parsed.data?.user != null) {
+              StorageManager().save('userId', parsed.data!.user.id);
+              StorageManager().save('userEmail', parsed.data!.user.email);
+              // simpan data lain sesuai kebutuhan
+            }
           }
+          
           status.value = ApiCallStatus.success;
         } catch (e) {
           errorMessage.value = 'Parsing error';
@@ -89,28 +101,35 @@ class LoginController extends GetxController {
         status.value = ApiCallStatus.error;
       },
     );
+    
     if (status.value == ApiCallStatus.loading) {
-      status.value = ApiCallStatus.error; // fallback jika tidak berubah
+      status.value = ApiCallStatus.error;
     }
   }
-
-  /// Logout user: hapus token & reset form tanpa dispose controller
+  
+  /// Logout user: hapus semua data login
   void logout() {
-    // Hapus token
+    // Hapus semua data login
     StorageManager().delete('token');
-    // Bersihkan field agar tidak ada data lama
+    StorageManager().delete('isLoggedIn');
+    StorageManager().delete('userId');
+    StorageManager().delete('userEmail');
+    
+    // Bersihkan field
     email.clear();
     password.clear();
-    // Reset status ke holding
+    
+    // Reset status
     status.value = ApiCallStatus.holding;
     errorMessage.value = '';
     apiResponse.value = null;
-    // Reset validation errors
+    
+    // Reset validation
     emailError.value = '';
     passwordError.value = '';
     hasAttemptedSubmit.value = false;
   }
-
+  
   void clearForm() {
     email.clear();
     password.clear();
@@ -119,6 +138,7 @@ class LoginController extends GetxController {
     hasAttemptedSubmit.value = false;
     errorMessage.value = '';
   }
+  
   @override
   void onClose() {
     email.dispose();

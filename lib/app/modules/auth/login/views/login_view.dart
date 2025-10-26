@@ -17,7 +17,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> with RouteAware  {
   bool passwordSee = true;
-  final LoginController loginController = Get.find<LoginController>();
+  final LoginController loginController = Get.put<LoginController>(LoginController());
 
   @override
   void initState() {

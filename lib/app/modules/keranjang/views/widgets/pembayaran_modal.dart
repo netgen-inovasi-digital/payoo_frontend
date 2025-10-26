@@ -103,8 +103,11 @@ class _PembayaranModalState extends State<PembayaranModal> {
     final success = await controller.createOrder();
 
     if (success) {
+      controller.enteredAmount.clear();
+      controller.kembalianController.clear();
+      controller.diskonController.clear();
       Get.back();
-      Get.off(TransaksiBerhasilView(
+      Get.to(TransaksiBerhasilView(
         kembalian: double.tryParse(controller.kembalianController.text) ?? 0,
         orderId: controller.orderId.value,
       ));
@@ -236,12 +239,13 @@ class _PembayaranModalState extends State<PembayaranModal> {
               const SizedBox(height: 16),
 
               // Input Kembalian
-              CurrencyInput(
+              paymentMethods.firstWhere((method) => method['id'] == selectedMethod)['id'] == 'cash' ? CurrencyInput(
                 label: 'Kembalian',
                 hintText: 'Rp. 0',
                 onChanged: _onKembalianChanged,
                 valueController: controller.kembalianController,
-              ),
+              ) : Container(),
+              
 
               const SizedBox(height: 16),
               // Grid layout metode pembayaran
