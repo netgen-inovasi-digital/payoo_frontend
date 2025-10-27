@@ -119,7 +119,11 @@ class _StokViewState extends State<StokView> {
                   children: [
                     FloatingActionButton(
                       shape: const CircleBorder(),
-                      onPressed: () => Get.to(() => const StokFormView()),
+                      onPressed: () async{
+                        final result = await Get.to(() => const StokFormView());
+                        if (result == true) {
+                          _stokController.fetchStockList(refresh: true);
+                        }},
                       backgroundColor: Colors.white,
                       elevation: 4,
                       child: const Icon(

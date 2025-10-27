@@ -155,7 +155,7 @@ class _CurrencyInputState extends State<CurrencyInput> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: Colors.black,
                 ),
               ),
               if (widget.required) ...[
@@ -205,7 +205,7 @@ class _CurrencyInputState extends State<CurrencyInput> {
             ),
             style: TextStyle(
               fontSize: 16,
-              color: _hasError ? Colors.red : const Color(0xFF9E9E9E),
+              color: _hasError ? Colors.red : Colors.black,
               fontWeight: FontWeight.w300,
             ),
           ),

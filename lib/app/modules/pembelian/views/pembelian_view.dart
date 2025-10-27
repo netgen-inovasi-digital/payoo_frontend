@@ -117,7 +117,13 @@ class _PembelianViewState extends State<PembelianView> {
                   children: [
                     FloatingActionButton(
                       shape: const CircleBorder(),
-                      onPressed: () => Get.to(() => const PembelianFormView()),
+                      onPressed: () async {
+                        final result = Get.to(() => const PembelianFormView());
+                        if (result == true) {
+                          _stokController.fetchStockList(
+                              pembelian: true, refresh: true);
+                        }
+                      },
                       backgroundColor: Colors.white,
                       elevation: 4,
                       child: const Icon(

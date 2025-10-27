@@ -15,7 +15,7 @@ class StokController extends GetxController {
   TextEditingController dateController = TextEditingController();
   TextEditingController buyPriceController = TextEditingController();
   TextEditingController notesController = TextEditingController();
-  
+
   // State create
   var statusCreate = ApiCallStatus.holding.obs;
   var errorCreate = ''.obs;
@@ -33,7 +33,7 @@ class StokController extends GetxController {
   var totalPages = 1.obs;
   var isLoadingMore = false.obs;
   var hasMoreData = true.obs;
-  
+
   // Form validation states
   var quantityError = ''.obs;
   var dateError = ''.obs;
@@ -41,18 +41,15 @@ class StokController extends GetxController {
   var notesError = ''.obs;
   var hasAttemptedSubmit = false.obs;
 
-  
-
-
   bool validateForm(String type) {
     hasAttemptedSubmit.value = true;
     quantityError.value = '';
     dateError.value = '';
     buyPriceError.value = '';
     notesError.value = '';
-    
+
     bool isValid = true;
-    
+
     // Validate quantity
     final quantityText = quantityController.text.trim();
     if (quantityText.isEmpty) {
@@ -71,14 +68,14 @@ class StokController extends GetxController {
         isValid = false;
       }
     }
-    
+
     // Validate date
     final dateText = dateController.text.trim();
     if (dateText.isEmpty) {
       dateError.value = 'Tanggal tidak boleh kosong';
       isValid = false;
     }
-    
+
     // Validate buy price only for "in" type
     if (type == 'in') {
       final buyPriceText = buyPriceController.text.trim();
@@ -99,7 +96,7 @@ class StokController extends GetxController {
         }
       }
     }
-    
+
     return isValid;
   }
 
@@ -132,7 +129,8 @@ class StokController extends GetxController {
     };
 
     if (type == 'in') {
-      payload['buy_price'] = double.tryParse(buyPriceController.text.trim()) ?? 0;
+      payload['buy_price'] =
+          double.tryParse(buyPriceController.text.trim()) ?? 0;
     }
 
     bool success = false;
@@ -170,7 +168,7 @@ class StokController extends GetxController {
       statusCreate.value = ApiCallStatus.error;
       errorCreate.value = 'Request timeout';
     }
-
+    fetchStockList(refresh: true);
     return success;
   }
 
@@ -180,7 +178,7 @@ class StokController extends GetxController {
     buyPriceController.clear();
     notesController.clear();
     clearValidationErrors();
-    statusCreate.value = ApiCallStatus.holding;
+  statusCreate.value = ApiCallStatus.holding;
     errorCreate.value = '';
   }
 
@@ -199,9 +197,8 @@ class StokController extends GetxController {
           final responseData = response.data;
           if (responseData != null && responseData['data'] is List) {
             final List<dynamic> dataList = responseData['data'];
-            final List<Stock> stocks = dataList
-                .map((json) => Stock.fromJson(json))
-                .toList();
+            final List<Stock> stocks =
+                dataList.map((json) => Stock.fromJson(json)).toList();
             listStock.assignAll(stocks);
             statusListStock.value = ApiCallStatus.success;
             success = true;
@@ -227,11 +224,13 @@ class StokController extends GetxController {
     }
 
     return success;
-  } 
-  
+  }
 
   // Fetch stock list dengan pagination
-  Future<bool> fetchStockList({bool refresh = false, bool isLoadMore = false, bool pembelian = false}) async {
+  Future<bool> fetchStockList(
+      {bool refresh = false,
+      bool isLoadMore = false,
+      bool pembelian = false}) async {
     // Jika refresh, reset pagination
     if (refresh) {
       currentPage.value = 1;
@@ -244,9 +243,10 @@ class StokController extends GetxController {
       statusListStock.value = ApiCallStatus.loading;
     }
     errorListStock.value = '';
-    
+
     // Build URL dengan query parameter pagination
-    final url = '${Constants.baseUrl}${Constants.STOCKS}?page=${currentPage.value}&per_page=100${pembelian ? '&type=in' : ''}';
+    final url =
+        '${Constants.baseUrl}${Constants.STOCKS}?page=${currentPage.value}&per_page=100${pembelian ? '&type=in' : ''}';
     final token = StorageManager().read<String>('token');
 
     bool success = false;
@@ -259,31 +259,31 @@ class StokController extends GetxController {
           final responseData = response.data;
           if (responseData != null && responseData['data'] is List) {
             final List<dynamic> dataList = responseData['data'];
-            final List<Stock> stocks = dataList
-                .map((json) => Stock.fromJson(json))
-                .toList();
-            
+            final List<Stock> stocks =
+                dataList.map((json) => Stock.fromJson(json)).toList();
+
             // Jika refresh, replace semua data. Jika tidak, append
             if (refresh) {
               listStock.assignAll(stocks);
             } else {
               listStock.addAll(stocks);
             }
-            
+
             // Parse pagination metadata dari response
-            if (responseData['meta'] != null && 
+            if (responseData['meta'] != null &&
                 responseData['meta']['pagination'] != null) {
               final pagination = responseData['meta']['pagination'];
-              currentPage.value = pagination['current_page'] ?? currentPage.value;
+              currentPage.value =
+                  pagination['current_page'] ?? currentPage.value;
               totalPages.value = pagination['total_pages'] ?? 1;
-              
+
               // Check apakah masih ada data selanjutnya
               hasMoreData.value = currentPage.value < totalPages.value;
             } else {
               // Jika tidak ada meta, cek dari jumlah data yang diterima
               hasMoreData.value = stocks.length >= 10;
             }
-            
+
             // Only update status if it's not a load more operation
             if (!isLoadMore) {
               statusListStock.value = ApiCallStatus.success;
@@ -314,6 +314,7 @@ class StokController extends GetxController {
       errorListStock.value = 'Request timeout';
     }
 
+    listStock.sort((a, b) => (b.id).compareTo(a.id));
     return success;
   }
 
@@ -321,7 +322,7 @@ class StokController extends GetxController {
   Future<void> loadMoreStocks({bool pembelian = false}) async {
     // Jangan load jika sedang loading atau sudah tidak ada data lagi
     if (isLoadingMore.value || !hasMoreData.value) return;
-    
+
     isLoadingMore.value = true;
     currentPage.value++;
 
@@ -349,7 +350,7 @@ class StokController extends GetxController {
             final List<ProductWithStock> products = dataList
                 .map((json) => ProductWithStock.fromJson(json))
                 .toList();
-            
+
             productsStock.assignAll(products);
             statusProductsStock.value = ApiCallStatus.success;
             success = true;
@@ -373,7 +374,6 @@ class StokController extends GetxController {
       statusProductsStock.value = ApiCallStatus.error;
       errorProductsStock.value = 'Request timeout';
     }
-
     return success;
   }
 

@@ -101,7 +101,6 @@ class _PembayaranModalState extends State<PembayaranModal> {
 
     final price = totalSetelahDiskon;
     final success = await controller.createOrder();
-
     if (success) {
       controller.enteredAmount.clear();
       controller.kembalianController.clear();

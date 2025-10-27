@@ -58,10 +58,10 @@ class KeranjangController extends GetxController {
       status.value = ApiCallStatus.error;
       return false;
     }
-
+  
     // Parse entered amount to ensure we have the correct payment amount
     final enteredAmountValue = double.tryParse(enteredAmount.text.trim());
-    if (enteredAmountValue == null || enteredAmountValue <= 0) {
+    if (enteredAmountValue == null || enteredAmountValue <= 0 || enteredAmountValue < totalPrice) {
       error.value = 'Invalid payment amount';
       status.value = ApiCallStatus.error;
       return false;
