@@ -206,7 +206,7 @@ class _CurrencyInputState extends State<CurrencyInput> {
             style: TextStyle(
               fontSize: 16,
               color: _hasError ? Colors.red : Colors.black,
-              fontWeight: FontWeight.w300,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

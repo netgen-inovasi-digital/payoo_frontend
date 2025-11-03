@@ -180,6 +180,23 @@ class BaseClient {
       {required DioException error,
       Function(ApiException)? onError,
       required String url}) {
+    
+    // 401 error (Unauthorized - Token expired)
+    if (error.response?.statusCode == 401) {
+      var exception = ApiException(
+        message: 'Sesi Anda telah berakhir. Silakan login ulang.',
+        url: url,
+        statusCode: 401,
+        response: error.response,
+      );
+      
+      if (onError != null) {
+        return onError(exception);
+      } else {
+        return handleApiError(exception);
+      }
+    }
+    
     // 404 error
     if (error.response?.statusCode == 404) {
       if (onError != null) {
@@ -221,17 +238,17 @@ class BaseClient {
       }
     }
 
-  // Ambil pesan dari body jika ada
-  String apiMessage = error.response?.data is Map
-    ? (error.response?.data['message']?.toString() ?? '')
-    : '';
-  var exception = ApiException(
-    url: url,
-    message: apiMessage.isNotEmpty
-      ? apiMessage
-      : (error.message ?? 'Un Expected Api Error!'),
-    response: error.response,
-    statusCode: error.response?.statusCode);
+    // Ambil pesan dari body jika ada
+    String apiMessage = error.response?.data is Map
+        ? (error.response?.data['message']?.toString() ?? '')
+        : '';
+    var exception = ApiException(
+        url: url,
+        message: apiMessage.isNotEmpty
+            ? apiMessage
+            : (error.message ?? 'Un Expected Api Error!'),
+        response: error.response,
+        statusCode: error.response?.statusCode);
     if (onError != null) {
       return onError(exception);
     } else {

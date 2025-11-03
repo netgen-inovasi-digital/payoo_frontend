@@ -112,7 +112,7 @@ class _ProdukViewState extends State<ProdukView> {
                       height: 30,
                     ),
                     CustomButtonOutline(
-                      label: 'stok opname',
+                      label: 'Stok Opname',
                       onPressed: () {
                         Get.toNamed(Routes.STOK);
                       },

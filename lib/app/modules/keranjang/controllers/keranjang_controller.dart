@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:payoo/app/data/models/keranjang_model.dart';
 import 'package:payoo/app/data/models/produk_model.dart';
 import 'package:payoo/app/data/models/user_model.dart';
@@ -26,7 +27,7 @@ class KeranjangController extends GetxController {
   final satuanController = TextEditingController();
   final notesController = TextEditingController();
   final kembalianController = TextEditingController();
-  final diskonController   = TextEditingController();
+  final diskonController = TextEditingController();
   RxString selectedPaymentMethod = 'cash'.obs;
   var shopId = 0.obs;
   var userId = 0.obs;
@@ -35,6 +36,7 @@ class KeranjangController extends GetxController {
   var statusUpdate = ApiCallStatus.holding.obs;
   var errorUpdate = ''.obs;
   var orderId = 0.obs;
+  
   @override
   void onInit() {
     super.onInit();
@@ -86,9 +88,17 @@ class KeranjangController extends GetxController {
       return false;
     }
 
-    // Get current timestamp for created_at and updated_at
-    final now = DateTime.now().toString().split('.')[0].replaceAll('T', ' ');
-
+    // ✅ FIXED: Get ACTUAL local time, not UTC
+    final now = DateTime.now().toLocal(); // Force to local timezone
+    
+    // Manual formatting to ensure local time is used
+    final formattedDate = '${now.year}-'
+        '${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')} '
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
+    
     // Default tax rate (can be made configurable)
     final taxRate = 0.0; // 0% tax by default
     final taxAmount = totalPrice * taxRate;
@@ -96,20 +106,22 @@ class KeranjangController extends GetxController {
     final payload = {
       'user_id': userId.value.toString(),
       'shop_id': shopId.value.toString(),
-      'status': 'pending', // Consider making this configurable
+      'status': 'pending',
       'notes': notesController.text.isNotEmpty
           ? notesController.text
           : (notes ?? ''),
       'total': totalPrice.toStringAsFixed(2),
       'amount_paid': paymentAmount.value.toStringAsFixed(2),
-      'created_at': now,
-      'updated_at': now,
+      'created_at': formattedDate,
+      'updated_at': formattedDate,
       'order_items': orderItems,
       'payment_method': selectedPaymentMethod.value,
       'change_money': kembalianController.text,
       'tax': taxAmount.toStringAsFixed(2),
-      'discount': diskonController  .text, // Use string format to match expected output
+      'discount': diskonController.text,
     };
+
+    print('Payload being sent: $payload');
 
     bool success = false;
     await BaseClient.safeApiCall(
@@ -119,23 +131,26 @@ class KeranjangController extends GetxController {
       data: payload,
       onSuccess: (response) {
         try {
+          print('Order created successfully: ${response.data}');
           final parsed = ApiResponse<KeranjangModel>.fromJson(
             response.data,
             (json) => KeranjangModel.fromJson(json),
           );
           if (parsed.data != null) {
             keranjang.value = parsed.data;
-            clearCart(); // Clear cart after successful order
+            clearCart();
           }
           orderId.value = keranjang.value?.id ?? 0;
           status.value = ApiCallStatus.success;
           success = true;
         } catch (e) {
+          print('Error parsing response: $e');
           error.value = 'Parsing error: ${e.toString()}';
           status.value = ApiCallStatus.error;
         }
       },
       onError: (e) {
+        print('Error creating order: $e');
         error.value = e.toString();
         status.value = ApiCallStatus.error;
       },
@@ -147,16 +162,18 @@ class KeranjangController extends GetxController {
     return success;
   }
 
-
   @override
   void onClose() {
-    // ✅ Proper cleanup
     enteredAmount.dispose();
-    diskonController  .dispose();
+    diskonController.dispose();
     kembalianController.dispose();
+    namaController.dispose();
+    hargaModalController.dispose();
+    hargaJualController.dispose();
+    satuanController.dispose();
+    notesController.dispose();
     product.clear();
     countItem.clear();
-    notesController.clear();
     super.onClose();
   }
 
@@ -185,15 +202,12 @@ class KeranjangController extends GetxController {
   }
 
   void addProduct(Produk produk) {
-    // Check if product already exists in cart
     bool productExists = product.any((p) => p.id == produk.id);
 
     if (!productExists) {
-      // Add new product to cart
       product.add(produk);
-      countItem[produk.id] = 1; // Initialize with count 1
+      countItem[produk.id] = 1;
     } else {
-      // If product exists, increment the count
       incrementCount(produk.id);
     }
   }
@@ -219,17 +233,13 @@ class KeranjangController extends GetxController {
     } else {
       countItem[productId] = count;
     }
-    // ✅ Remove update() since we're using .obs
   }
 
   void removeProduct(int productId) {
-    // ✅ Use reactive methods
     product.removeWhere((p) => p.id == productId);
     countItem.remove(productId);
-    // ✅ Remove update() since we're using .obs
   }
 
-  // ✅ Fixed calculation - no double counting
   double get totalPrice {
     double total = 0.0;
 
@@ -241,7 +251,7 @@ class KeranjangController extends GetxController {
     return total;
   }
 
-   double get totalItems {
+  double get totalItems {
     double total = 0;
 
     for (var prod in product) {
@@ -250,10 +260,8 @@ class KeranjangController extends GetxController {
     }
 
     return total;
-   }
+  }
 
-
-  // ✅ Helper method for clearing cart
   void clearCart() {
     product.clear();
     countItem.clear();

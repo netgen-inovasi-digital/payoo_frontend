@@ -4,10 +4,13 @@ import 'package:payoo/app/components/currency_input.dart';
 import 'package:payoo/app/components/custom_text_field.dart';
 import 'package:payoo/app/components/custom_save_button.dart';
 import 'package:payoo/app/components/custom_snackbar.dart';
+import 'package:payoo/app/modules/komposisi/controllers/komposisi_controller.dart';
 import 'package:payoo/app/modules/produk/controllers/produk_controller.dart';
 import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
+
+enum TipePembelian { semua, produk, komposisi }
 
 class StokFormView extends StatefulWidget {
   const StokFormView({super.key});
@@ -24,8 +27,11 @@ class _StokFormViewState extends State<StokFormView> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int _selectedProdukId = 0;
+  TipePembelian _selectedTipe = TipePembelian.semua;
+  bool _isKomposisi = false;
 
   late final ProdukController _produkController;
+  late final KomposisiController _komposisiController;
   late final StokController _stokController;
 
   @override
@@ -40,9 +46,11 @@ class _StokFormViewState extends State<StokFormView> {
         : Get.put(StokController());
         
     _produkController = Get.put(ProdukController(), permanent: false);
+    _komposisiController = Get.put(KomposisiController(), permanent: false);
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _produkController.fetchProduk();
+      _komposisiController.fetchKomposisi();
       _stokController.clearValidationErrors();
     });
   }
@@ -54,22 +62,40 @@ class _StokFormViewState extends State<StokFormView> {
     if (_selectedProdukId <= 0) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'Gagal',
-        message: 'Silakan pilih produk terlebih dahulu',
+        message: 'Silakan pilih produk/komposisi terlebih dahulu',
       );
       return;
     }
 
-    // Find the selected product
-    final selectedProduct = _produkController.list.firstWhereOrNull(
-      (produk) => produk.id == _selectedProdukId,
-    );
-
-    if (selectedProduct == null) {
-      CustomSnackBar.showCustomErrorSnackBar(
-        title: 'Gagal',
-        message: 'Produk tidak ditemukan',
+    // Find the selected product or komposisi
+    String selectedName = '';
+    
+    if (_isKomposisi) {
+      final selectedKomposisi = _komposisiController.list.firstWhereOrNull(
+        (komposisi) => komposisi.id == _selectedProdukId,
       );
-      return;
+      
+      if (selectedKomposisi == null) {
+        CustomSnackBar.showCustomErrorSnackBar(
+          title: 'Gagal',
+          message: 'Komposisi tidak ditemukan',
+        );
+        return;
+      }
+      selectedName = selectedKomposisi.namaKomposisi;
+    } else {
+      final selectedProduct = _produkController.list.firstWhereOrNull(
+        (produk) => produk.id == _selectedProdukId,
+      );
+
+      if (selectedProduct == null) {
+        CustomSnackBar.showCustomErrorSnackBar(
+          title: 'Gagal',
+          message: 'Produk tidak ditemukan',
+        );
+        return;
+      }
+      selectedName = selectedProduct.name;
     }
 
     // Validate date and time selection
@@ -97,7 +123,7 @@ class _StokFormViewState extends State<StokFormView> {
     final success = await _stokController.createStock(
       _selectedProdukId,
       stockType,
-      selectedProduct.name,
+      selectedName,
     );
 
     if (!mounted) return;
@@ -117,6 +143,8 @@ class _StokFormViewState extends State<StokFormView> {
       _selectedDate = null;
       _selectedTime = null;
       _mode = _modeAdd;
+      _selectedTipe = TipePembelian.semua;
+      _isKomposisi = false;
     });
     
     Get.back(result: true);
@@ -195,6 +223,8 @@ class _StokFormViewState extends State<StokFormView> {
             const SizedBox(height: 16),
             _buildModeSelector(),
             const SizedBox(height: 16),
+            _buildTipeDropdown(),
+            const SizedBox(height: 16),
             _buildProdukDropdownWrapper(),
             const SizedBox(height: 16),
             _buildDatePicker(context),
@@ -237,6 +267,51 @@ class _StokFormViewState extends State<StokFormView> {
     );
   }
 
+  Widget _buildTipeDropdown() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<TipePembelian>(
+          value: _selectedTipe,
+          hint: const Text(
+            'Tipe Produk*',
+            style: TextStyle(color: Colors.black, fontSize: 15),
+          ),
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down,
+              color: Colors.grey, size: 20),
+          items: const [
+            DropdownMenuItem(
+              value: TipePembelian.semua,
+              child: Text('Semua Tipe', style: TextStyle(fontSize: 15)),
+            ),
+            DropdownMenuItem(
+              value: TipePembelian.produk,
+              child: Text('Produk', style: TextStyle(fontSize: 15)),
+            ),
+            DropdownMenuItem(
+              value: TipePembelian.komposisi,
+              child: Text('Komposisi', style: TextStyle(fontSize: 15)),
+            ),
+          ],
+          onChanged: (TipePembelian? newValue) {
+            if (newValue != null) {
+              setState(() {
+                _selectedTipe = newValue;
+                _selectedProdukId = 0; // Reset selection when type changes
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildProdukDropdownWrapper() {
     return Container(
       width: double.infinity,
@@ -246,13 +321,16 @@ class _StokFormViewState extends State<StokFormView> {
         borderRadius: BorderRadius.circular(25),
       ),
       child: Obx(() {
-        final status = _produkController.statusList.value;
+        final produkStatus = _produkController.statusList.value;
+        final komposisiStatus = _komposisiController.statusList.value;
         
-        if (status == ApiCallStatus.loading) {
+        if (produkStatus == ApiCallStatus.loading || 
+            komposisiStatus == ApiCallStatus.loading) {
           return _buildLoadingState();
         }
         
-        if (status == ApiCallStatus.error) {
+        if (produkStatus == ApiCallStatus.error || 
+            komposisiStatus == ApiCallStatus.error) {
           return _buildErrorState();
         }
         
@@ -276,7 +354,7 @@ class _StokFormViewState extends State<StokFormView> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Memuat produk...',
+            'Memuat data...',
             style: TextStyle(color: Colors.grey[600], fontSize: 15),
           ),
         ],
@@ -293,12 +371,15 @@ class _StokFormViewState extends State<StokFormView> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Gagal memuat produk',
+              'Gagal memuat data',
               style: TextStyle(color: Colors.red[700], fontSize: 14),
             ),
           ),
           TextButton(
-            onPressed: () => _produkController.fetchProduk(),
+            onPressed: () {
+              _produkController.fetchProduk();
+              _komposisiController.fetchKomposisi();
+            },
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               minimumSize: Size.zero,
@@ -306,7 +387,7 @@ class _StokFormViewState extends State<StokFormView> {
             ),
             child: const Text(
               'Coba Lagi',
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 12),   
             ),
           ),
         ],
@@ -316,55 +397,85 @@ class _StokFormViewState extends State<StokFormView> {
 
   Widget _buildProdukDropdownContent() {
     return Obx(() {
-      if (_produkController.list.isEmpty) {
-        return _buildEmptyState('Tidak ada produk tersedia');
+      List<DropdownMenuItem<String>> items = [];
+      
+      // Filter based on selected type
+      if (_selectedTipe == TipePembelian.semua || _selectedTipe == TipePembelian.produk) {
+        final produkItems = _produkController.list.map((produk) {
+          return DropdownMenuItem<String>(
+            value: 'p_${produk.id}',
+            child: Text(
+              produk.name,
+              style: const TextStyle(fontSize: 15),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+        items.addAll(produkItems);
+      }
+      
+      if (_selectedTipe == TipePembelian.semua || _selectedTipe == TipePembelian.komposisi) {
+        final komposisiItems = _komposisiController.list.map((komposisi) {
+          return DropdownMenuItem<String>(
+            value: 'k_${komposisi.id}',
+            child: Text(
+              komposisi.namaKomposisi,
+              style: const TextStyle(fontSize: 15),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+        items.addAll(komposisiItems);
       }
 
-      final uniqueProduk = _produkController.list.toSet().toList();
-      final selectedValue = _getValidatedSelectedValue(uniqueProduk);
+      if (items.isEmpty) {
+        return _buildEmptyState('Tidak ada data tersedia');
+      }
+
+      final selectedValue = _getValidatedSelectedValue(items);
 
       return DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedValue,
           hint: const Text(
-            'Produk*',
+            'Pilih Produk/Komposisi*',
             style: TextStyle(color: Colors.black, fontSize: 15),
           ),
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
-          items: uniqueProduk.map((produk) {
-            return DropdownMenuItem<String>(
-              value: produk.id.toString(),
-              child: Text(
-                produk.name,
-                style: const TextStyle(fontSize: 15),
-              ),
-            );
-          }).toList(),
+          items: items,
           onChanged: _onProdukChanged,
         ),
       );
     });
   }
 
-  String? _getValidatedSelectedValue(List<dynamic> uniqueProduk) {
+  String? _getValidatedSelectedValue(List<DropdownMenuItem<String>> items) {
     if (_selectedProdukId <= 0) return null;
+
+    final prefix = _isKomposisi ? 'k_' : 'p_';
+    final selectedValue = '$prefix$_selectedProdukId';
     
-    final selectedValue = _selectedProdukId.toString();
-    final exists = uniqueProduk.any((produk) => produk.id.toString() == selectedValue);
-    
+    final exists = items.any((item) => item.value == selectedValue);
+
     if (!exists) {
       _selectedProdukId = 0;
       return null;
     }
-    
+
     return selectedValue;
   }
 
   void _onProdukChanged(String? newValue) {
     if (newValue != null) {
       setState(() {
-        _selectedProdukId = int.tryParse(newValue) ?? 0;
+        if (newValue.startsWith('k_')) {
+          _isKomposisi = true;
+          _selectedProdukId = int.tryParse(newValue.substring(2)) ?? 0;
+        } else if (newValue.startsWith('p_')) {
+          _isKomposisi = false;
+          _selectedProdukId = int.tryParse(newValue.substring(2)) ?? 0;
+        }
       });
     }
   }
@@ -534,6 +645,11 @@ class _StokFormViewState extends State<StokFormView> {
     if (Get.isRegistered<ProdukController>()) {
       try {
         Get.delete<ProdukController>();
+      } catch (e) {}
+    }
+    if (Get.isRegistered<KomposisiController>()) {
+      try {
+        Get.delete<KomposisiController>();
       } catch (e) {}
     }
     super.dispose();

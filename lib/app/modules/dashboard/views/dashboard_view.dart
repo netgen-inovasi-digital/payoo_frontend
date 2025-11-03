@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/state_manager.dart';
 import 'package:payoo/app/components/custom_drawer_menu.dart';
 import 'package:payoo/app/components/custom_header_clip_path.dart';
+import 'package:payoo/app/modules/auth/login/controllers/login_controller.dart';
 import 'package:payoo/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:payoo/app/modules/dashboard/views/widgets/custom_card.dart';
 import 'package:payoo/app/modules/dashboard/views/widgets/custom_card_premium.dart';
@@ -17,14 +18,13 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  final DashboardController dashboardController = Get.find<DashboardController>();
+  final DashboardController dashboardController =
+      Get.find<DashboardController>();
   bool _hasLoadedData = false;
 
   @override
   void initState() {
     super.initState();
-    // Load data only once when the screen is first initialized
-    // Use addPostFrameCallback to ensure it runs AFTER build is complete
     if (!_hasLoadedData) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         dashboardController.refreshData();
@@ -38,7 +38,6 @@ class _DashboardViewState extends State<DashboardView> {
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: Obx(() {
-        // Pass static data from dashboard controller to drawer
         if (dashboardController.status.value == ApiCallStatus.loading) {
           return const Drawer(
             child: Center(child: CircularProgressIndicator()),
@@ -46,9 +45,13 @@ class _DashboardViewState extends State<DashboardView> {
         }
 
         final userPhoto = dashboardController.userController.user.value?.photo;
-        final userName = dashboardController.userController.user.value?.name ?? 'Nama Pemilik';
-        final userEmail = dashboardController.userController.user.value?.email ?? 'Email';
-        final userPhone = dashboardController.userController.user.value?.phone ?? '08115100900';
+        final userName = dashboardController.userController.user.value?.name ??
+            'Nama Pemilik';
+        final userEmail =
+            dashboardController.userController.user.value?.email ?? 'Email';
+        final userPhone =
+            dashboardController.userController.user.value?.phone ??
+                '08115100900';
         final shopId = dashboardController.userController.user.value?.shopId;
 
         return CustomDrawerMenu(
@@ -61,18 +64,122 @@ class _DashboardViewState extends State<DashboardView> {
       }),
       body: Obx(
         () {
-          if (dashboardController.status.value == ApiCallStatus.loading) {
+          // Loading state
+          if (dashboardController.status.value == ApiCallStatus.loading ||
+              dashboardController.statusDashboardData ==
+                  ApiCallStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (dashboardController.status.value == ApiCallStatus.error) {
+
+          // Error state
+          if (dashboardController.status.value == ApiCallStatus.error ||
+              dashboardController.statusDashboardData == ApiCallStatus.error) {
+            // Check if it's a 401 error (token expired)
+            final isTokenExpired =
+                dashboardController.errorStatusCode.value == 401;
+
+            if (isTokenExpired) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.lock_clock,
+                      size: 80,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Sesi Anda Telah Berakhir",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Silakan login kembali untuk melanjutkan",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        final LoginController loginController =
+                            Get.put<LoginController>(LoginController());
+                        loginController.logout();
+                      },
+                      icon: const Icon(Icons.logout),
+                      label: const Text("KELUAR"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 15,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            // Handle other errors
             return Center(
-              child: Text(
-                'Error: ${dashboardController.errorMessage.value}',
-                style: const TextStyle(color: Colors.red),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 80,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Terjadi Kesalahan",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      "Gagal memuat data. Silakan coba lagi.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      dashboardController.refreshData();
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("COBA LAGI"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF36A86F),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 15,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }
 
+          // Success state
           return Column(
             children: [
               CustomHeaderClipPath(
@@ -85,16 +192,21 @@ class _DashboardViewState extends State<DashboardView> {
                     child: Builder(
                       builder: (context) {
                         return ProfileHeader(
-                          photo: dashboardController.tokoController.toko.value?.photo ?? '',
+                          photo: dashboardController
+                                  .tokoController.toko.value?.photo ??
+                              '',
                           businessName: dashboardController
                                   .tokoController.toko.value?.name ??
                               'Nama Toko',
-                          address:
-                              dashboardController.tokoController.toko.value
-                                      ?.address ??
-                                  'Alamat Toko',
-                          ownerName: dashboardController.userController.user.value?.name ?? 'Nama Pemilik',
-                          phoneNumber: dashboardController.tokoController.toko.value?.phone ?? 'Nomor Telepon',
+                          address: dashboardController
+                                  .tokoController.toko.value?.address ??
+                              'Alamat Toko',
+                          ownerName: dashboardController
+                                  .userController.user.value?.name ??
+                              'Nama Pemilik',
+                          phoneNumber: dashboardController
+                                  .tokoController.toko.value?.phone ??
+                              'Nomor Telepon',
                           onEditProfile: () {},
                           onAccountUpgrade: () {},
                         );
@@ -115,32 +227,37 @@ class _DashboardViewState extends State<DashboardView> {
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     children: [
                       CustomCard(
-                          title: 'Jumlah Produk', 
-                          label: 'Total', 
-                          value: dashboardController.dashboardData.value?.productQuantity.toString() ?? '0'),
+                          title: 'Jumlah Produk',
+                          label: 'Total',
+                          value: dashboardController
+                                  .dashboardData.value?.productQuantity
+                                  .toString() ??
+                              '0'),
                       CustomCard(
                           title: 'Kategori Produk',
                           label: 'Total',
-                          value: dashboardController.dashboardData.value?.categoryQuantity.toString() ?? '0'),
-                      // CustomCard(
-                      //     title: 'Komposisi Produk', 
-                      //     label: 'Total', 
-                      //     value: dashboardController.dashboardData.value?.compositionQuantity.toString() ?? '0'),
+                          value: dashboardController
+                                  .dashboardData.value?.categoryQuantity
+                                  .toString() ??
+                              '0'),
                       CustomCard(
                           title: 'Jumlah Transaksi',
-                          label: dashboardController.dashboardData.value?.date ?? '0',
-                          value: dashboardController.dashboardData.value?.transactionCount.toString() ?? '0'),
+                          label:
+                              dashboardController.dashboardData.value?.date ??
+                                  '0',
+                          value: dashboardController
+                                  .dashboardData.value?.transactionCount
+                                  .toString() ??
+                              '0'),
                       CustomCard(
                           title: 'Pendapatan',
-                          label: dashboardController.dashboardData.value?.date ?? '0',
-                          value: dashboardController.dashboardData.value?.revenue.toString() ?? '0'),
-                      // const CustomCardPremium(
-                      //     title: 'Keuntungan', description: 'Payoo Premium'),
-                      // const CustomCardPremium(
-                      //     title: 'Pelanggan', description: 'Payoo Premium'),
-                      // const CustomCardPremium(
-                      //     title: 'Bahan Baku Habis',
-                      //     description: 'Payoo Premium'),
+                          label:
+                              dashboardController.dashboardData.value?.date ??
+                                  '0',
+                          value: dashboardController
+                                  .dashboardData.value?.revenue
+                                  .toString() ??
+                              '0'),
                     ],
                   ),
                 ),
@@ -152,4 +269,3 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 }
-  

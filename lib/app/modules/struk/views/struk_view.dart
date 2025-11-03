@@ -94,26 +94,20 @@ class _StrukViewState extends State<StrukView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    // Format date from createdAt
-                    controller.tokoController.toko.value?.createdAt != null
-                        ? DateTime.parse(controller
-                                .tokoController.toko.value!.createdAt!)
-                            .toLocal()
-                            .toString()
+                    // Format date from order createdAt (use order, not toko!)
+                    controller.order.value?.createdAt != null
+                        ? controller.order.value!.createdAt!
                             .split(' ')[0]
-                        : 'DD/MM/YYYY',
+                        : 'YYYY-MM-DD',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    // Format time from createdAt
-                    controller.tokoController.toko.value?.createdAt != null
-                        ? DateTime.parse(controller
-                                .tokoController.toko.value!.createdAt!)
-                            .toLocal()
-                            .toString()
+                    // Format time from order createdAt
+                    controller.order.value?.createdAt != null
+                        ? controller.order.value!.createdAt!
                             .split(' ')[1]
                             .substring(0, 5)
                         : 'HH:MM',

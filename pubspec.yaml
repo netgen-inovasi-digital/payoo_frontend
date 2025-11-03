@@ -47,6 +47,8 @@ dependencies:
   image_picker: ^1.2.0
   print_bluetooth_thermal: ^1.1.6
   permission_handler: ^11.0.1
+  intl: ^0.20.2
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

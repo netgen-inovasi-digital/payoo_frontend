@@ -11,6 +11,8 @@ import 'package:payoo/app/modules/stok/controllers/stok_controller.dart';
 import 'package:payoo/app/services/api_call_status.dart';
 import 'package:payoo/app/components/custom_app_bar.dart';
 
+enum TipePembelian { semua, produk, komposisi }
+
 class PembelianFormView extends StatefulWidget {
   const PembelianFormView({super.key});
 
@@ -22,30 +24,31 @@ class _PembelianFormViewState extends State<PembelianFormView> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int _selectedProdukId = 0;
+  TipePembelian _selectedTipe = TipePembelian.semua;
+  bool _isKomposisi = false; // Track if selected item is komposisi
   
-late final ProdukController _produkController;
-late final KomposisiController _komposisiController;
-late final StokController _stokController;
+  late final ProdukController _produkController;
+  late final KomposisiController _komposisiController;
+  late final StokController _stokController;
 
-@override
-void initState() {
-  super.initState();
-  
-  // Get or create controllers
-  _stokController = Get.isRegistered<StokController>() 
-      ? Get.find<StokController>() 
-      : Get.put(StokController());
-      
-  _produkController = Get.put(ProdukController(), permanent: false);
-  _komposisiController = Get.put(KomposisiController(), permanent: false);
-  
-  // Fetch data
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _produkController.fetchProduk();
-    _komposisiController.fetchKomposisi();
-    _stokController.clearValidationErrors();
-  });
-}
+  @override
+  void initState() {
+    super.initState();
+    
+    _stokController = Get.isRegistered<StokController>() 
+        ? Get.find<StokController>() 
+        : Get.put(StokController());
+        
+    _produkController = Get.put(ProdukController(), permanent: false);
+    _komposisiController = Get.put(KomposisiController(), permanent: false);
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _produkController.fetchProduk();
+      _komposisiController.fetchKomposisi();
+      _stokController.clearValidationErrors();
+    });
+  }
+
   void _fetchData() {
     if (_produkController == null || _komposisiController == null) return;
     
@@ -60,8 +63,7 @@ void initState() {
         }
         return Future.value();
       },
-    ).then((_) {
-    }).catchError((error) {
+    ).catchError((error) {
       if (mounted) {
         CustomSnackBar.showCustomErrorSnackBar(
           title: 'Error',
@@ -80,7 +82,6 @@ void initState() {
   }
 
   Future<void> _onSave() async {
-    
     if (_stokController == null || _produkController == null) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'Error',
@@ -93,29 +94,44 @@ void initState() {
       return;
     }
 
-    // Validate product selection
     if (_selectedProdukId <= 0) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'Gagal',
-        message: 'Silakan pilih produk terlebih dahulu',
+        message: 'Silakan pilih produk/komposisi terlebih dahulu',
       );
       return;
     }
 
-    // Find the selected product
-    final selectedProduct = _produkController!.list.firstWhereOrNull(
-      (produk) => produk.id == _selectedProdukId,
-    );
-
-    if (selectedProduct == null) {
-      CustomSnackBar.showCustomErrorSnackBar(
-        title: 'Gagal',
-        message: 'Produk tidak ditemukan',
+    String selectedName = '';
+    
+    if (_isKomposisi) {
+      final selectedKomposisi = _komposisiController!.list.firstWhereOrNull(
+        (komposisi) => komposisi.id == _selectedProdukId,
       );
-      return;
+      
+      if (selectedKomposisi == null) {
+        CustomSnackBar.showCustomErrorSnackBar(
+          title: 'Gagal',
+          message: 'Komposisi tidak ditemukan',
+        );
+        return;
+      }
+      selectedName = selectedKomposisi.namaKomposisi;
+    } else {
+      final selectedProduct = _produkController!.list.firstWhereOrNull(
+        (produk) => produk.id == _selectedProdukId,
+      );
+
+      if (selectedProduct == null) {
+        CustomSnackBar.showCustomErrorSnackBar(
+          title: 'Gagal',
+          message: 'Produk tidak ditemukan',
+        );
+        return;
+      }
+      selectedName = selectedProduct.name;
     }
 
-    // Validate date and time selection
     if (_selectedDate == null || _selectedTime == null) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'Gagal',
@@ -124,7 +140,6 @@ void initState() {
       return;
     }
 
-    // Format date and time for API
     try {
       final dateTime = DateTime(
         _selectedDate!.year,
@@ -153,7 +168,7 @@ void initState() {
       success = await _stokController!.createStock(
         _selectedProdukId,
         stockType,
-        selectedProduct.name,
+        selectedName,
       );
     } catch (e, stackTrace) {
       if (mounted) {
@@ -165,9 +180,7 @@ void initState() {
       return;
     }
 
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     if (success) {
       _handleSuccessfulSave();
@@ -183,19 +196,21 @@ void initState() {
       _selectedProdukId = 0;
       _selectedDate = null;
       _selectedTime = null;
+      _selectedTipe = TipePembelian.semua;
+      _isKomposisi = false;
     });
 
     Get.back(result: true);
     CustomSnackBar.showCustomSnackBar(
       title: 'Sukses',
-      message: 'Pembelian berhasil diperbarui',
+      message: 'Pembelian berhasil disimpan',
     );
   }
 
   void _handleSaveError() {
     if (_stokController?.errorCreate.value.isNotEmpty ?? false) {
       CustomSnackBar.showCustomErrorSnackBar(
-        title: 'Gagal Memperbarui',
+        title: 'Gagal Menyimpan',
         message: _stokController!.errorCreate.value,
       );
     } else {
@@ -253,29 +268,76 @@ void initState() {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Manajemen Pembelian'),
       body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  _buildProdukDropdownWrapper(),
-                  const SizedBox(height: 16),
-                  _buildDatePicker(context),
-                  const SizedBox(height: 16),
-                  _buildQuantityField(),
-                  const SizedBox(height: 16),
-                  _buildBuyPriceField(),
-                  const SizedBox(height: 16),
-                  _buildTextField("Catatan", _stokController!.notesController),
-                ],
-              ),
-            ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            _buildTipeDropdown(),
+            const SizedBox(height: 16),
+            _buildProdukDropdownWrapper(),
+            const SizedBox(height: 16),
+            _buildDatePicker(context),
+            const SizedBox(height: 16),
+            _buildQuantityField(),
+            const SizedBox(height: 16),
+            _buildBuyPriceField(),
+            const SizedBox(height: 16),
+            _buildTextField("Catatan", _stokController!.notesController),
+          ],
+        ),
+      ),
       bottomNavigationBar: _buildBottomButton(),
     );
   }
 
+  Widget _buildTipeDropdown() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<TipePembelian>(
+          value: _selectedTipe,
+          hint: const Text(
+            'Tipe Produk*',
+            style: TextStyle(color: Colors.black, fontSize: 15),
+          ),
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down,
+              color: Colors.grey, size: 20),
+          items: const [
+            DropdownMenuItem(
+              value: TipePembelian.semua,
+              child: Text('Semua Tipe', style: TextStyle(fontSize: 15)),
+            ),
+            DropdownMenuItem(
+              value: TipePembelian.produk,
+              child: Text('Produk', style: TextStyle(fontSize: 15)),
+            ),
+            DropdownMenuItem(
+              value: TipePembelian.komposisi,
+              child: Text('Komposisi', style: TextStyle(fontSize: 15)),
+            ),
+          ],
+          onChanged: (TipePembelian? newValue) {
+            if (newValue != null) {
+              setState(() {
+                _selectedTipe = newValue;
+                _selectedProdukId = 0; // Reset selection when type changes
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildProdukDropdownWrapper() {
-    if (_produkController == null) {
+    if (_produkController == null || _komposisiController == null) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -295,13 +357,16 @@ void initState() {
         borderRadius: BorderRadius.circular(25),
       ),
       child: Obx(() {
-        final status = _produkController!.statusList.value;
+        final produkStatus = _produkController!.statusList.value;
+        final komposisiStatus = _komposisiController!.statusList.value;
 
-        if (status == ApiCallStatus.loading) {
+        if (produkStatus == ApiCallStatus.loading || 
+            komposisiStatus == ApiCallStatus.loading) {
           return _buildLoadingState();
         }
 
-        if (status == ApiCallStatus.error) {
+        if (produkStatus == ApiCallStatus.error || 
+            komposisiStatus == ApiCallStatus.error) {
           return _buildErrorState();
         }
 
@@ -325,7 +390,7 @@ void initState() {
           ),
           const SizedBox(width: 12),
           Text(
-            'Memuat produk...',
+            'Memuat data...',
             style: TextStyle(color: Colors.grey[600], fontSize: 15),
           ),
         ],
@@ -342,7 +407,7 @@ void initState() {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Gagal memuat produk',
+              'Gagal memuat data',
               style: TextStyle(color: Colors.red[700], fontSize: 14),
             ),
           ),
@@ -365,44 +430,66 @@ void initState() {
 
   Widget _buildProdukDropdownContent() {
     return Obx(() {
-      if (_produkController!.list.isEmpty) {
-        return _buildEmptyState('Tidak ada produk tersedia');
+      List<DropdownMenuItem<String>> items = [];
+      
+      // Filter based on selected type
+      if (_selectedTipe == TipePembelian.semua || _selectedTipe == TipePembelian.produk) {
+        final produkItems = _produkController!.list.map((produk) {
+          return DropdownMenuItem<String>(
+            value: 'p_${produk.id}',
+            child: Text(
+              produk.name,
+              style: const TextStyle(fontSize: 15),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+        items.addAll(produkItems);
+      }
+      
+      if (_selectedTipe == TipePembelian.semua || _selectedTipe == TipePembelian.komposisi) {
+        final komposisiItems = _komposisiController!.list.map((komposisi) {
+          return DropdownMenuItem<String>(
+            value: 'k_${komposisi.id}',
+            child: Text(
+              komposisi.namaKomposisi,
+              style: const TextStyle(fontSize: 15),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList();
+        items.addAll(komposisiItems);
       }
 
-      final uniqueProduk = _produkController!.list.toSet().toList();
-      final selectedValue = _getValidatedSelectedValue(uniqueProduk);
+      if (items.isEmpty) {
+        return _buildEmptyState('Tidak ada data tersedia');
+      }
+
+      final selectedValue = _getValidatedSelectedValue(items);
 
       return DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedValue,
           hint: const Text(
-            'Produk*',
+            'Pilih Produk/Komposisi*',
             style: TextStyle(color: Colors.black, fontSize: 15),
           ),
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down,
-              color: Colors.grey, size: 20),
-          items: uniqueProduk.map((produk) {
-            return DropdownMenuItem<String>(
-              value: produk.id.toString(),
-              child: Text(
-                produk.name,
-                style: const TextStyle(fontSize: 15),
-              ),
-            );
-          }).toList(),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
+          items: items,
           onChanged: _onProdukChanged,
         ),
       );
     });
   }
 
-  String? _getValidatedSelectedValue(List<dynamic> uniqueProduk) {
+  String? _getValidatedSelectedValue(List<DropdownMenuItem<String>> items) {
     if (_selectedProdukId <= 0) return null;
 
-    final selectedValue = _selectedProdukId.toString();
-    final exists =
-        uniqueProduk.any((produk) => produk.id.toString() == selectedValue);
+    final prefix = _isKomposisi ? 'k_' : 'p_';
+    final selectedValue = '$prefix$_selectedProdukId';
+    
+    final exists = items.any((item) => item.value == selectedValue);
 
     if (!exists) {
       _selectedProdukId = 0;
@@ -415,7 +502,13 @@ void initState() {
   void _onProdukChanged(String? newValue) {
     if (newValue != null) {
       setState(() {
-        _selectedProdukId = int.tryParse(newValue) ?? 0;
+        if (newValue.startsWith('k_')) {
+          _isKomposisi = true;
+          _selectedProdukId = int.tryParse(newValue.substring(2)) ?? 0;
+        } else if (newValue.startsWith('p_')) {
+          _isKomposisi = false;
+          _selectedProdukId = int.tryParse(newValue.substring(2)) ?? 0;
+        }
       });
     }
   }
@@ -580,7 +673,7 @@ void initState() {
         final isLoading =
             _stokController!.statusCreate.value == ApiCallStatus.loading;
         return CustomSaveButton(
-          onPressed:_onSave,
+          onPressed: _onSave,
           label: isLoading ? 'Menyimpan...' : 'SIMPAN',
         );
       }),
@@ -589,7 +682,6 @@ void initState() {
 
   @override
   void dispose() {
-    // Clean up controllers if we created them
     if (_produkController != null && Get.isRegistered<ProdukController>()) {
       try {
         Get.delete<ProdukController>();
