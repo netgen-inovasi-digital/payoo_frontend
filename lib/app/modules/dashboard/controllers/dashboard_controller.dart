@@ -30,28 +30,61 @@ class DashboardController extends GetxController {
     try {
       status.value = ApiCallStatus.loading;
       errorStatusCode.value = 0;
+      errorMessage.value = '';
+      
+      print('=== Starting refreshData ===');
       
       // Fetch user data first
       await userController.fetchUser();
       
-      // Check if user data is available
+      
+      // Check if user fetch failed due to 401
+      if (userController.status.value == ApiCallStatus.error) {
+        // Check if it's a token issue (401)
+        final userError = userController.error.value.toLowerCase();
+        if (userError.contains('401') || 
+            userError.contains('unauthorized') || 
+            userError.contains('token')) {
+          status.value = ApiCallStatus.error;
+          errorStatusCode.value = 401;
+          errorMessage.value = 'Session expired. Please login again.';
+          
+          // Redirect to login
+          Get.offAllNamed('/login');
+          return;
+        }
+        
+        status.value = ApiCallStatus.error;
+        errorStatusCode.value = 500;
+        errorMessage.value = userController.error.value;
+        return;
+      }
+      
       if (userController.user.value != null) {
-        // Fetch shop and dashboard data in parallel
-        await Future.wait([
+         await Future.wait([
           tokoController.fetchTokoById(userController.user.value!.shopId),
           fetchShopData(),
         ]);
+      
+        // Check if any of the fetches failed with 401
+        if (statusDashboardData.value == ApiCallStatus.error && 
+            errorStatusCode.value == 401) {
+          errorMessage.value = 'Session expired. Please login again.';
+          Get.offAllNamed('/login');
+          return;
+        }
         
         status.value = ApiCallStatus.success;
+        errorMessage.value = '';
       } else {
         status.value = ApiCallStatus.error;
-        errorStatusCode.value = 400;
-        errorMessage.value = 'User data not available';
+        errorStatusCode.value = 500; // Changed from 400 to 500
+        errorMessage.value = 'Failed to load user data';
       }
     } catch (e) {
       status.value = ApiCallStatus.error;
       errorMessage.value = e.toString();
-      print('Error in refreshData: $e');
+      errorStatusCode.value = 500;
     }
   }
 
@@ -70,7 +103,6 @@ class DashboardController extends GetxController {
         headers: token != null ? {'Authorization': 'Bearer $token'} : null,
         onSuccess: (response) {
           try {
-            print('Dashboard API response: ${response.data}');
             
             final parsed = ApiResponse<DashboardData>.fromJson(
               response.data,
@@ -81,26 +113,24 @@ class DashboardController extends GetxController {
             statusDashboardData.value = ApiCallStatus.success;
             errorStatusCode.value = 0;
           } catch (e) {
-            print('Error parsing dashboard data: $e');
             errorDashboardData.value = 'Parsing error: $e';
             statusDashboardData.value = ApiCallStatus.error;
             errorStatusCode.value = 500;
           }
         },
         onError: (e) {
-          print('Error fetching dashboard data: $e');
+          
           errorDashboardData.value = e.toString();
           statusDashboardData.value = ApiCallStatus.error;
           errorStatusCode.value = e.statusCode ?? 0;
           
-          // If 401, it's a token expiration
+          // If 401, set flag for logout
           if (e.statusCode == 401) {
-            status.value = ApiCallStatus.error;
+            errorMessage.value = 'Session expired';
           }
         },
       );
     } catch (e) {
-      print('Exception in fetchShopData: $e');
       errorDashboardData.value = e.toString();
       statusDashboardData.value = ApiCallStatus.error;
       errorStatusCode.value = 500;

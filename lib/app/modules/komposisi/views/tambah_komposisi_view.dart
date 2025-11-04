@@ -72,7 +72,7 @@ class _TambahKomposisiViewState extends State<TambahKomposisiView> {
             const SizedBox(height: 16),
             CurrencyInput(
               valueController: controller.hargaModalController,
-              hintText: 'harga jual*',
+              hintText: 'harga Modal*',
               enabled: true,
               label: '',
             ),

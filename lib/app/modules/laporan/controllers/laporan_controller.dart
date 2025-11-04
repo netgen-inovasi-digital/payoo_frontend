@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:payoo/app/data/models/keranjang_model.dart';
 import 'package:payoo/app/data/models/laporan_model.dart';
@@ -16,6 +17,8 @@ class LaporanController extends GetxController {
   var statusOrderReport = ApiCallStatus.holding.obs;
   var errorOrderReport = ''.obs;
   var selectedPeriod = 'bulan ini'.obs;
+  TextEditingController rangeStartController = TextEditingController();
+  TextEditingController rangeEndController = TextEditingController();
 
   var reportSummary = Rx<ReportSummary?>(null);
   var statusSummary = ApiCallStatus.holding.obs;
@@ -72,6 +75,33 @@ class LaporanController extends GetxController {
     errorOrderReport.value = '';
     final url =
         "${Constants.baseUrl}${Constants.REPORTS_ORDERS.replaceAll('{shop_id}', shopId.value.toString())}?period=$period";
+    final storage = StorageManager();
+    final token = storage.read<String>('token');
+    await BaseClient.safeApiCall(url, RequestType.get,
+        headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+        onSuccess: (response) {
+      try {
+        final parsed = ApiResponse<OrdersReport>.fromJson(
+          response.data,
+          (json) => OrdersReport.fromJson(json),
+        );
+        ordersReport.value = parsed.data;
+        statusOrderReport.value = ApiCallStatus.success;
+      } catch (e) {
+        errorOrderReport.value = 'Parsing error $e';
+        statusOrderReport.value = ApiCallStatus.error;
+      }
+    }, onError: (e) {
+      errorOrderReport.value = e.toString();
+      statusOrderReport.value = ApiCallStatus.error;
+    });
+  }
+
+  fetchOrderReportByDateRange() async {
+    statusOrderReport.value = ApiCallStatus.loading;
+    errorOrderReport.value = '';
+    final url =
+        "${Constants.baseUrl}${Constants.REPORTS_ORDERS_V2.replaceAll('{shop_id}', shopId.value.toString())}?range_start=${rangeStartController.text}&range_end=${rangeEndController.text}";
     final storage = StorageManager();
     final token = storage.read<String>('token');
     await BaseClient.safeApiCall(url, RequestType.get,

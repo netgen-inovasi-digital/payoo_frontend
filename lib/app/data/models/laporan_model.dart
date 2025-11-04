@@ -43,7 +43,6 @@ class OrderReport {
       changeMoney: double.tryParse(json['change_money'].toString()) ?? 0.0,
       tax: double.tryParse(json['tax'].toString()) ?? 0.0,
       paymentMethod: json['payment_method'] ?? '',
-      // FIX: Handle the specific date format by replacing the space with a 'T'.
       createdAt: DateTime.parse(json['created_at'].toString().replaceFirst(' ', 'T')),
       updatedAt: DateTime.parse(json['updated_at'].toString().replaceFirst(' ', 'T')),
       totalItems: int.tryParse(json['total_items'].toString()) ?? 0,
@@ -67,38 +66,6 @@ class OrderReport {
       'total_items': totalItems.toString(),
     };
   }
-
-  OrderReport copyWith({
-    String? id,
-    String? userId,
-    String? shopId,
-    String? status,
-    String? notes,
-    double? total,
-    double? amountPaid,
-    double? changeMoney,
-    double? tax,
-    String? paymentMethod,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    int? totalItems,
-  }) {
-    return OrderReport(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      shopId: shopId ?? this.shopId,
-      status: status ?? this.status,
-      notes: notes ?? this.notes,
-      total: total ?? this.total,
-      amountPaid: amountPaid ?? this.amountPaid,
-      changeMoney: changeMoney ?? this.changeMoney,
-      tax: tax ?? this.tax,
-      paymentMethod: paymentMethod ?? this.paymentMethod,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      totalItems: totalItems ?? this.totalItems,
-    );
-  }
 }
 
 class DateRange {
@@ -112,7 +79,6 @@ class DateRange {
 
   factory DateRange.fromJson(Map<String, dynamic> json) {
     return DateRange(
-      // FIX: Handle the specific date format by replacing the space with a 'T'.
       start: DateTime.parse(json['start'].toString().replaceFirst(' ', 'T')),
       end: DateTime.parse(json['end'].toString().replaceFirst(' ', 'T')),
     );
@@ -126,30 +92,52 @@ class DateRange {
   }
 }
 
+class ReportFilters {
+  final String rangeStart;
+  final String rangeEnd;
+
+  ReportFilters({
+    required this.rangeStart,
+    required this.rangeEnd,
+  });
+
+  factory ReportFilters.fromJson(Map<String, dynamic> json) {
+    return ReportFilters(
+      rangeStart: json['range_start'] ?? '',
+      rangeEnd: json['range_end'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'range_start': rangeStart,
+      'range_end': rangeEnd,
+    };
+  }
+}
+
 class OrdersReport {
   final List<OrderReport> orders;
   final int totalOrders;
-  final String period;
+  final ReportFilters filters;
   final DateRange dateRange;
 
   OrdersReport({
     required this.orders,
     required this.totalOrders,
-    required this.period,
+    required this.filters,
     required this.dateRange,
   });
 
-  // FIX: This factory now works directly with the 'data' object from your API response.
   factory OrdersReport.fromJson(Map<String, dynamic> json) {
-    // The 'json' parameter is now expected to be the 'data' object itself.
-    final ordersList = json['orders'] as List;
-    final orders = ordersList.map((e) => OrderReport.fromJson(e)).toList();
+    final ordersList = (json['orders'] as List?) ?? [];
+    final orders = ordersList.map((e) => OrderReport.fromJson(e as Map<String, dynamic>)).toList();
 
     return OrdersReport(
       orders: orders,
       totalOrders: json['total_orders'] ?? 0,
-      period: json['period'] ?? '',
-      dateRange: DateRange.fromJson(json['date_range']),
+      filters: ReportFilters.fromJson(json['filters'] ?? {}),
+      dateRange: DateRange.fromJson(json['date_range'] ?? {}),
     );
   }
 
@@ -157,7 +145,7 @@ class OrdersReport {
     return {
       'orders': orders.map((o) => o.toJson()).toList(),
       'total_orders': totalOrders,
-      'period': period,
+      'filters': filters.toJson(),
       'date_range': dateRange.toJson(),
     };
   }
@@ -184,15 +172,5 @@ class ReportSummary {
       'total_revenue': totalRevenue.toString(),
       'total_transactions': totalTransactions,
     };
-  }
-
-  ReportSummary copyWith({
-    double? totalRevenue,
-    int? totalTransactions,
-  }) {
-    return ReportSummary(
-      totalRevenue: totalRevenue ?? this.totalRevenue,
-      totalTransactions: totalTransactions ?? this.totalTransactions,
-    );
   }
 }

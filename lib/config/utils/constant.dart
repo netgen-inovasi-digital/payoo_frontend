@@ -46,10 +46,12 @@ class Constants {
   static const ORDER_BY_ID = '/orders/{id}';
   static const ORDER_STATUS = '/orders/status/{id}'; //put
   static const ORDERS = '/orders'; //post
+  static const ORDERSV2 = '/ordersv2'; 
   static const DASHBOARD = '/dashboard';
   //reports
   static const REPORTS_SUMMARY = "/reports/{shop_id}/summary";
   static const REPORTS_ORDERS = "/reports/{shop_id}/orders";
+  static const REPORTS_ORDERS_V2 = "/reports/{shop_id}/ordersv2";
   //upload
   static const UPLOAD = '/upload';
 
