@@ -21,7 +21,7 @@ class Produk {
   final int stock;
   final Shop shop;
   final Kategori kategori;
-  final List<Komposisi> compositions;
+  List<Komposisi> compositions;
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;

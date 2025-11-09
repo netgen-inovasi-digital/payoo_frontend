@@ -61,10 +61,23 @@ class DashboardController extends GetxController {
       }
       
       if (userController.user.value != null) {
-         await Future.wait([
-          tokoController.fetchTokoById(userController.user.value!.shopId),
-          fetchShopData(),
-        ]);
+        final shopId = userController.user.value!.shopId;
+        
+        print('=== ShopId from user: $shopId ===');
+        
+        // Always try to fetch data, even if shopId is 0
+        // The API will return empty/default data for new accounts
+        try {
+          await Future.wait([
+            if (shopId > 0) tokoController.fetchTokoById(shopId),
+            fetchShopData(),
+          ]);
+          
+          print('=== After fetch - Toko name: ${tokoController.toko.value?.name} ===');
+        } catch (e) {
+          print('Error fetching dashboard data: $e');
+          // Don't fail, just continue with empty data
+        }
       
         // Check if any of the fetches failed with 401
         if (statusDashboardData.value == ApiCallStatus.error && 
@@ -103,7 +116,6 @@ class DashboardController extends GetxController {
         headers: token != null ? {'Authorization': 'Bearer $token'} : null,
         onSuccess: (response) {
           try {
-            
             final parsed = ApiResponse<DashboardData>.fromJson(
               response.data,
               (json) => DashboardData.fromJson(json),
@@ -113,27 +125,42 @@ class DashboardController extends GetxController {
             statusDashboardData.value = ApiCallStatus.success;
             errorStatusCode.value = 0;
           } catch (e) {
-            errorDashboardData.value = 'Parsing error: $e';
-            statusDashboardData.value = ApiCallStatus.error;
-            errorStatusCode.value = 500;
+            print('Dashboard parsing error: $e');
+            // For new accounts, data might be null or empty - this is ok
+            dashboardData.value = null;
+            statusDashboardData.value = ApiCallStatus.success;
+            errorStatusCode.value = 0;
           }
         },
         onError: (e) {
-          
+          print('Dashboard fetch error: ${e.toString()}');
           errorDashboardData.value = e.toString();
-          statusDashboardData.value = ApiCallStatus.error;
-          errorStatusCode.value = e.statusCode ?? 0;
           
-          // If 401, set flag for logout
-          if (e.statusCode == 401) {
-            errorMessage.value = 'Session expired';
+          // If 404 or 422, it might be a new account without shop yet
+          // This is normal for newly registered users
+          if (e.statusCode == 404 || e.statusCode == 422) {
+            print('Dashboard: New account without shop (422/404), setting empty data');
+            dashboardData.value = null;
+            statusDashboardData.value = ApiCallStatus.success;
+            errorStatusCode.value = 0;
+          } else {
+            statusDashboardData.value = ApiCallStatus.error;
+            errorStatusCode.value = e.statusCode ?? 0;
+            
+            // If 401, set flag for logout
+            if (e.statusCode == 401) {
+              errorMessage.value = 'Session expired';
+            }
           }
         },
       );
     } catch (e) {
+      print('Dashboard exception: $e');
       errorDashboardData.value = e.toString();
-      statusDashboardData.value = ApiCallStatus.error;
-      errorStatusCode.value = 500;
+      // For unexpected errors in new accounts, still show success with empty data
+      dashboardData.value = null;
+      statusDashboardData.value = ApiCallStatus.success;
+      errorStatusCode.value = 0;
     }
   }
 }

@@ -8,6 +8,7 @@ class Komposisi {
   final String satuan; // mapping dari unit
   final String? createdAt;
   final String? updatedAt;
+  final int? compositionId; // tambahan untuk kemudahan akses satuan
   final int stokKomposisi; // tidak ada di API create -> default 0 atau dari endpoint lain
   int quantity; // untuk kebutuhan UI / form (tidak ada di API)
 
@@ -17,6 +18,7 @@ class Komposisi {
     required this.hargaModal,
     required this.hargaJual,
     required this.satuan,
+    this.compositionId = 0,
     this.shopId,
     this.createdAt,
     this.updatedAt,
@@ -42,6 +44,9 @@ class Komposisi {
       quantity: json['quantity'] is int
           ? json['quantity']
           : int.tryParse(json['quantity']?.toString() ?? '0') ?? 0,
+      compositionId: json['composition_id'] is int
+          ? json['composition_id']
+          : int.tryParse(json['composition_id']?.toString() ?? '0') ?? 0,
     );
   }
 
@@ -51,6 +56,7 @@ class Komposisi {
         'selling_price': hargaJual,
         'unit': satuan,
         'quantity': quantity,
+        'composition_id': compositionId,
       };
 
   static double _toDouble(dynamic v) {

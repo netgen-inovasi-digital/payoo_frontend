@@ -215,13 +215,24 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () async {
+                                // Close any open snackbars before navigation
+                                if (Get.isSnackbarOpen) {
+                                  Get.closeAllSnackbars();
+                                }
+
                                 // Navigate to edit view and wait for result
                                 final result = await Get.to(
-                                    () => const TambahProdukView(isEdit: true));
+                                  () => const TambahProdukView(isEdit: true)
+                                );
 
                                 // Refresh the product details after editing
-                                if (result == true && mounted) {
-                                  controller.fetchProdukById(widget.produkId);
+                                if (result != null && result is int && mounted) {
+                                  // Result is the product ID
+                                  // Add a small delay to ensure snackbars are cleared
+                                  await Future.delayed(const Duration(milliseconds: 200));
+                                  
+                                  // Refresh the product detail using the returned ID
+                                  await controller.fetchProdukById(result);
                                 }
                               },
                               style: ElevatedButton.styleFrom(
@@ -243,7 +254,13 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
+                                // Close any open snackbars immediately
+                                if (Get.isSnackbarOpen) {
+                                  Get.closeAllSnackbars();
+                                }
+
+                                // Show confirmation dialog
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -255,38 +272,64 @@ class _DetailProdukViewState extends State<DetailProdukView> {
                                         // Close the confirmation dialog
                                         Get.back();
 
+                                        // Close any open snackbars before deletion
+                                        if (Get.isSnackbarOpen) {
+                                          Get.closeAllSnackbars();
+                                        }
+
                                         // Perform delete
-                                        final success = await controller
-                                            .deleteProduk(produk.id);
+                                        final success = await controller.deleteProduk(
+                                            produk.id);
 
                                         if (success) {
-                                          // Reset controller state to prevent issues
+                                          // Reset controller state
                                           controller.produk.value = null;
-                                          
+
                                           // Refresh the product list
                                           await controller.fetchProduk();
-                                          
-                                          // Close detail view and return to data produk
+
+                                          // Navigate back FIRST
                                           if (mounted) {
                                             Get.back(result: true);
                                           }
 
-                                          // Show success message after navigation
-                                          Get.snackbar(
-                                            'Berhasil',
-                                            'Produk berhasil dihapus',
-                                            backgroundColor: Colors.green,
-                                            colorText: Colors.white,
-                                            duration:
-                                                const Duration(seconds: 2),
-                                          );
+                                          // THEN show success message after a delay
+                                          await Future.delayed(
+                                              const Duration(milliseconds: 400));
+
+                                          // Only show snackbar if context is still valid
+                                          if (Get.context != null &&
+                                              !Get.isSnackbarOpen) {
+                                            Get.snackbar(
+                                              'Berhasil',
+                                              'Produk berhasil dihapus',
+                                              backgroundColor: Colors.green,
+                                              colorText: Colors.white,
+                                              duration:
+                                                  const Duration(seconds: 2),
+                                              snackPosition: SnackPosition.TOP,
+                                              margin: const EdgeInsets.all(10),
+                                            );
+                                          }
                                         } else {
-                                          Get.snackbar(
-                                            'Error',
-                                            controller.errorDelete.value,
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                          );
+                                          // Show error message with delay
+                                          await Future.delayed(
+                                              const Duration(milliseconds: 100));
+                                          if (mounted && !Get.isSnackbarOpen) {
+                                            Get.snackbar(
+                                              'Error',
+                                              controller.errorDelete.value
+                                                  .isNotEmpty
+                                                  ? controller.errorDelete.value
+                                                  : 'Gagal menghapus produk',
+                                              backgroundColor: Colors.red,
+                                              colorText: Colors.white,
+                                              duration:
+                                                  const Duration(seconds: 3),
+                                              snackPosition: SnackPosition.TOP,
+                                              margin: const EdgeInsets.all(10),
+                                            );
+                                          }
                                         }
                                       },
                                     );

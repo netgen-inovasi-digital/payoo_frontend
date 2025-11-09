@@ -15,25 +15,30 @@ import 'package:payoo/app/services/image_upload_service.dart';
 class TambahProdukTab extends StatefulWidget {
   final bool isEdit;
   final VoidCallback? onNextTab;
-  final List<Komposisi> selectedKomposisi;
 
   const TambahProdukTab({
     super.key,
     this.onNextTab,
     this.isEdit = false,
-    this.selectedKomposisi = const [],
   });
 
   @override
   State<TambahProdukTab> createState() => _TambahProdukTabState();
 }
 
-class _TambahProdukTabState extends State<TambahProdukTab> {
+class _TambahProdukTabState extends State<TambahProdukTab>
+    with AutomaticKeepAliveClientMixin {
   final ProdukController controller = Get.find<ProdukController>();
   final KategoriController kategoriController =
       Get.put<KategoriController>(KategoriController());
   final ImageUploadService imageController =
       Get.put<ImageUploadService>(ImageUploadService());
+
+  // Flag to prevent multiple submissions
+  bool _isSubmitting = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   Future<void> _loadProdukCategories() async {
     if (kategoriController.list.isEmpty) {
@@ -57,7 +62,15 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
   }
 
   @override
+  void dispose() {
+    _isSubmitting = false;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(40.0, 20.0, 40.0, 0.0),
@@ -71,32 +84,34 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             const SizedBox(height: 16),
             _buildCategoryDropdown(),
             const SizedBox(height: 16),
-            _buildTextField('Stok*', controller.stokController,isNumber: true),
+            _buildTextField('Stok*', controller.stokController, isNumber: true),
             const SizedBox(height: 16),
             CurrencyInput(
               valueController: controller.hargaJualController,
-
               hintText: 'harga jual*',
-              enabled: true, label: '',
+              enabled: true,
+              label: '',
             ),
             const SizedBox(height: 16),
             CurrencyInput(
               valueController: controller.hargaModalController,
               hintText: 'harga modal*',
-              enabled: true, label: '',
+              enabled: true,
+              label: '',
             ),
-            // Komposisi info section - UPDATED
-            Obx(() {
-              // Always read from the controller, which is the single source of truth
-              if (controller.selectedKomposisi.isNotEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: _buildKomposisiInfo(),
-                );
-              }
-              // Return an empty widget if there are no compositions
-              return const SizedBox.shrink();
-            }),
+            // Komposisi info section
+            GetBuilder<ProdukController>(
+              id: 'komposisi_info',
+              builder: (ctrl) {
+                if (ctrl.selectedKomposisi.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: _buildKomposisiInfo(),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
 
             const SizedBox(height: 80),
 
@@ -105,7 +120,8 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                   controller.statusCreate.value == ApiCallStatus.loading;
               final isUpdateLoading =
                   controller.statusUpdate.value == ApiCallStatus.loading;
-              final isLoading = isCreateLoading || isUpdateLoading;
+              final isLoading =
+                  isCreateLoading || isUpdateLoading || _isSubmitting;
 
               return CustomSaveButton(
                 onPressed: isLoading ? () {} : () => _submitProduk(),
@@ -119,7 +135,6 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
     );
   }
 
-  // UPDATED METHOD
   Widget _buildKomposisiInfo() {
     return Container(
       width: double.infinity,
@@ -136,7 +151,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Komposisi (${controller.selectedKomposisi.length})', // Read from controller
+                'Komposisi (${controller.selectedKomposisi.length})',
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2FA36B),
@@ -156,7 +171,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             ],
           ),
           const SizedBox(height: 8),
-          ...controller.selectedKomposisi.take(3).map( // Read from controller
+          ...controller.selectedKomposisi.take(3).map(
                 (komposisi) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Text(
@@ -165,7 +180,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                   ),
                 ),
               ),
-          if (controller.selectedKomposisi.length > 3) // Read from controller
+          if (controller.selectedKomposisi.length > 3)
             Text(
               'dan ${controller.selectedKomposisi.length - 3} lainnya...',
               style: TextStyle(
@@ -179,6 +194,15 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
   }
 
   Future<void> _submitProduk() async {
+    // Prevent multiple submissions
+    if (_isSubmitting) return;
+
+    // Close any open snackbars first
+    if (Get.isSnackbarOpen) {
+      Get.closeAllSnackbars();
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
     // Comprehensive input validation
     if (controller.namaController.text.trim().isEmpty) {
       _showErrorSnackbar('Nama produk harus diisi');
@@ -194,33 +218,36 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
       _showErrorSnackbar('Harga jual harus diisi');
       return;
     }
+
     if (controller.hargaModalController.text.trim().isEmpty) {
       _showErrorSnackbar('Harga modal harus diisi');
       return;
     }
 
     // Validate price format
-    final hargaJual = double.tryParse(controller.hargaJualController.text.trim());
+    final hargaJual =
+        double.tryParse(controller.hargaJualController.text.trim());
     if (hargaJual == null || hargaJual <= 0) {
       _showErrorSnackbar(
           'Harga jual harus berupa angka yang valid dan lebih dari 0');
       return;
     }
 
-    // Validate modal price if provided
-    if (controller.hargaModalController.text.trim().isNotEmpty) {
-      final hargaModal =
-          double.tryParse(controller.hargaModalController.text.trim());
-      if (hargaModal == null || hargaModal < 0) {
-        _showErrorSnackbar('Harga modal harus berupa angka yang valid');
-        return;
-      }
+    // Validate modal price
+    final hargaModal =
+        double.tryParse(controller.hargaModalController.text.trim());
+    if (hargaModal == null || hargaModal < 0) {
+      _showErrorSnackbar('Harga modal harus berupa angka yang valid');
+      return;
     }
+
+    // Set submitting flag
+    setState(() {
+      _isSubmitting = true;
+    });
 
     // Set selected category to controller
     controller.setKategori(controller.selectedKategoriId.value);
-    
-    // DELETED: controller.setKomposisi(widget.selectedKomposisi);
 
     bool success = false;
 
@@ -232,18 +259,52 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
         success = await controller.updateProduk(controller.produk.value!.id);
       }
 
+      // Reset submitting flag
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+
       if (success) {
-         await controller.fetchProduk();
-         controller.produk.value = null;
-        // Fixed navigation - don't call multiple routes
-        Get.back(); // Go back to previous screen
-        if (widget.isEdit) {
-          Get.back(); // Go back to data produk view if needed
+        // Store the product ID before closing snackbars
+        final int? productId = controller.produk.value?.id;
+        
+        // Close all snackbars before navigation
+        Get.closeAllSnackbars();
+
+        // Refresh product list
+        await controller.fetchProduk();
+
+        // Navigate back based on edit mode
+        if (mounted) {
+          if (widget.isEdit && productId != null) {
+            // For edit mode: Go back with result and pass the product ID
+            Get.back(result: productId);
+          } else {
+            // For create mode: Just go back to list
+            Get.back(result: true);
+          }
         }
 
-        _showSuccessSnackbar(widget.isEdit
-            ? 'Produk berhasil diperbarui'
-            : 'Produk berhasil ditambahkan');
+        // Reset form after navigation
+        controller.resetCreateForm();
+
+        // Show success message after navigation
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (Get.context != null && !Get.isSnackbarOpen) {
+          Get.snackbar(
+            'Berhasil',
+            widget.isEdit
+                ? 'Produk berhasil diperbarui'
+                : 'Produk berhasil ditambahkan',
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 2),
+            snackPosition: SnackPosition.TOP,
+            margin: const EdgeInsets.all(10),
+          );
+        }
       } else {
         final errorMessage = widget.isEdit
             ? controller.errorUpdate.value
@@ -254,28 +315,58 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
             : 'Gagal ${widget.isEdit ? "memperbarui" : "menambahkan"} produk');
       }
     } catch (e) {
+      // Reset submitting flag on error
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
       _showErrorSnackbar('Terjadi kesalahan: $e');
     }
   }
 
   void _showErrorSnackbar(String message) {
-    Get.snackbar(
-      'Error',
-      message,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+    // Close existing snackbar if any
+    if (Get.isSnackbarOpen) {
+      Get.closeAllSnackbars();
+    }
+
+    // Use Future.delayed to ensure previous snackbar is closed
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        Get.snackbar(
+          'Error',
+          message,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+          snackPosition: SnackPosition.TOP,
+          margin: const EdgeInsets.all(10),
+        );
+      }
+    });
   }
 
   void _showSuccessSnackbar(String message) {
-    Get.snackbar(
-      'Berhasil',
-      message,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+    // Close existing snackbar if any
+    if (Get.isSnackbarOpen) {
+      Get.closeAllSnackbars();
+    }
+
+    // Use Future.delayed to ensure previous snackbar is closed
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        Get.snackbar(
+          'Berhasil',
+          message,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+          snackPosition: SnackPosition.TOP,
+          margin: const EdgeInsets.all(10),
+        );
+      }
+    });
   }
 
   Widget _buildImageUpload(
@@ -313,12 +404,26 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                       ApiCallStatus.loading) {
                     return const CircularProgressIndicator();
                   }
-                  // Show current image if available
-                  final currentImageUrl = controller.linkImage.value.isNotEmpty
-                      ? controller.linkImage.value
-                      : controller.produk.value?.photo;
+                  
+                  // Get current image URL with validation
+                  String? currentImageUrl;
+                  
+                  // Priority 1: Check linkImage from controller
+                  if (controller.linkImage.value.isNotEmpty && 
+                      controller.linkImage.value != 'file:///' &&
+                      Uri.tryParse(controller.linkImage.value)?.hasScheme == true) {
+                    currentImageUrl = controller.linkImage.value;
+                  }
+                  // Priority 2: Check produk photo
+                  else if (controller.produk.value?.photo != null && 
+                           controller.produk.value!.photo!.isNotEmpty &&
+                           controller.produk.value!.photo != 'file:///' &&
+                           Uri.tryParse(controller.produk.value!.photo!)?.hasScheme == true) {
+                    currentImageUrl = controller.produk.value!.photo;
+                  }
 
-                  if (currentImageUrl != null && currentImageUrl.isNotEmpty) {
+                  // Display image if valid URL exists
+                  if (currentImageUrl != null) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.network(
@@ -326,18 +431,33 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
                         height: 110,
                         width: 110,
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey[200],
-                            child: const Center(
-                              child: Icon(Icons.error_outline,
-                                  color: Colors.red, size: 40),
+                            child: Center(
+                              child: Icon(
+                                Icons.image_outlined,
+                                size: 40,
+                                color: Colors.grey[500],
+                              ),
                             ),
                           );
                         },
                       ),
                     );
                   } else {
+                    // Show placeholder icon
                     return Icon(
                       Icons.image_outlined,
                       size: 40,
@@ -459,7 +579,7 @@ class _TambahProdukTabState extends State<TambahProdukTab> {
               return DropdownMenuItem<String>(
                 value: kategori.id.toString(),
                 child: Text(
-                  kategori.name ?? 'Unknown Category', // Handle null names
+                  kategori.name ?? 'Unknown Category',
                   style: const TextStyle(fontSize: 15),
                 ),
               );

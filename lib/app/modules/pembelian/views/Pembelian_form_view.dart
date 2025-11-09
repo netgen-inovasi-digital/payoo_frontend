@@ -190,7 +190,7 @@ class _PembelianFormViewState extends State<PembelianFormView> {
   }
 
   void _handleSuccessfulSave() {
-    _stokController?.resetForm();
+    _stokController.resetForm();
 
     setState(() {
       _selectedProdukId = 0;
@@ -200,6 +200,9 @@ class _PembelianFormViewState extends State<PembelianFormView> {
       _isKomposisi = false;
     });
 
+    // Refresh stock list with pembelian filter before going back
+    _stokController.fetchStockList(pembelian: true, refresh: true);
+    
     Get.back(result: true);
     CustomSnackBar.showCustomSnackBar(
       title: 'Sukses',
@@ -208,10 +211,10 @@ class _PembelianFormViewState extends State<PembelianFormView> {
   }
 
   void _handleSaveError() {
-    if (_stokController?.errorCreate.value.isNotEmpty ?? false) {
+    if (_stokController.errorCreate.value.isNotEmpty) {
       CustomSnackBar.showCustomErrorSnackBar(
         title: 'Gagal Menyimpan',
-        message: _stokController!.errorCreate.value,
+        message: _stokController.errorCreate.value,
       );
     } else {
       CustomSnackBar.showCustomErrorSnackBar(

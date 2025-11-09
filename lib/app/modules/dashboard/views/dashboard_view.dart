@@ -179,7 +179,7 @@ class _DashboardViewState extends State<DashboardView> {
             );
           }
 
-          // Success state
+          // Success state - always show dashboard UI
           return Column(
             children: [
               CustomHeaderClipPath(
@@ -191,22 +191,20 @@ class _DashboardViewState extends State<DashboardView> {
                     padding: const EdgeInsets.all(30),
                     child: Builder(
                       builder: (context) {
+                        // Check if user has shop assigned
+                        final hasShop = dashboardController.userController.user.value?.shopId != null &&
+                                       dashboardController.userController.user.value!.shopId > 0;
+                        final tokoData = dashboardController.tokoController.toko.value;
+                        
                         return ProfileHeader(
-                          photo: dashboardController
-                                  .tokoController.toko.value?.photo ??
-                              '',
-                          businessName: dashboardController
-                                  .tokoController.toko.value?.name ??
-                              'Nama Toko',
-                          address: dashboardController
-                                  .tokoController.toko.value?.address ??
-                              'Alamat Toko',
+                          photo: tokoData?.photo ?? '',
+                          businessName: tokoData?.name ?? (hasShop ? '-' : 'Belum ada toko'),
+                          address: tokoData?.address ?? (hasShop ? '-' : 'Hubungi admin untuk setup toko'),
                           ownerName: dashboardController
                                   .userController.user.value?.name ??
                               'Nama Pemilik',
-                          phoneNumber: dashboardController
-                                  .tokoController.toko.value?.phone ??
-                              'Nomor Telepon',
+                          phoneNumber: tokoData?.phone ?? 
+                                      (dashboardController.userController.user.value?.phone ?? '-'),
                           onEditProfile: () {},
                           onAccountUpgrade: () {},
                         );
@@ -244,7 +242,7 @@ class _DashboardViewState extends State<DashboardView> {
                           title: 'Jumlah Transaksi',
                           label:
                               dashboardController.dashboardData.value?.date ??
-                                  '0',
+                                  'Hari Ini',
                           value: dashboardController
                                   .dashboardData.value?.transactionCount
                                   .toString() ??
@@ -253,7 +251,7 @@ class _DashboardViewState extends State<DashboardView> {
                           title: 'Pendapatan',
                           label:
                               dashboardController.dashboardData.value?.date ??
-                                  '0',
+                                  'Hari Ini',
                           value: dashboardController
                                   .dashboardData.value?.revenue
                                   .toString() ??

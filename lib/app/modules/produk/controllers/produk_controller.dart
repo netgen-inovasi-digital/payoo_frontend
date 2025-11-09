@@ -41,51 +41,45 @@ class ProdukController extends GetxController {
   var selectedKategoriId = ''.obs;
   var selectedKomposisi = <Komposisi>[].obs;
 
-
-
   /// Sets the selected category ID for the product
   void setKategori(String kategoriId) {
     selectedKategoriId.value = kategoriId;
-    // Removed update() call to prevent build issues
   }
 
   /// Sets the selected komposisi list for the product
   void setKomposisi(List<Komposisi> komposisi) {
     selectedKomposisi.value = komposisi;
-    // Removed update() call to prevent build issues
   }
 
   /// Clears the selected kategori
   void clearKategori() {
     selectedKategoriId.value = '';
-    // Removed update() call to prevent build issues
   }
 
   /// Clears the selected komposisi
   void clearKomposisi() {
     selectedKomposisi.clear();
-    // Removed update() call to prevent build issues
+    update(['komposisi_info']);
   }
 
   /// Adds a single komposisi to the list
   void addKomposisi(Komposisi komposisi) {
     if (!selectedKomposisi.any((item) => item.id == komposisi.id)) {
       selectedKomposisi.add(komposisi);
-      // Removed update() call to prevent build issues
+      update(['komposisi_info']);
     }
   }
 
   /// Removes a komposisi from the list
   void removeKomposisi(Komposisi komposisi) {
     selectedKomposisi.removeWhere((item) => item.id == komposisi.id);
-    // Removed update() call to prevent build issues
+    update(['komposisi_info']);
   }
 
-  /// Gets the selected kategori name (if you need it for display)
+  /// Gets the selected kategori name
   String getSelectedKategoriName() {
     if (selectedKategoriId.value.isEmpty) return '';
 
-    // Assuming you have access to KategoriController
     final kategoriController = Get.find<KategoriController>();
     final kategori = kategoriController.list.firstWhereOrNull(
         (kat) => kat.id.toString() == selectedKategoriId.value);
@@ -117,7 +111,6 @@ class ProdukController extends GetxController {
       return false;
     }
 
-    // Validate modal price if provided
     if (hargaModalController.text.trim().isNotEmpty) {
       final hargaModal = double.tryParse(hargaModalController.text.trim());
       if (hargaModal == null || hargaModal < 0) {
@@ -237,13 +230,11 @@ class ProdukController extends GetxController {
     const url = Constants.baseUrl + Constants.PRODUCTS;
     final token = StorageManager().read<String>('token');
 
-    // Validate input using the validation method
     if (!validateProdukData()) {
       statusCreate.value = ApiCallStatus.error;
       return false;
     }
 
-    // Parse category_id to integer
     final categoryId = int.tryParse(selectedKategoriId.value);
     if (categoryId == null) {
       errorCreate.value = 'Invalid category selected';
@@ -258,11 +249,13 @@ class ProdukController extends GetxController {
       'description': 'lorem50adasdadsssssssssssssss',
       'photo': linkImage.value,
       'category_id': categoryId,
-      'compositions': selectedKomposisi.map((c) => c.id).toList(),
+      'compositions': selectedKomposisi
+          .map((c) => {
+                'composition_id': c.id,
+                'quantity': (c.quantity ?? 1),
+              }).toList(),
       'stock': int.tryParse(stokController.text.trim()) ?? 0,
     };
-
-    print('Creating product with payload: $payload');
 
     bool success = false;
     await BaseClient.safeApiCall(
@@ -276,12 +269,39 @@ class ProdukController extends GetxController {
             response.data,
             (json) => Produk.fromJson(json),
           );
+          
           if (parsed.data != null) {
-            list.insert(0, parsed.data!);
+            // PERBAIKAN: Parse compositions dari response POST
+            // Response POST mengembalikan pivot table dengan composition_id
+            final createdProduct = parsed.data!;
+            
+            // Convert pivot compositions back to Komposisi objects
+            if (createdProduct.compositions != null) {
+              final convertedCompositions = <Komposisi>[];
+              
+              for (var comp in createdProduct.compositions!) {
+                // Cari komposisi asli dari selectedKomposisi berdasarkan composition_id
+                // Karena response hanya ada composition_name, cost_price, selling_price, unit
+                // kita buat Komposisi baru dari data response
+                convertedCompositions.add(Komposisi(
+                  id: comp.compositionId ?? comp.id, // Gunakan composition_id bukan pivot id
+                  namaKomposisi: comp.namaKomposisi,
+                  hargaModal: double.tryParse(comp.hargaModal.toString()) ?? 0,
+                  hargaJual: double.tryParse(comp.hargaJual.toString()) ?? 0,
+                  satuan: comp.satuan ?? '',
+                  quantity: comp.quantity,
+                ));
+              }
+              
+              // Update produk dengan komposisi yang sudah dikonversi
+              createdProduct.compositions = convertedCompositions;
+            }
+            
+            list.insert(0, createdProduct);
           }
+          
           statusCreate.value = ApiCallStatus.success;
           success = true;
-          resetCreateForm();
         } catch (e) {
           errorCreate.value = 'Error parsing response: $e';
           statusCreate.value = ApiCallStatus.error;
@@ -304,25 +324,32 @@ class ProdukController extends GetxController {
   }
 
   Future<bool> updateProduk(int id) async {
-    statusUpdate.value = ApiCallStatus.loading; // Fixed: Use statusUpdate instead of statusCreate
-    errorUpdate.value = ''; // Fixed: Use errorUpdate instead of errorCreate
+    statusUpdate.value = ApiCallStatus.loading;
+    errorUpdate.value = '';
     final url = Constants.baseUrl +
         Constants.PRODUCT_BY_ID.replaceAll('{id}', id.toString());
     final token = StorageManager().read<String>('token');
 
-    // Validate input using the validation method
     if (!validateProdukData()) {
       statusUpdate.value = ApiCallStatus.error;
       return false;
     }
 
-    // Parse category_id to integer
     final categoryId = int.tryParse(selectedKategoriId.value);
     if (categoryId == null) {
       errorUpdate.value = 'Invalid category selected';
       statusUpdate.value = ApiCallStatus.error;
       return false;
     }
+
+    // PERBAIKAN: Gunakan composition_id yang benar, bukan pivot id
+    final compositionsPayload = selectedKomposisi.map((c) {
+      // Pastikan menggunakan ID komposisi asli, bukan ID pivot
+      return {
+        'composition_id': c.id, // Ini harus ID komposisi (37), bukan ID pivot (31)
+        'quantity': (c.quantity ?? 1),
+      };
+    }).toList();
 
     final payload = {
       'name': namaController.text.trim(),
@@ -333,9 +360,11 @@ class ProdukController extends GetxController {
           ? produk.value?.photo ?? ''
           : linkImage.value,
       'category_id': categoryId,
-      'compositions': selectedKomposisi.map((c) => c.id).toList(),
+      'compositions': compositionsPayload,
       'stock': int.tryParse(stokController.text.trim()) ?? 0,
     };
+
+    print('Update payload compositions: $compositionsPayload'); // Debug log
 
     bool success = false;
     await BaseClient.safeApiCall(
@@ -350,19 +379,16 @@ class ProdukController extends GetxController {
             (json) => Produk.fromJson(json),
           );
           
-          // Update the product in the list
           if (parsed.data != null) {
             final index = list.indexWhere((p) => p.id == id);
             if (index != -1) {
               list[index] = parsed.data!;
             }
-            // Also update the current produk value
             produk.value = parsed.data!;
           }
           
           statusUpdate.value = ApiCallStatus.success;
           success = true;
-          resetCreateForm();
         } catch (e) {
           errorUpdate.value = 'Error parsing response: $e';
           statusUpdate.value = ApiCallStatus.error;
@@ -423,6 +449,7 @@ class ProdukController extends GetxController {
     errorCreate.value = '';
     statusUpdate.value = ApiCallStatus.holding;
     errorUpdate.value = '';
+    update(['komposisi_info']);
   }
 
   void resetData() {
@@ -440,6 +467,9 @@ class ProdukController extends GetxController {
     stokController.dispose();
     linkImage.value = '';
     produk.value = null;
+    if (Get.isSnackbarOpen) {
+      Get.closeAllSnackbars();
+    }
     super.onClose();
   }
 
@@ -448,8 +478,48 @@ class ProdukController extends GetxController {
     hargaModalController.text = produk.costPrice.toString();
     hargaJualController.text = produk.sellingPrice.toString();
     selectedKategoriId.value = produk.kategori.id.toString();
-    selectedKomposisi.value = produk.compositions ?? [];
+    
+    // PERBAIKAN: Pastikan menggunakan composition_id yang benar
+    if (produk.compositions != null) {
+      selectedKomposisi.value = produk.compositions!.map((comp) {
+        // Jika comp.compositionId ada, gunakan itu (untuk data dari API)
+        // Jika tidak, gunakan comp.id (untuk data lokal)
+        return Komposisi(
+          id: comp.compositionId ?? comp.id,
+          namaKomposisi: comp.namaKomposisi,
+          hargaModal: double.tryParse(comp.hargaModal.toString()) ?? 0,
+          hargaJual: double.tryParse(comp.hargaJual.toString()) ?? 0,
+          satuan: comp.satuan ?? '',
+          quantity: comp.quantity,
+        );
+      }).toList();
+    }
+    
     stokController.text = produk.stock.toString();
-    // Removed update() call to prevent build issues
+    update(['komposisi_info']);
   }
+
+  // Add this method to safely show snackbars
+  void showSnackbar(String title, String message, {bool isError = false}) {
+    // Cancel any existing snackbar first
+    if (Get.isSnackbarOpen) {
+      Get.closeAllSnackbars();
+    }
+    
+    // Wait a frame before showing new snackbar
+    Future.delayed(Duration.zero, () {
+      if (!Get.isSnackbarOpen) {
+        Get.snackbar(
+          title,
+          message,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: isError ? Colors.red : Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+      }
+    });
+  }
+  
+  
 }

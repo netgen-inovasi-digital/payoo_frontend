@@ -9,6 +9,7 @@ class KomposisiCard extends StatefulWidget {
   final VoidCallback? onTap;
   final Color cardColor;
   final bool useQuantities;
+  final Function(Komposisi)? onQuantityZero;
   
   const KomposisiCard({
     super.key,
@@ -16,6 +17,7 @@ class KomposisiCard extends StatefulWidget {
     this.onTap,
     this.cardColor = Colors.white,
     this.useQuantities = false,
+    this.onQuantityZero,
   });
 
   @override
@@ -113,7 +115,12 @@ Widget _buildInputButton(Komposisi komposisi) {
       children: [
         _buildIconButton(Icons.remove, Colors.red, () {
           setState(() {
-            if (komposisi.quantity > 0) komposisi.quantity--;
+            if (komposisi.quantity > 0) {
+              komposisi.quantity--;
+              if (komposisi.quantity == 0 && widget.onQuantityZero != null) {
+                widget.onQuantityZero!(komposisi);
+              }
+            }
           });
         }),
         Container(
@@ -141,6 +148,9 @@ Widget _buildInputButton(Komposisi komposisi) {
               final newQuantity = int.tryParse(value) ?? 0;
               setState(() {
                 komposisi.quantity = newQuantity;
+                if (komposisi.quantity == 0 && widget.onQuantityZero != null) {
+                  widget.onQuantityZero!(komposisi);
+                }
               });
             },
           ),

@@ -87,8 +87,7 @@ class KeranjangController extends GetxController {
       status.value = ApiCallStatus.error;
       return false;
     }
-
-    // ✅ FIXED: Get ACTUAL local time, not UTC
+    
     final now = DateTime.now().toLocal(); // Force to local timezone
     
     // Manual formatting to ensure local time is used
@@ -121,7 +120,7 @@ class KeranjangController extends GetxController {
       'discount': diskonController.text,
     };
 
-    print('Payload being sent: $payload');
+  
 
     bool success = false;
     await BaseClient.safeApiCall(
@@ -131,7 +130,6 @@ class KeranjangController extends GetxController {
       data: payload,
       onSuccess: (response) {
         try {
-          print('Order created successfully: ${response.data}');
           final parsed = ApiResponse<KeranjangModel>.fromJson(
             response.data,
             (json) => KeranjangModel.fromJson(json),
@@ -144,7 +142,6 @@ class KeranjangController extends GetxController {
           status.value = ApiCallStatus.success;
           success = true;
         } catch (e) {
-          print('Error parsing response: $e');
           error.value = 'Parsing error: ${e.toString()}';
           status.value = ApiCallStatus.error;
         }

@@ -118,7 +118,7 @@ class _PembelianViewState extends State<PembelianView> {
                     FloatingActionButton(
                       shape: const CircleBorder(),
                       onPressed: () async {
-                        final result = Get.to(() => const PembelianFormView());
+                        final result = await Get.to(() => const PembelianFormView());
                         if (result == true) {
                           _stokController.fetchStockList(
                               pembelian: true, refresh: true);

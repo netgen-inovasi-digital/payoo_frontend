@@ -212,7 +212,7 @@ class InformasiTokoView extends StatelessWidget {
                                         backgroundColor: Colors.green,
                                         colorText: Colors.white);
                                     // arahkan ke halaman dashboard
-                                    Get.toNamed(Routes.DASHBOARD);
+                                    Get.offAllNamed(Routes.LOGIN);
                                   }
                                 },
                                 height: 50,

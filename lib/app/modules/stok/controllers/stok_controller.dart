@@ -168,7 +168,7 @@ class StokController extends GetxController {
       statusCreate.value = ApiCallStatus.error;
       errorCreate.value = 'Request timeout';
     }
-    fetchStockList(refresh: true);
+    // Don't auto-fetch here - let the calling view handle it with proper parameters
     return success;
   }
 
@@ -178,7 +178,7 @@ class StokController extends GetxController {
     buyPriceController.clear();
     notesController.clear();
     clearValidationErrors();
-  statusCreate.value = ApiCallStatus.holding;
+    statusCreate.value = ApiCallStatus.holding;
     errorCreate.value = '';
   }
 
@@ -317,6 +317,8 @@ class StokController extends GetxController {
     listStock.sort((a, b) => (b.id).compareTo(a.id));
     return success;
   }
+
+  
 
   // Load more stocks untuk infinite scroll
   Future<void> loadMoreStocks({bool pembelian = false}) async {
